@@ -124,4 +124,41 @@ describe('checkSyllable', () => {
       expect(checkSyllable(parts('ก', 'aa', final))).toBeNull();
     });
   });
+
+  describe('rule 5: an onset ending in ว takes neither -ัว, -ัวะ nor the invisible o', () => {
+    const ONSETS_ENDING_IN_WO = ['กว', 'ขว', 'คว', 'หว'];
+
+    // กว + invisible o + น would be written กวน, which reads ก + ua + น.
+    it.each(ONSETS_ENDING_IN_WO)('rejects %s + invisible o + final', (onsetText) => {
+      for (const final of ['น', 'ก', 'ด']) {
+        expect(checkSyllable(parts(onsetText, 'o', final)), final).toMatch(/ends in ว/);
+      }
+    });
+
+    it.each(ONSETS_ENDING_IN_WO)('rejects %s + -ัว, open or closed', (onsetText) => {
+      expect(checkSyllable(parts(onsetText, 'uua'))).toMatch(/ends in ว/);
+      expect(checkSyllable(parts(onsetText, 'uua', 'น'))).toMatch(/ends in ว/);
+    });
+
+    it.each(ONSETS_ENDING_IN_WO)('rejects %s + -ัวะ', (onsetText) => {
+      expect(checkSyllable(parts(onsetText, 'ua'))).toMatch(/ends in ว/);
+    });
+
+    it.each(ONSETS_ENDING_IN_WO)('accepts %s + โ-ะ, where the o is written', (onsetText) => {
+      expect(checkSyllable(parts(onsetText, 'o'))).toBeNull();
+    });
+
+    type Case = [string, VowelId, string | null];
+    it.each([
+      ['กว', 'aa', 'ง'], // กวาง
+      ['หว', 'aa', 'น'], // หวาน
+      ['คว', 'aa', 'ม'], // ความ
+      ['ว', 'uua', null], // วัว, single ว
+      ['ว', 'o', 'น'], // วน, single ว
+      ['ก', 'uua', 'น'], // กวน
+      ['ห', 'uua', 'น'], // หวน
+    ] as Case[])('accepts %s + %s + final %s', (onsetText, id, final) => {
+      expect(checkSyllable(parts(onsetText, id, final))).toBeNull();
+    });
+  });
 });

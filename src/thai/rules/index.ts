@@ -11,13 +11,20 @@ import type { SyllableParts } from '../render';
 import { finalAllowed } from './final-allowed';
 import { invisibleOFinals } from './invisible-o-finals';
 import { midClassOnlyMarks } from './mid-class-only-marks';
+import { onsetEndingInWo } from './onset-ending-in-wo';
 import { semivowelFinals } from './semivowel-finals';
 
 /** A validity rule: `null` if the syllable follows it, otherwise the reason it does not. */
 type Rule = (parts: SyllableParts) => string | null;
 
 /** The rules, in the order they are checked: the first one broken gives the reason. */
-const RULES: readonly Rule[] = [midClassOnlyMarks, finalAllowed, semivowelFinals, invisibleOFinals];
+const RULES: readonly Rule[] = [
+  midClassOnlyMarks,
+  finalAllowed,
+  semivowelFinals,
+  invisibleOFinals,
+  onsetEndingInWo,
+];
 
 /**
  * Checks whether a syllable can be shown in the game.
