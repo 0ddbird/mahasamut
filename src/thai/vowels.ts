@@ -53,7 +53,9 @@ export const VOWELS: readonly Vowel[] = [
   { id: VOWEL.I, length: SHORT, open: '◌ิ', closed: '◌ิ' },
   { id: VOWEL.Ii, length: LONG, open: '◌ี', closed: '◌ี' },
   { id: VOWEL.Ue, length: SHORT, open: '◌ึ', closed: '◌ึ' },
-  { id: VOWEL.Uee, length: LONG, open: '◌ือ', closed: null }, // TODO: ◌ื before a final (มืด)
+  // Drops อ before a final: มือ / มืด
+  // @see "Les cahiers d'écriture Assimil - Thaï", p57
+  { id: VOWEL.Uee, length: LONG, open: '◌ือ', closed: '◌ื' },
   { id: VOWEL.U, length: SHORT, open: '◌ุ', closed: '◌ุ' },
   { id: VOWEL.Uu, length: LONG, open: '◌ู', closed: '◌ู' },
   { id: VOWEL.E, length: SHORT, open: 'เ◌ะ', closed: null }, // TODO: เ◌็, without ็ when marked (เล็ก, เล่น)
@@ -71,7 +73,9 @@ export const VOWELS: readonly Vowel[] = [
   { id: VOWEL.Uea, length: SHORT, open: 'เ◌ือะ', closed: null },
   { id: VOWEL.Ueea, length: LONG, open: 'เ◌ือ', closed: 'เ◌ือ' },
   { id: VOWEL.Ua, length: SHORT, open: '◌ัวะ', closed: null },
-  { id: VOWEL.Uua, length: LONG, open: '◌ัว', closed: null }, // TODO: ◌ว before a final (ควร)
+  // Drops ั before a final: ตัว / ควร
+  // @see https://www.thaipod101.com/lesson/thai-alphabet-made-easy-15-the-classchanging-h%C7%8Eaw-hiip-short-ua-and-long-ua
+  { id: VOWEL.Uua, length: LONG, open: '◌ัว', closed: '◌ว' },
 ];
 
 const BY_ID = new Map(VOWELS.map((v) => [v.id, v]));

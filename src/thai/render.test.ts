@@ -77,6 +77,12 @@ describe('render (closed syllable, no tone mark)', () => {
     ['ม', 'ueea', 'ง', 'เมือง'],
     ['ก', 'oor', 'ง', 'กอง'],
     ['ส', 'u', 'ข', 'สุข'],
+    // -ือ loses its อ before a final
+    ['ม', 'uee', 'ด', 'มืด'],
+    ['ค', 'uee', 'น', 'คืน'],
+    // -ัว loses its ั before a final
+    ['ค', 'uua', 'ร', 'ควร'],
+    ['ส', 'uua', 'ย', 'สวย'],
   ];
 
   it.each(WITH_KO_KAI_AND_NO_NUU)('ก + %s + น → %s', (id, expected) => {
@@ -108,7 +114,10 @@ describe('render (tone marks)', () => {
     ['ก', 'or', null, 'trii', 'เก๊าะ'],
     ['ข', 'aa', 'ว', 'thoo', 'ข้าว'],
     ['น', 'oor', 'ง', 'thoo', 'น้อง'],
+    ['ม', 'uua', 'ง', 'eek', 'ม่วง'],
+    ['ก', 'uua', 'ย', 'djattawaa', 'ก๋วย'],
     // Mark after a vowel written above the consonant
+    ['ด', 'uee', 'ม', 'eek', 'ดื่ม'],
     ['ก', 'ii', null, 'eek', 'กี่'],
     ['ก', 'i', 'ง', 'eek', 'กิ่ง'],
     ['ก', 'a', 'น', 'thoo', 'กั้น'],

@@ -85,13 +85,16 @@ describe('closed forms (vowel written before a final consonant)', () => {
     ['oor', '◌อ'],
     ['iia', 'เ◌ีย'],
     ['ueea', 'เ◌ือ'],
+    // The closed form drops part of the open one
+    ['uee', '◌ื'],
+    ['uua', '◌ว'],
   ];
 
   // Never followed by a final consonant.
   const NEVER_CLOSED: VowelId[] = ['or', 'oe', 'ia', 'uea', 'ua'];
 
   // Their closed form changes shape; handled in a later step.
-  const NOT_YET_CLOSED: VowelId[] = ['e', 'ae', 'uee', 'o', 'oee', 'uua'];
+  const NOT_YET_CLOSED: VowelId[] = ['e', 'ae', 'o', 'oee'];
 
   it.each(CLOSED)('%s is written %s before a final', (id, closed) => {
     expect(vowel(id).closed).toBe(closed);
