@@ -51,3 +51,43 @@ describe('vowels', () => {
     expect(() => vowel('xx' as VowelId)).toThrow(/Unknown vowel/);
   });
 });
+
+describe('closed forms (vowel written before a final consonant)', () => {
+  const CLOSED: [VowelId, string][] = [
+    ['a', '◌ั'],
+    ['aa', '◌า'],
+    ['i', '◌ิ'],
+    ['ii', '◌ี'],
+    ['ue', '◌ึ'],
+    ['u', '◌ุ'],
+    ['uu', '◌ู'],
+    ['ee', 'เ◌'],
+    ['aee', 'แ◌'],
+    ['oo', 'โ◌'],
+    ['oor', '◌อ'],
+    ['iia', 'เ◌ีย'],
+    ['ueea', 'เ◌ือ'],
+  ];
+
+  // Never followed by a final consonant.
+  const NEVER_CLOSED: VowelId[] = ['or', 'oe', 'ia', 'uea', 'ua'];
+
+  // Their closed form changes shape; handled in a later step.
+  const NOT_YET_CLOSED: VowelId[] = ['e', 'ae', 'uee', 'o', 'oee', 'uua'];
+
+  it.each(CLOSED)('%s is written %s before a final', (id, closed) => {
+    expect(vowel(id).closed).toBe(closed);
+  });
+
+  it.each([...NEVER_CLOSED, ...NOT_YET_CLOSED])('%s has no closed form (yet)', (id) => {
+    expect(vowel(id).closed).toBeNull();
+  });
+
+  it('covers all 24 vowels', () => {
+    expect(CLOSED.length + NEVER_CLOSED.length + NOT_YET_CLOSED.length).toBe(24);
+  });
+
+  it.each(CLOSED)('%s closed template %s has exactly one consonant slot', (_id, closed) => {
+    expect(closed.split(CONSONANT_SLOT)).toHaveLength(2);
+  });
+});
