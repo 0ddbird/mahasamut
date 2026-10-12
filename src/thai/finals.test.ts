@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CONSONANTS } from './consonants';
-import { finalKind, finalSound } from './finals';
-import type { FinalKind, FinalSound } from './types';
+import { finalKind, finalSound, liveness } from './finals';
+import type { FinalKind, FinalSound, Liveness, VowelLength } from './types';
 
 const LETTERS_BY_SOUND: [FinalSound, string[]][] = [
   ['k', ['ก', 'ข', 'ค', 'ฆ']],
@@ -54,5 +54,20 @@ describe('finalSound', () => {
 describe('finalKind', () => {
   it.each(KIND_BY_SOUND)('final sound %s → %s', (sound, kind) => {
     expect(finalKind(sound)).toBe(kind);
+  });
+});
+
+describe('liveness', () => {
+  const CASES: [FinalKind, VowelLength, Liveness][] = [
+    ['none', 'short', 'dead'],
+    ['none', 'long', 'live'],
+    ['sonorant', 'short', 'live'],
+    ['sonorant', 'long', 'live'],
+    ['stop', 'short', 'dead'],
+    ['stop', 'long', 'dead'],
+  ];
+
+  it.each(CASES)('%s final + %s vowel → %s', (kind, length, expected) => {
+    expect(liveness(kind, length)).toBe(expected);
   });
 });

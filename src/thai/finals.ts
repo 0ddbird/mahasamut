@@ -10,8 +10,8 @@
  * m, n, ng, y, w are sonorants. That kind is what makes a syllable live or dead.
  */
 import { consonant } from './consonants';
-import { FINAL_KIND, FINAL_SOUND } from './types';
-import type { FinalKind, FinalSound } from './types';
+import { FINAL_KIND, FINAL_SOUND, LIVENESS, VOWEL_LENGTH } from './types';
+import type { FinalKind, FinalSound, Liveness, VowelLength } from './types';
 
 const SOUND_BY_LETTER: ReadonlyMap<string, FinalSound> = new Map([
   ['ก', FINAL_SOUND.K],
@@ -75,4 +75,15 @@ export function finalSound(letter: string): FinalSound {
 export function finalKind(sound: FinalSound | null): FinalKind {
   if (sound === null) return FINAL_KIND.None;
   return STOP_SOUNDS.includes(sound) ? FINAL_KIND.Stop : FINAL_KIND.Sonorant;
+}
+
+/**
+ * Whether a syllable is live or dead. The final decides first: a sonorant
+ * final makes it live and a stop final makes it dead, whatever the vowel.
+ * Only without a final does the vowel length decide: long is live, short is dead.
+ */
+export function liveness(kind: FinalKind, length: VowelLength): Liveness {
+  if (kind === FINAL_KIND.Sonorant) return LIVENESS.Live;
+  if (kind === FINAL_KIND.Stop) return LIVENESS.Dead;
+  return length === VOWEL_LENGTH.Long ? LIVENESS.Live : LIVENESS.Dead;
 }
