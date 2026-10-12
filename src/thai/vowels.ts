@@ -41,6 +41,8 @@ export interface Vowel {
    * it; `null` if the vowel cannot take a final consonant.
    */
   closed: string | null;
+  /** Replaces `closed` when the final consonant is ย: เ-อ + ย is written เ◌ย (เลย). */
+  closedBeforeY?: string;
 }
 
 const SHORT = VOWEL_LENGTH.Short;
@@ -67,7 +69,8 @@ export const VOWELS: readonly Vowel[] = [
   { id: VOWEL.Or, length: SHORT, open: 'เ◌าะ', closed: null },
   { id: VOWEL.Oor, length: LONG, open: '◌อ', closed: '◌อ' },
   { id: VOWEL.Oe, length: SHORT, open: 'เ◌อะ', closed: null },
-  { id: VOWEL.Oee, length: LONG, open: 'เ◌อ', closed: null }, // TODO: เ◌ิ, or เ◌ย with final ย (เดิน, เลย)
+  // Becomes เ◌ิ before a final (เธอ / เดิน), and drops อ before ย (เลย)
+  { id: VOWEL.Oee, length: LONG, open: 'เ◌อ', closed: 'เ◌ิ', closedBeforeY: 'เ◌' },
   { id: VOWEL.Ia, length: SHORT, open: 'เ◌ียะ', closed: null },
   { id: VOWEL.Iia, length: LONG, open: 'เ◌ีย', closed: 'เ◌ีย' },
   { id: VOWEL.Uea, length: SHORT, open: 'เ◌ือะ', closed: null },

@@ -66,5 +66,6 @@ function closedTemplate(vowel: Vowel, finalChar: string): string {
   // Called to raise an exception if finalChar is not valid.
   finalSound(finalChar);
   if (vowel.closed === null) throw new Error(`Vowel ${vowel.id} cannot take a final consonant`);
+  if (finalChar === 'ย' && vowel.closedBeforeY !== undefined) return vowel.closedBeforeY;
   return vowel.closed;
 }
