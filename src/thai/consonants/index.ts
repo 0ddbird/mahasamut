@@ -10,7 +10,8 @@
  * They are still part of the alphabet, but no modern word is spelled with
  * them (ข and ค replaced them), so this table leaves them out and keeps 42
  * consonants: 9 mid, 10 high, 23 low. Each class has its own file:
- * mid.ts, high.ts and low.ts. Final consonants are handled in finals.ts.
+ * mid.ts, high.ts and low.ts. Syllable onsets (clusters, silent ห and อ)
+ * are in onsets.ts, final consonants in finals.ts.
  */
 import type { ConsonantClass } from '../types';
 import { HIGH_CONSONANTS } from './high';

@@ -7,6 +7,19 @@
  * Adding a value to an object updates its type and its list automatically.
  */
 
+/**
+ * How a syllable starts: a single consonant, a consonant cluster (กร, ปล),
+ * a silent ห before a low sonorant (หม, หน), or a silent อ before ย (อย).
+ */
+export const ONSET_KIND = {
+  Single: 'single',
+  Cluster: 'cluster',
+  LeadingHo: 'leadingHo',
+  LeadingO: 'leadingO',
+} as const;
+export type OnsetKind = (typeof ONSET_KIND)[keyof typeof ONSET_KIND];
+export const ONSET_KINDS: readonly OnsetKind[] = Object.values(ONSET_KIND);
+
 /** Tone classes of a consonant. The class decides which row of the tone rules applies. */
 export const CONSONANT_CLASS = {
   High: 'high',

@@ -4,6 +4,7 @@ import {
   FINAL_KINDS,
   FINAL_SOUNDS,
   LIVENESSES,
+  ONSET_KINDS,
   TONE_MARKS,
   TONES,
   VOWEL_IDS,
@@ -11,6 +12,10 @@ import {
 } from './types';
 
 describe('runtime lists of values', () => {
+  it('lists the four kinds of onset', () => {
+    expect(ONSET_KINDS).toEqual(['single', 'cluster', 'leadingHo', 'leadingO']);
+  });
+
   it('lists the 24 simple vowels in short/long pairs, then the 4 sara koen', () => {
     // prettier-ignore
     expect(VOWEL_IDS).toEqual([
