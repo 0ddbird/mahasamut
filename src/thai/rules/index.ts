@@ -56,8 +56,24 @@ function semivowelFinals({ vowel, final = null }: SyllableParts): string | null 
   return `Final ${final} cannot follow vowel ${vowel.id}`;
 }
 
+/** Finals never written after the invisible o. */
+const FINALS_NOT_AFTER_INVISIBLE_O: readonly string[] = ['ร', 'ว', 'ย'];
+
+/**
+ * Rule 4: the invisible o never takes a ร ว ย final. A consonant followed by ร
+ * alone reads with a long ɔ and a final n (พร and จร read like พอน and จอน),
+ * and ว ย only close the written vowels of rule 3.
+ *
+ * @see https://en.wikipedia.org/wiki/Thai_script (vowels table, ◌ร)
+ */
+function invisibleOFinals({ vowel, final = null }: SyllableParts): string | null {
+  if (vowel.id !== VOWEL.O || final === null) return null;
+  if (!FINALS_NOT_AFTER_INVISIBLE_O.includes(final)) return null;
+  return `Final ${final} cannot follow the invisible o`;
+}
+
 /** The rules, in the order they are checked: the first one broken gives the reason. */
-const RULES: readonly Rule[] = [midClassOnlyMarks, finalAllowed, semivowelFinals];
+const RULES: readonly Rule[] = [midClassOnlyMarks, finalAllowed, semivowelFinals, invisibleOFinals];
 
 /**
  * Checks whether a syllable can be shown in the game.

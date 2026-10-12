@@ -100,4 +100,28 @@ describe('checkSyllable', () => {
       expect(checkSyllable(parts('ก', id, final))).toMatch(/cannot follow/);
     });
   });
+
+  describe('rule 4: invisible o never with a ร ว ย final', () => {
+    it.each(['น', 'ม', 'ง', 'ก', 'ด', 'บ'])('accepts invisible o + final %s', (final) => {
+      expect(checkSyllable(parts('ค', 'o', final))).toBeNull();
+    });
+
+    // ล after the invisible o is fine when onset + ล is not a cluster (กล is rule 6).
+    it.each(['ช', 'ม'])('accepts %s + invisible o + final ล', (onsetText) => {
+      expect(checkSyllable(parts(onsetText, 'o', 'ล'))).toBeNull(); // ชล, มล
+    });
+
+    it.each(['ค', 'ม', 'ช'])('rejects %s + invisible o + final ร', (onsetText) => {
+      expect(checkSyllable(parts(onsetText, 'o', 'ร'))).toMatch(/invisible o/); // read -ɔɔn
+    });
+
+    // Rule 3 already rejects these, and is checked first.
+    it.each(['ว', 'ย'])('rejects invisible o + final %s', (final) => {
+      expect(checkSyllable(parts('ม', 'o', final))).not.toBeNull();
+    });
+
+    it.each(['ร', 'ล'])('accepts final %s after a written vowel', (final) => {
+      expect(checkSyllable(parts('ก', 'aa', final))).toBeNull();
+    });
+  });
 });

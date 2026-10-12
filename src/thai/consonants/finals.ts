@@ -47,6 +47,7 @@ const SOUND_BY_LETTER: ReadonlyMap<string, FinalSound> = new Map([
   ['น', FINAL_SOUND.N],
   ['ญ', FINAL_SOUND.N],
   ['ณ', FINAL_SOUND.N],
+  // @see "Les cahiers d'écriture Assimil - Thaï", p43 (อาหาร)
   ['ร', FINAL_SOUND.N],
   ['ล', FINAL_SOUND.N],
   ['ฬ', FINAL_SOUND.N],
