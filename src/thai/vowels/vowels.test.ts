@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { CONSONANT_SLOT, VOWEL_SIGNS_ON_CONSONANT, VOWELS, vowel } from './vowels';
-import { VOWEL_IDS } from './types';
-import type { VowelId, VowelLength } from './types';
+import {
+  CHANGING_VOWELS,
+  CONSONANT_SLOT,
+  OPEN_ONLY_VOWELS,
+  REGULAR_VOWELS,
+  VOWEL_SIGNS_ON_CONSONANT,
+  VOWELS,
+  vowel,
+} from './index';
+import { VOWEL_IDS } from '../types';
+import type { VowelId, VowelLength } from '../types';
 
 const LENGTHS: [VowelId, VowelLength][] = [
   ['a', 'short'],
@@ -48,6 +56,16 @@ describe('vowels', () => {
       0x0e38, // ุ
       0x0e39, // ู
     ]);
+  });
+
+  it('puts each vowel in exactly one group', () => {
+    const grouped = [...REGULAR_VOWELS, ...CHANGING_VOWELS, ...OPEN_ONLY_VOWELS].map((v) => v.id);
+    expect([...grouped].sort()).toEqual([...VOWEL_IDS].sort());
+  });
+
+  it('keeps regular vowels the same before a final, and open-only vowels without one', () => {
+    for (const v of REGULAR_VOWELS) expect(v.closed, v.id).toBe(v.open);
+    for (const v of OPEN_ONLY_VOWELS) expect(v.closed, v.id).toBeNull();
   });
 
   it('defines one vowel per id, in the same order', () => {
