@@ -43,6 +43,11 @@ export interface Vowel {
   closed: string | null;
   /** Replaces `closed` when the final consonant is ย: เ-อ + ย is written เ◌ย (เลย). */
   closedBeforeY?: string;
+  /**
+   * Replaces `closed` when a tone mark is written: the ็ of เ◌็ and แ◌็ has
+   * to make room for the mark (เล็ก / เล่น).
+   */
+  closedMarked?: string;
 }
 
 const SHORT = VOWEL_LENGTH.Short;
@@ -60,9 +65,11 @@ export const VOWELS: readonly Vowel[] = [
   { id: VOWEL.Uee, length: LONG, open: '◌ือ', closed: '◌ื' },
   { id: VOWEL.U, length: SHORT, open: '◌ุ', closed: '◌ุ' },
   { id: VOWEL.Uu, length: LONG, open: '◌ู', closed: '◌ู' },
-  { id: VOWEL.E, length: SHORT, open: 'เ◌ะ', closed: null }, // TODO: เ◌็, without ็ when marked (เล็ก, เล่น)
+  // Takes ็ before a final (เตะ / เล็ก), which a tone mark replaces (เล่น)
+  { id: VOWEL.E, length: SHORT, open: 'เ◌ะ', closed: 'เ◌็', closedMarked: 'เ◌' },
   { id: VOWEL.Ee, length: LONG, open: 'เ◌', closed: 'เ◌' },
-  { id: VOWEL.Ae, length: SHORT, open: 'แ◌ะ', closed: null }, // TODO: แ◌็, without ็ when marked (แข็ง, แข่ง)
+  // Takes ็ before a final (แกะ / แข็ง), which a tone mark replaces (แข่ง)
+  { id: VOWEL.Ae, length: SHORT, open: 'แ◌ะ', closed: 'แ◌็', closedMarked: 'แ◌' },
   { id: VOWEL.Aee, length: LONG, open: 'แ◌', closed: 'แ◌' },
   { id: VOWEL.O, length: SHORT, open: 'โ◌ะ', closed: null }, // TODO: invisible before a final (คน)
   { id: VOWEL.Oo, length: LONG, open: 'โ◌', closed: 'โ◌' },

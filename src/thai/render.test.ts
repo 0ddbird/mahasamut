@@ -89,6 +89,11 @@ describe('render (closed syllable, no tone mark)', () => {
     // ... but เ-ย before the final ย
     ['ล', 'oee', 'ย', 'เลย'],
     ['ค', 'oee', 'ย', 'เคย'],
+    // เ-ะ and แ-ะ become เ-็- and แ-็- before a final
+    ['ล', 'e', 'ก', 'เล็ก'],
+    ['ป', 'e', 'น', 'เป็น'],
+    ['ร', 'e', 'ว', 'เร็ว'],
+    ['ข', 'ae', 'ง', 'แข็ง'],
   ];
 
   it.each(WITH_KO_KAI_AND_NO_NUU)('ก + %s + น → %s', (id, expected) => {
@@ -123,6 +128,11 @@ describe('render (tone marks)', () => {
     ['ม', 'uua', 'ง', 'eek', 'ม่วง'],
     ['ก', 'uua', 'ย', 'djattawaa', 'ก๋วย'],
     ['อ', 'oee', 'ย', 'eek', 'เอ่ย'],
+    // เ-็- and แ-็- lose their ็ when a tone mark takes its place
+    ['ล', 'e', 'น', 'eek', 'เล่น'],
+    ['ต', 'e', 'น', 'thoo', 'เต้น'],
+    ['ก', 'e', 'ง', 'eek', 'เก่ง'],
+    ['ข', 'ae', 'ง', 'eek', 'แข่ง'],
     // Mark after a vowel written above the consonant
     ['ด', 'uee', 'ม', 'eek', 'ดื่ม'],
     ['ป', 'oee', 'น', 'eek', 'เปิ่น'],
@@ -150,6 +160,19 @@ describe('render (tone marks)', () => {
     // ก ุ ้ ง
     expect(codePoints(render('ก', vowel('u'), 'ง', 'thoo'))).toEqual([
       0x0e01, 0x0e38, 0x0e49, 0x0e07,
+    ]);
+  });
+
+  // Checked as code points: ็ (U+0E47) must not remain next to the tone mark.
+  it('never writes ็ together with a tone mark', () => {
+    const codePoints = (text: string) => [...text].map((char) => char.codePointAt(0));
+    // เ ล ่ น
+    expect(codePoints(render('ล', vowel('e'), 'น', 'eek'))).toEqual([
+      0x0e40, 0x0e25, 0x0e48, 0x0e19,
+    ]);
+    // แ ข ่ ง
+    expect(codePoints(render('ข', vowel('ae'), 'ง', 'eek'))).toEqual([
+      0x0e41, 0x0e02, 0x0e48, 0x0e07,
     ]);
   });
 

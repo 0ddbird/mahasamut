@@ -89,13 +89,16 @@ describe('closed forms (vowel written before a final consonant)', () => {
     ['uee', '◌ื'],
     ['uua', '◌ว'],
     ['oee', 'เ◌ิ'],
+    // The closed form adds ็ (mai taikhu)
+    ['e', 'เ◌็'],
+    ['ae', 'แ◌็'],
   ];
 
   // Never followed by a final consonant.
   const NEVER_CLOSED: VowelId[] = ['or', 'oe', 'ia', 'uea', 'ua'];
 
   // Their closed form changes shape; handled in a later step.
-  const NOT_YET_CLOSED: VowelId[] = ['e', 'ae', 'o'];
+  const NOT_YET_CLOSED: VowelId[] = ['o'];
 
   it.each(CLOSED)('%s is written %s before a final', (id, closed) => {
     expect(vowel(id).closed).toBe(closed);
@@ -120,5 +123,20 @@ describe('closed forms (vowel written before a final consonant)', () => {
   it('has no special form before ย for the other vowels', () => {
     const others = VOWELS.filter((v) => v.id !== 'oee');
     for (const v of others) expect(v.closedBeforeY, v.id).toBeUndefined();
+  });
+
+  it.each([
+    ['e', 'เ◌'],
+    ['ae', 'แ◌'],
+  ] as [VowelId, string][])(
+    'drops ็ from %s when a tone mark is written: %s',
+    (id, closedMarked) => {
+      expect(vowel(id).closedMarked).toBe(closedMarked);
+    },
+  );
+
+  it('has no special marked form for the other vowels', () => {
+    const others = VOWELS.filter((v) => v.id !== 'e' && v.id !== 'ae');
+    for (const v of others) expect(v.closedMarked, v.id).toBeUndefined();
   });
 });

@@ -34,7 +34,7 @@ export function render(
   consonant(consonantChar);
 
   // The vowel is written differently when a final consonant follows (กะ / กัน).
-  const template = finalChar === null ? vowel.open : closedTemplate(vowel, finalChar);
+  const template = finalChar === null ? vowel.open : closedTemplate(vowel, finalChar, mark);
 
   // What the vowel writes before the consonant (เ in เ◌ีย) and after it (ีย).
   const [vowelPartBeforeConsonant, vowelPartAfterConsonant] = template.split(CONSONANT_SLOT);
@@ -62,10 +62,11 @@ export function render(
   );
 }
 
-function closedTemplate(vowel: Vowel, finalChar: string): string {
+function closedTemplate(vowel: Vowel, finalChar: string, mark: ToneMark): string {
   // Called to raise an exception if finalChar is not valid.
   finalSound(finalChar);
   if (vowel.closed === null) throw new Error(`Vowel ${vowel.id} cannot take a final consonant`);
   if (finalChar === 'ย' && vowel.closedBeforeY !== undefined) return vowel.closedBeforeY;
+  if (mark !== TONE_MARK.None && vowel.closedMarked !== undefined) return vowel.closedMarked;
   return vowel.closed;
 }
