@@ -8,7 +8,8 @@
  */
 import { canBeFinal } from '../consonants/finals';
 import type { SyllableParts } from '../render';
-import { CONSONANT_CLASS, TONE_MARK } from '../types';
+import { CONSONANT_CLASS, TONE_MARK, VOWEL } from '../types';
+import type { VowelId } from '../types';
 
 /** A validity rule: `null` if the syllable follows it, otherwise the reason it does not. */
 type Rule = (parts: SyllableParts) => string | null;
@@ -33,8 +34,30 @@ function finalAllowed({ vowel, final = null }: SyllableParts): string | null {
   return null;
 }
 
+/**
+ * Vowels a final ย or ว can follow. Together they make a diphthong: สาย, คุย,
+ * ลอย, โดย, เลย, สวย, เหนื่อย with ย; ขาว, หิว, เร็ว, เลว, แมว, เขียว with ว.
+ *
+ * @see https://en.wikipedia.org/wiki/Royal_Thai_General_System_of_Transcription (vowels table)
+ */
+const VOWELS_BEFORE_SEMIVOWEL: ReadonlyMap<string, readonly VowelId[]> = new Map([
+  ['ย', [VOWEL.Aa, VOWEL.U, VOWEL.Uu, VOWEL.Oor, VOWEL.Oo, VOWEL.Oee, VOWEL.Uua, VOWEL.Ueea]],
+  ['ว', [VOWEL.Aa, VOWEL.I, VOWEL.E, VOWEL.Ee, VOWEL.Ae, VOWEL.Aee, VOWEL.Iia]],
+]);
+
+/**
+ * Rule 3: a final ย or ว only follows the vowels it makes a common diphthong
+ * with. Short a + /y/ is written ไ- or ใ-, and short a + /w/ is written เ-า.
+ */
+function semivowelFinals({ vowel, final = null }: SyllableParts): string | null {
+  if (final === null) return null;
+  const allowedVowels = VOWELS_BEFORE_SEMIVOWEL.get(final);
+  if (allowedVowels === undefined || allowedVowels.includes(vowel.id)) return null;
+  return `Final ${final} cannot follow vowel ${vowel.id}`;
+}
+
 /** The rules, in the order they are checked: the first one broken gives the reason. */
-const RULES: readonly Rule[] = [midClassOnlyMarks, finalAllowed];
+const RULES: readonly Rule[] = [midClassOnlyMarks, finalAllowed, semivowelFinals];
 
 /**
  * Checks whether a syllable can be shown in the game.

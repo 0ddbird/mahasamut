@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { onset } from '../consonants/onsets';
-import { vowel } from '../vowels';
+import { vowel, VOWELS } from '../vowels';
 import { checkSyllable } from './index';
 import type { ToneMark, VowelId } from '../types';
 
@@ -71,6 +71,33 @@ describe('checkSyllable', () => {
 
     it.each(VOWELS_WITHOUT_FINAL)('accepts %s without a final', (id) => {
       expect(checkSyllable(parts('ก', id))).toBeNull();
+    });
+  });
+
+  describe('rule 3: ย and ว finals only after some vowels', () => {
+    // prettier-ignore
+    const VOWELS_BEFORE: [string, VowelId[]][] = [
+      ['ย', ['aa', 'u', 'uu', 'oor', 'oo', 'oee', 'uua', 'ueea']], // สาย คุย ลอย โดย เลย สวย เหนื่อย
+      ['ว', ['aa', 'i', 'e', 'ee', 'ae', 'aee', 'iia']], // ขาว หิว เร็ว เลว แมว เขียว
+    ];
+
+    const allowed = VOWELS_BEFORE.flatMap(([final, ids]) =>
+      ids.map((id): [VowelId, string] => [id, final]),
+    );
+
+    const vowelsTakingAFinal = VOWELS.filter((v) => v.closed !== null).map((v) => v.id);
+    const forbidden = VOWELS_BEFORE.flatMap(([final, ids]) =>
+      vowelsTakingAFinal
+        .filter((id) => !ids.includes(id))
+        .map((id): [VowelId, string] => [id, final]),
+    );
+
+    it.each(allowed)('accepts %s + final %s', (id, final) => {
+      expect(checkSyllable(parts('ก', id, final))).toBeNull();
+    });
+
+    it.each(forbidden)('rejects %s + final %s', (id, final) => {
+      expect(checkSyllable(parts('ก', id, final))).toMatch(/cannot follow/);
     });
   });
 });
