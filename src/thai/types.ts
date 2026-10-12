@@ -16,6 +16,33 @@ export const CONSONANT_CLASS = {
 export type ConsonantClass = (typeof CONSONANT_CLASS)[keyof typeof CONSONANT_CLASS];
 export const CONSONANT_CLASSES: readonly ConsonantClass[] = Object.values(CONSONANT_CLASS);
 
+/**
+ * The eight sounds a syllable can end on. Whatever the written letter, a
+ * final consonant is pronounced as one of these: stops (k, t, p) or sonorants
+ * (m, n, ng, y, w).
+ */
+export const FINAL_SOUND = {
+  K: 'k',
+  T: 't',
+  P: 'p',
+  M: 'm',
+  N: 'n',
+  Ng: 'ng',
+  Y: 'y',
+  W: 'w',
+} as const;
+export type FinalSound = (typeof FINAL_SOUND)[keyof typeof FINAL_SOUND];
+export const FINAL_SOUNDS: readonly FinalSound[] = Object.values(FINAL_SOUND);
+
+/** How a syllable ends: no final sound, a sonorant final, or a stop final. */
+export const FINAL_KIND = {
+  None: 'none',
+  Sonorant: 'sonorant',
+  Stop: 'stop',
+} as const;
+export type FinalKind = (typeof FINAL_KIND)[keyof typeof FINAL_KIND];
+export const FINAL_KINDS: readonly FinalKind[] = Object.values(FINAL_KIND);
+
 /** Lengths of the written vowel. */
 export const VOWEL_LENGTH = {
   Short: 'short',
