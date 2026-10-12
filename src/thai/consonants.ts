@@ -11,6 +11,7 @@
  * them (ข and ค replaced them), so this table leaves them out and keeps 42
  * consonants: 9 mid, 10 high, 23 low.
  */
+import { CONSONANT_CLASS } from './types';
 import type { ConsonantClass } from './types';
 
 /** A consonant letter and the tone class it belongs to. */
@@ -21,54 +22,54 @@ export interface Consonant {
 }
 
 const MID_CONSONANTS: readonly Consonant[] = [
-  { char: 'ก', consonantClass: 'mid' },
-  { char: 'จ', consonantClass: 'mid' },
-  { char: 'ฎ', consonantClass: 'mid' },
-  { char: 'ฏ', consonantClass: 'mid' },
-  { char: 'ด', consonantClass: 'mid' },
-  { char: 'ต', consonantClass: 'mid' },
-  { char: 'บ', consonantClass: 'mid' },
-  { char: 'ป', consonantClass: 'mid' },
-  { char: 'อ', consonantClass: 'mid' },
+  { char: 'ก', consonantClass: CONSONANT_CLASS.Mid },
+  { char: 'จ', consonantClass: CONSONANT_CLASS.Mid },
+  { char: 'ฎ', consonantClass: CONSONANT_CLASS.Mid },
+  { char: 'ฏ', consonantClass: CONSONANT_CLASS.Mid },
+  { char: 'ด', consonantClass: CONSONANT_CLASS.Mid },
+  { char: 'ต', consonantClass: CONSONANT_CLASS.Mid },
+  { char: 'บ', consonantClass: CONSONANT_CLASS.Mid },
+  { char: 'ป', consonantClass: CONSONANT_CLASS.Mid },
+  { char: 'อ', consonantClass: CONSONANT_CLASS.Mid },
 ];
 
 const HIGH_CONSONANTS: readonly Consonant[] = [
-  { char: 'ข', consonantClass: 'high' },
-  { char: 'ฉ', consonantClass: 'high' },
-  { char: 'ฐ', consonantClass: 'high' },
-  { char: 'ถ', consonantClass: 'high' },
-  { char: 'ผ', consonantClass: 'high' },
-  { char: 'ฝ', consonantClass: 'high' },
-  { char: 'ศ', consonantClass: 'high' },
-  { char: 'ษ', consonantClass: 'high' },
-  { char: 'ส', consonantClass: 'high' },
-  { char: 'ห', consonantClass: 'high' },
+  { char: 'ข', consonantClass: CONSONANT_CLASS.High },
+  { char: 'ฉ', consonantClass: CONSONANT_CLASS.High },
+  { char: 'ฐ', consonantClass: CONSONANT_CLASS.High },
+  { char: 'ถ', consonantClass: CONSONANT_CLASS.High },
+  { char: 'ผ', consonantClass: CONSONANT_CLASS.High },
+  { char: 'ฝ', consonantClass: CONSONANT_CLASS.High },
+  { char: 'ศ', consonantClass: CONSONANT_CLASS.High },
+  { char: 'ษ', consonantClass: CONSONANT_CLASS.High },
+  { char: 'ส', consonantClass: CONSONANT_CLASS.High },
+  { char: 'ห', consonantClass: CONSONANT_CLASS.High },
 ];
 
 const LOW_CONSONANTS: readonly Consonant[] = [
-  { char: 'ค', consonantClass: 'low' },
-  { char: 'ฆ', consonantClass: 'low' },
-  { char: 'ง', consonantClass: 'low' },
-  { char: 'ช', consonantClass: 'low' },
-  { char: 'ซ', consonantClass: 'low' },
-  { char: 'ฌ', consonantClass: 'low' },
-  { char: 'ญ', consonantClass: 'low' },
-  { char: 'ฑ', consonantClass: 'low' },
-  { char: 'ฒ', consonantClass: 'low' },
-  { char: 'ณ', consonantClass: 'low' },
-  { char: 'ท', consonantClass: 'low' },
-  { char: 'ธ', consonantClass: 'low' },
-  { char: 'น', consonantClass: 'low' },
-  { char: 'พ', consonantClass: 'low' },
-  { char: 'ฟ', consonantClass: 'low' },
-  { char: 'ภ', consonantClass: 'low' },
-  { char: 'ม', consonantClass: 'low' },
-  { char: 'ย', consonantClass: 'low' },
-  { char: 'ร', consonantClass: 'low' },
-  { char: 'ล', consonantClass: 'low' },
-  { char: 'ว', consonantClass: 'low' },
-  { char: 'ฬ', consonantClass: 'low' },
-  { char: 'ฮ', consonantClass: 'low' },
+  { char: 'ค', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ฆ', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ง', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ช', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ซ', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ฌ', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ญ', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ฑ', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ฒ', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ณ', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ท', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ธ', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'น', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'พ', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ฟ', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ภ', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ม', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ย', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ร', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ล', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ว', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ฬ', consonantClass: CONSONANT_CLASS.Low },
+  { char: 'ฮ', consonantClass: CONSONANT_CLASS.Low },
 ];
 
 /** All 42 supported consonants, mid first, then high, then low. */
