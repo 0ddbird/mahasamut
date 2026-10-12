@@ -4,6 +4,7 @@ import type { ConsonantClass } from './types';
 
 const MID = ['ก', 'จ', 'ฎ', 'ฏ', 'ด', 'ต', 'บ', 'ป', 'อ'];
 const HIGH = ['ข', 'ฉ', 'ฐ', 'ถ', 'ผ', 'ฝ', 'ศ', 'ษ', 'ส', 'ห'];
+// prettier-ignore
 const LOW = [
   'ค', 'ฆ', 'ง', 'ช', 'ซ', 'ฌ', 'ญ', 'ฑ', 'ฒ', 'ณ', 'ท', 'ธ',
   'น', 'พ', 'ฟ', 'ภ', 'ม', 'ย', 'ร', 'ล', 'ว', 'ฬ', 'ฮ',
@@ -16,7 +17,8 @@ describe('consonants', () => {
   });
 
   it('splits classes into 9 mid, 10 high and 23 low', () => {
-    const count = (cls: ConsonantClass) => CONSONANTS.filter((c) => c.consonantClass === cls).length;
+    const count = (cls: ConsonantClass) =>
+      CONSONANTS.filter((c) => c.consonantClass === cls).length;
     expect(count('mid')).toBe(9);
     expect(count('high')).toBe(10);
     expect(count('low')).toBe(23);

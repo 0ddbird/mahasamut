@@ -12,6 +12,7 @@ import {
 
 describe('runtime lists of values', () => {
   it('lists the 24 simple vowels, short then long for each pair', () => {
+    // prettier-ignore
     expect(VOWEL_IDS).toEqual([
       'a', 'aa', 'i', 'ii', 'ue', 'uee', 'u', 'uu',
       'e', 'ee', 'ae', 'aee', 'o', 'oo', 'or', 'oor',

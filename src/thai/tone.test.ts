@@ -31,9 +31,12 @@ const MARKED: [ConsonantClass, ToneMark, Tone][] = [
 
 describe('computeTone', () => {
   describe('without a tone mark', () => {
-    it.each(UNMARKED)('%s class, %s syllable, %s vowel → %s tone', (cls, liveness, length, tone) => {
-      expect(computeTone(cls, liveness, length, 'none')).toBe(tone);
-    });
+    it.each(UNMARKED)(
+      '%s class, %s syllable, %s vowel → %s tone',
+      (cls, liveness, length, tone) => {
+        expect(computeTone(cls, liveness, length, 'none')).toBe(tone);
+      },
+    );
   });
 
   describe('with a tone mark', () => {
@@ -50,8 +53,11 @@ describe('computeTone', () => {
       ['high', 'djattawaa'],
       ['low', 'trii'],
       ['low', 'djattawaa'],
-    ] as [ConsonantClass, ToneMark][])('rejects %s class + mai %s (mid class only)', (cls, mark) => {
-      expect(() => computeTone(cls, 'live', 'long', mark)).toThrow(/mid class only/);
-    });
+    ] as [ConsonantClass, ToneMark][])(
+      'rejects %s class + mai %s (mid class only)',
+      (cls, mark) => {
+        expect(() => computeTone(cls, 'live', 'long', mark)).toThrow(/mid class only/);
+      },
+    );
   });
 });

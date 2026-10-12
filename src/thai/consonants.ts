@@ -73,7 +73,11 @@ const LOW_CONSONANTS: readonly Consonant[] = [
 ];
 
 /** All 42 supported consonants, mid first, then high, then low. */
-export const CONSONANTS: readonly Consonant[] = [...MID_CONSONANTS, ...HIGH_CONSONANTS, ...LOW_CONSONANTS];
+export const CONSONANTS: readonly Consonant[] = [
+  ...MID_CONSONANTS,
+  ...HIGH_CONSONANTS,
+  ...LOW_CONSONANTS,
+];
 
 const BY_CHAR = new Map(CONSONANTS.map((c) => [c.char, c]));
 

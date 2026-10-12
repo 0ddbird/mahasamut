@@ -42,7 +42,9 @@ export function render(
   // A vowel sign sitting above or below the consonant (ี in เ◌ีย) is written
   // right after it...
   const firstCharAfter = vowelPartAfterConsonant.charAt(0);
-  const vowelPartOnConsonant = VOWEL_SIGNS_ON_CONSONANT.includes(firstCharAfter) ? firstCharAfter : '';
+  const vowelPartOnConsonant = VOWEL_SIGNS_ON_CONSONANT.includes(firstCharAfter)
+    ? firstCharAfter
+    : '';
   const vowelRest = vowelPartAfterConsonant.slice(vowelPartOnConsonant.length);
 
   // ... and the tone mark comes after that sign.
@@ -50,7 +52,14 @@ export function render(
   const finalConsonant = finalChar ?? '';
 
   // Writing order: เ + ก + ี + ่ + ย + ว → เกี่ยว
-  return vowelPartBeforeConsonant + consonantChar + vowelPartOnConsonant + toneMarkChar + vowelRest + finalConsonant;
+  return (
+    vowelPartBeforeConsonant +
+    consonantChar +
+    vowelPartOnConsonant +
+    toneMarkChar +
+    vowelRest +
+    finalConsonant
+  );
 }
 
 function closedTemplate(vowel: Vowel, finalChar: string): string {

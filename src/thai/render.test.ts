@@ -131,7 +131,9 @@ describe('render (tone marks)', () => {
     // ก ี ่
     expect(codePoints(render('ก', vowel('ii'), null, 'eek'))).toEqual([0x0e01, 0x0e35, 0x0e48]);
     // ก ุ ้ ง
-    expect(codePoints(render('ก', vowel('u'), 'ง', 'thoo'))).toEqual([0x0e01, 0x0e38, 0x0e49, 0x0e07]);
+    expect(codePoints(render('ก', vowel('u'), 'ง', 'thoo'))).toEqual([
+      0x0e01, 0x0e38, 0x0e49, 0x0e07,
+    ]);
   });
 
   it('writes nothing for "none"', () => {

@@ -54,9 +54,12 @@ describe('vowels', () => {
     expect(VOWELS.map((v) => v.id)).toEqual(VOWEL_IDS);
   });
 
-  it.each(VOWELS.map((v) => [v.id, v.open]))('%s template %s has exactly one consonant slot', (_id, open) => {
-    expect(open.split(CONSONANT_SLOT)).toHaveLength(2);
-  });
+  it.each(VOWELS.map((v) => [v.id, v.open]))(
+    '%s template %s has exactly one consonant slot',
+    (_id, open) => {
+      expect(open.split(CONSONANT_SLOT)).toHaveLength(2);
+    },
+  );
 
   it.each(LENGTHS)('%s is %s', (id, length) => {
     expect(vowel(id).length).toBe(length);
