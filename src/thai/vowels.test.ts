@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CONSONANT_SLOT, VOWELS, vowel } from './vowels';
+import { CONSONANT_SLOT, VOWEL_SIGNS_ON_CONSONANT, VOWELS, vowel } from './vowels';
 import { VOWEL_IDS } from './types';
 import type { VowelId, VowelLength } from './types';
 
@@ -30,9 +30,24 @@ const LENGTHS: [VowelId, VowelLength][] = [
   ['uua', 'long'],
 ];
 
+/** Code points of a string, so tests check exact characters rather than look-alike glyphs. */
+const codePoints = (text: string) => [...text].map((char) => char.codePointAt(0));
+
 describe('vowels', () => {
   it('uses the dotted circle U+25CC as the consonant slot', () => {
-    expect(CONSONANT_SLOT).toBe('◌');
+    expect(codePoints(CONSONANT_SLOT)).toEqual([0x25cc]);
+  });
+
+  it('lists the vowel signs written above or below the consonant: ั ิ ี ึ ื ุ ู', () => {
+    expect(VOWEL_SIGNS_ON_CONSONANT.flatMap(codePoints)).toEqual([
+      0x0e31, // ั
+      0x0e34, // ิ
+      0x0e35, // ี
+      0x0e36, // ึ
+      0x0e37, // ื
+      0x0e38, // ุ
+      0x0e39, // ู
+    ]);
   });
 
   it('defines one vowel per id, in the same order', () => {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { render } from './render';
 import { vowel } from './vowels';
-import type { VowelId } from './types';
+import type { ToneMark, VowelId } from './types';
 
 const WITH_KO_KAI: [VowelId, string][] = [
   ['a', 'กะ'],
@@ -94,5 +94,47 @@ describe('render (closed syllable, no tone mark)', () => {
 
   it('rejects a letter that cannot be a final consonant', () => {
     expect(() => render('ก', vowel('aa'), 'ห')).toThrow(/cannot be a final consonant/);
+  });
+});
+
+describe('render (tone marks)', () => {
+  const MARKED: [string, VowelId, string | null, ToneMark, string][] = [
+    // Mark right after the consonant
+    ['ก', 'aa', null, 'eek', 'ก่า'],
+    ['ม', 'aa', null, 'thoo', 'ม้า'],
+    ['ค', 'a', null, 'eek', 'ค่ะ'],
+    ['จ', 'a', null, 'trii', 'จ๊ะ'],
+    ['ต', 'o', null, 'trii', 'โต๊ะ'],
+    ['ก', 'or', null, 'trii', 'เก๊าะ'],
+    ['ข', 'aa', 'ว', 'thoo', 'ข้าว'],
+    ['น', 'oor', 'ง', 'thoo', 'น้อง'],
+    // Mark after a vowel written above the consonant
+    ['ก', 'ii', null, 'eek', 'กี่'],
+    ['ก', 'i', 'ง', 'eek', 'กิ่ง'],
+    ['ก', 'a', 'น', 'thoo', 'กั้น'],
+    ['ก', 'ueea', null, 'thoo', 'เกื้อ'],
+    ['ก', 'iia', 'ว', 'eek', 'เกี่ยว'],
+    ['ต', 'uua', null, 'djattawaa', 'ตั๋ว'],
+    // Mark after a vowel written below the consonant
+    ['ก', 'u', 'ง', 'thoo', 'กุ้ง'],
+    ['ป', 'uu', null, 'eek', 'ปู่'],
+  ];
+
+  it.each(MARKED)('%s + %s + %s + %s → %s', (consonantChar, id, final, mark, expected) => {
+    expect(render(consonantChar, vowel(id), final, mark)).toBe(expected);
+  });
+
+  // Checked as code points: ก + ่ + ี and ก + ี + ่ can look the same on screen,
+  // but only the second order is correct Thai text.
+  it('writes the mark after the vowel sign, not before it', () => {
+    const codePoints = (text: string) => [...text].map((char) => char.codePointAt(0));
+    // ก ี ่
+    expect(codePoints(render('ก', vowel('ii'), null, 'eek'))).toEqual([0x0e01, 0x0e35, 0x0e48]);
+    // ก ุ ้ ง
+    expect(codePoints(render('ก', vowel('u'), 'ง', 'thoo'))).toEqual([0x0e01, 0x0e38, 0x0e49, 0x0e07]);
+  });
+
+  it('writes nothing for "none"', () => {
+    expect(render('ก', vowel('aa'), null, 'none')).toBe('กา');
   });
 });

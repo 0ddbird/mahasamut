@@ -13,8 +13,23 @@
 import { VOWEL, VOWEL_LENGTH } from './types';
 import type { VowelId, VowelLength } from './types';
 
-/** Placeholder for the consonant in a vowel template: the dotted circle U+25CC. */
-export const CONSONANT_SLOT = '◌';
+/** Placeholder for the consonant in a vowel template: the dotted circle ◌. */
+export const CONSONANT_SLOT = String.fromCodePoint(0x25cc);
+
+/**
+ * Vowel signs written above or below the consonant.
+ *
+ * @see docs/thai_unicode_chart.pdf (Unicode chart for the Thai block, U+0E00–U+0E7F)
+ */
+export const VOWEL_SIGNS_ON_CONSONANT: readonly string[] = [
+  String.fromCodePoint(0x0e31), // ั
+  String.fromCodePoint(0x0e34), // ิ
+  String.fromCodePoint(0x0e35), // ี
+  String.fromCodePoint(0x0e36), // ึ
+  String.fromCodePoint(0x0e37), // ื
+  String.fromCodePoint(0x0e38), // ุ
+  String.fromCodePoint(0x0e39), // ู
+];
 
 export interface Vowel {
   id: VowelId;
