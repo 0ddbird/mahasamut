@@ -4,12 +4,13 @@ import {
   CONSONANT_SLOT,
   OPEN_ONLY_VOWELS,
   REGULAR_VOWELS,
+  SARA_KOEN_VOWELS,
   VOWEL_SIGNS_ON_CONSONANT,
   VOWELS,
   vowel,
 } from './index';
 import { VOWEL_IDS } from '../types';
-import type { VowelId, VowelLength } from '../types';
+import type { FinalSound, VowelId, VowelLength } from '../types';
 
 const LENGTHS: [VowelId, VowelLength][] = [
   ['a', 'short'],
@@ -36,6 +37,10 @@ const LENGTHS: [VowelId, VowelLength][] = [
   ['ueea', 'long'],
   ['ua', 'short'],
   ['uua', 'long'],
+  ['am', 'short'],
+  ['ai_muan', 'short'],
+  ['ai_malai', 'short'],
+  ['ao', 'short'],
 ];
 
 /** Code points of a string, so tests check exact characters rather than look-alike glyphs. */
@@ -59,7 +64,12 @@ describe('vowels', () => {
   });
 
   it('puts each vowel in exactly one group', () => {
-    const grouped = [...REGULAR_VOWELS, ...CHANGING_VOWELS, ...OPEN_ONLY_VOWELS].map((v) => v.id);
+    const grouped = [
+      ...REGULAR_VOWELS,
+      ...CHANGING_VOWELS,
+      ...OPEN_ONLY_VOWELS,
+      ...SARA_KOEN_VOWELS,
+    ].map((v) => v.id);
     expect([...grouped].sort()).toEqual([...VOWEL_IDS].sort());
   });
 
@@ -117,16 +127,19 @@ describe('closed forms (vowel written before a final consonant)', () => {
   // Never followed by a final consonant.
   const NEVER_CLOSED: VowelId[] = ['or', 'oe', 'ia', 'uea', 'ua'];
 
+  // Sara koen already end with a final sound, so they never take another final.
+  const SARA_KOEN: VowelId[] = ['am', 'ai_muan', 'ai_malai', 'ao'];
+
   it.each(CLOSED)('%s is written %s before a final', (id, closed) => {
     expect(vowel(id).closed).toBe(closed);
   });
 
-  it.each(NEVER_CLOSED)('%s has no closed form', (id) => {
+  it.each([...NEVER_CLOSED, ...SARA_KOEN])('%s has no closed form', (id) => {
     expect(vowel(id).closed).toBeNull();
   });
 
-  it('covers all 24 vowels', () => {
-    expect(CLOSED.length + NEVER_CLOSED.length).toBe(24);
+  it('covers all 28 vowels', () => {
+    expect(CLOSED.length + NEVER_CLOSED.length + SARA_KOEN.length).toBe(28);
   });
 
   it.each(CLOSED)('%s closed template %s has exactly one consonant slot', (_id, closed) => {
@@ -155,5 +168,28 @@ describe('closed forms (vowel written before a final consonant)', () => {
   it('has no special marked form for the other vowels', () => {
     const others = VOWELS.filter((v) => v.id !== 'e' && v.id !== 'ae');
     for (const v of others) expect(v.closedMarked, v.id).toBeUndefined();
+  });
+});
+
+describe('sara koen (vowels with a built-in final sound)', () => {
+  const SARA_KOEN: [VowelId, string, FinalSound][] = [
+    ['am', '◌ำ', 'm'],
+    ['ai_muan', 'ใ◌', 'y'],
+    ['ai_malai', 'ไ◌', 'y'],
+    ['ao', 'เ◌า', 'w'],
+  ];
+
+  it.each(SARA_KOEN)('%s is written %s and ends with /%s/', (id, open, inherentFinal) => {
+    expect(vowel(id).open).toBe(open);
+    expect(vowel(id).inherentFinal).toBe(inherentFinal);
+  });
+
+  it('puts exactly the four sara koen in their group', () => {
+    expect(SARA_KOEN_VOWELS.map((v) => v.id)).toEqual(SARA_KOEN.map(([id]) => id));
+  });
+
+  it('gives no built-in final to the other vowels', () => {
+    const others = VOWELS.filter((v) => !SARA_KOEN_VOWELS.includes(v));
+    for (const v of others) expect(v.inherentFinal, v.id).toBeUndefined();
   });
 });

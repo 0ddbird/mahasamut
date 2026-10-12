@@ -28,6 +28,10 @@ const WITH_KO_KAI: [VowelId, string][] = [
   ['ueea', 'เกือ'],
   ['ua', 'กัวะ'],
   ['uua', 'กัว'],
+  ['am', 'กำ'],
+  ['ai_muan', 'ใก'],
+  ['ai_malai', 'ไก'],
+  ['ao', 'เกา'],
 ];
 
 const REAL_WORDS: [string, VowelId, string][] = [
@@ -36,6 +40,10 @@ const REAL_WORDS: [string, VowelId, string][] = [
   ['ธ', 'oee', 'เธอ'],
   ['ส', 'ueea', 'เสือ'],
   ['ข', 'aa', 'ขา'],
+  ['ข', 'am', 'ขำ'],
+  ['จ', 'ai_muan', 'ใจ'],
+  ['ป', 'ai_malai', 'ไป'],
+  ['ข', 'ao', 'เขา'],
 ];
 
 describe('render (open syllable, no tone mark)', () => {
@@ -109,9 +117,12 @@ describe('render (closed syllable, no tone mark)', () => {
     expect(render(consonantChar, vowel(id), final)).toBe(expected);
   });
 
-  it.each(['or', 'ua'] as VowelId[])('rejects a final after %s, which has no closed form', (id) => {
-    expect(() => render('ก', vowel(id), 'น')).toThrow(/cannot take a final consonant/);
-  });
+  it.each(['or', 'ua', 'am', 'ai_malai', 'ao'] as VowelId[])(
+    'rejects a final after %s, which has no closed form',
+    (id) => {
+      expect(() => render('ก', vowel(id), 'น')).toThrow(/cannot take a final consonant/);
+    },
+  );
 
   it('rejects a letter that cannot be a final consonant', () => {
     expect(() => render('ก', vowel('aa'), 'ห')).toThrow(/cannot be a final consonant/);
@@ -127,6 +138,10 @@ describe('render (tone marks)', () => {
     ['จ', 'a', null, 'trii', 'จ๊ะ'],
     ['ต', 'o', null, 'trii', 'โต๊ะ'],
     ['ก', 'or', null, 'trii', 'เก๊าะ'],
+    // Sara koen: ำ ใ ไ า are not written on the consonant, so the mark sits right on it
+    ['น', 'am', null, 'thoo', 'น้ำ'],
+    ['ม', 'ai_malai', null, 'eek', 'ไม่'],
+    ['ก', 'ao', null, 'thoo', 'เก้า'],
     ['ข', 'aa', 'ว', 'thoo', 'ข้าว'],
     ['น', 'oor', 'ง', 'thoo', 'น้อง'],
     ['ม', 'uua', 'ง', 'eek', 'ม่วง'],
@@ -168,6 +183,13 @@ describe('render (tone marks)', () => {
     expect(codePoints(render('ก', vowel('u'), 'ง', 'thoo'))).toEqual([
       0x0e01, 0x0e38, 0x0e49, 0x0e07,
     ]);
+  });
+
+  // Checked as code points: the mark goes on the consonant, before sara am (U+0E33).
+  it('writes the mark before ำ', () => {
+    const codePoints = (text: string) => [...text].map((char) => char.codePointAt(0));
+    // น ้ ำ
+    expect(codePoints(render('น', vowel('am'), null, 'thoo'))).toEqual([0x0e19, 0x0e49, 0x0e33]);
   });
 
   // Checked as code points: ็ (U+0E47) must not remain next to the tone mark.

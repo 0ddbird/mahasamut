@@ -11,13 +11,15 @@
  * before a final (กัน). They are grouped by that behavior:
  * - regular.ts: same spelling with or without a final;
  * - changing.ts: spelling changes before a final;
- * - open-only.ts: never followed by a final.
+ * - open-only.ts: never followed by a final;
+ * - sara-koen.ts: end with a built-in final sound (ำ ใ ไ เ-า).
  */
 import { VOWEL_IDS } from '../types';
-import type { VowelId, VowelLength } from '../types';
+import type { FinalSound, VowelId, VowelLength } from '../types';
 import { CHANGING_VOWELS } from './changing';
 import { OPEN_ONLY_VOWELS } from './open-only';
 import { REGULAR_VOWELS } from './regular';
+import { SARA_KOEN_VOWELS } from './sara-koen';
 
 /** Placeholder for the consonant in a vowel template: the dotted circle ◌. */
 export const CONSONANT_SLOT = String.fromCodePoint(0x25cc);
@@ -54,12 +56,17 @@ export interface Vowel {
    * to make room for the mark (เล็ก / เล่น).
    */
   closedMarked?: string;
+  /** Final sound built into the vowel itself, for sara koen: ำ ends with /m/ (น้ำ). */
+  inherentFinal?: FinalSound;
 }
 
-export { CHANGING_VOWELS, OPEN_ONLY_VOWELS, REGULAR_VOWELS };
+export { CHANGING_VOWELS, OPEN_ONLY_VOWELS, REGULAR_VOWELS, SARA_KOEN_VOWELS };
 
 const BY_ID = new Map(
-  [...REGULAR_VOWELS, ...CHANGING_VOWELS, ...OPEN_ONLY_VOWELS].map((v) => [v.id, v]),
+  [...REGULAR_VOWELS, ...CHANGING_VOWELS, ...OPEN_ONLY_VOWELS, ...SARA_KOEN_VOWELS].map((v) => [
+    v.id,
+    v,
+  ]),
 );
 
 /**
@@ -73,5 +80,5 @@ export function vowel(id: VowelId): Vowel {
   return found;
 }
 
-/** All 24 simple vowels, each short vowel followed by its long pair. */
+/** All 28 vowels: the 24 simple ones in short/long pairs, then the 4 sara koen. */
 export const VOWELS: readonly Vowel[] = VOWEL_IDS.map(vowel);

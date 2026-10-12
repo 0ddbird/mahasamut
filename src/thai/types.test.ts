@@ -11,12 +11,13 @@ import {
 } from './types';
 
 describe('runtime lists of values', () => {
-  it('lists the 24 simple vowels, short then long for each pair', () => {
+  it('lists the 24 simple vowels in short/long pairs, then the 4 sara koen', () => {
     // prettier-ignore
     expect(VOWEL_IDS).toEqual([
       'a', 'aa', 'i', 'ii', 'ue', 'uee', 'u', 'uu',
       'e', 'ee', 'ae', 'aee', 'o', 'oo', 'or', 'oor',
       'oe', 'oee', 'ia', 'iia', 'uea', 'ueea', 'ua', 'uua',
+      'am', 'ai_muan', 'ai_malai', 'ao',
     ]);
   });
 

@@ -44,9 +44,11 @@ export type FinalKind = (typeof FINAL_KIND)[keyof typeof FINAL_KIND];
 export const FINAL_KINDS: readonly FinalKind[] = Object.values(FINAL_KIND);
 
 /**
- * Simple vowels, named by a phonetic romanization where a doubled letter
- * means a long vowel. Each short vowel comes right before its long pair.
- * `or` / `oor` are the open o (ɔ), `oe` / `oee` the unrounded ɤ.
+ * Vowels, named by a phonetic romanization where a doubled letter means a
+ * long vowel. The 24 simple vowels come first, each short vowel right before
+ * its long pair; `or` / `oor` are the open o (ɔ), `oe` / `oee` the unrounded ɤ.
+ * The 4 sara koen follow; ใ and ไ sound the same and are named after their
+ * letter (mai muan, mai malai).
  */
 export const VOWEL = {
   A: 'a',
@@ -73,6 +75,11 @@ export const VOWEL = {
   Ueea: 'ueea',
   Ua: 'ua',
   Uua: 'uua',
+  // Sara koen: short vowels that end with a built-in final sound.
+  Am: 'am',
+  AiMuan: 'ai_muan',
+  AiMalai: 'ai_malai',
+  Ao: 'ao',
 } as const;
 export type VowelId = (typeof VOWEL)[keyof typeof VOWEL];
 export const VOWEL_IDS: readonly VowelId[] = Object.values(VOWEL);
