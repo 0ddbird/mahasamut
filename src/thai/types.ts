@@ -43,6 +43,40 @@ export const FINAL_KIND = {
 export type FinalKind = (typeof FINAL_KIND)[keyof typeof FINAL_KIND];
 export const FINAL_KINDS: readonly FinalKind[] = Object.values(FINAL_KIND);
 
+/**
+ * Simple vowels, named by a phonetic romanization where a doubled letter
+ * means a long vowel. Each short vowel comes right before its long pair.
+ * `or` / `oor` are the open o (ɔ), `oe` / `oee` the unrounded ɤ.
+ */
+export const VOWEL = {
+  A: 'a',
+  Aa: 'aa',
+  I: 'i',
+  Ii: 'ii',
+  Ue: 'ue',
+  Uee: 'uee',
+  U: 'u',
+  Uu: 'uu',
+  E: 'e',
+  Ee: 'ee',
+  Ae: 'ae',
+  Aee: 'aee',
+  O: 'o',
+  Oo: 'oo',
+  Or: 'or',
+  Oor: 'oor',
+  Oe: 'oe',
+  Oee: 'oee',
+  Ia: 'ia',
+  Iia: 'iia',
+  Uea: 'uea',
+  Ueea: 'ueea',
+  Ua: 'ua',
+  Uua: 'uua',
+} as const;
+export type VowelId = (typeof VOWEL)[keyof typeof VOWEL];
+export const VOWEL_IDS: readonly VowelId[] = Object.values(VOWEL);
+
 /** Lengths of the written vowel. */
 export const VOWEL_LENGTH = {
   Short: 'short',

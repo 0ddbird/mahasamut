@@ -6,10 +6,19 @@ import {
   LIVENESSES,
   TONE_MARKS,
   TONES,
+  VOWEL_IDS,
   VOWEL_LENGTHS,
 } from './types';
 
 describe('runtime lists of values', () => {
+  it('lists the 24 simple vowels, short then long for each pair', () => {
+    expect(VOWEL_IDS).toEqual([
+      'a', 'aa', 'i', 'ii', 'ue', 'uee', 'u', 'uu',
+      'e', 'ee', 'ae', 'aee', 'o', 'oo', 'or', 'oor',
+      'oe', 'oee', 'ia', 'iia', 'uea', 'ueea', 'ua', 'uua',
+    ]);
+  });
+
   it('lists the three consonant classes', () => {
     expect(CONSONANT_CLASSES).toEqual(['high', 'mid', 'low']);
   });
