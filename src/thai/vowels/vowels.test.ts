@@ -110,24 +110,23 @@ describe('closed forms (vowel written before a final consonant)', () => {
     // The closed form adds ็ (mai taikhu)
     ['e', 'เ◌็'],
     ['ae', 'แ◌็'],
+    // The vowel disappears: only the consonant is left before the final
+    ['o', '◌'],
   ];
 
   // Never followed by a final consonant.
   const NEVER_CLOSED: VowelId[] = ['or', 'oe', 'ia', 'uea', 'ua'];
 
-  // Their closed form changes shape; handled in a later step.
-  const NOT_YET_CLOSED: VowelId[] = ['o'];
-
   it.each(CLOSED)('%s is written %s before a final', (id, closed) => {
     expect(vowel(id).closed).toBe(closed);
   });
 
-  it.each([...NEVER_CLOSED, ...NOT_YET_CLOSED])('%s has no closed form (yet)', (id) => {
+  it.each(NEVER_CLOSED)('%s has no closed form', (id) => {
     expect(vowel(id).closed).toBeNull();
   });
 
   it('covers all 24 vowels', () => {
-    expect(CLOSED.length + NEVER_CLOSED.length + NOT_YET_CLOSED.length).toBe(24);
+    expect(CLOSED.length + NEVER_CLOSED.length).toBe(24);
   });
 
   it.each(CLOSED)('%s closed template %s has exactly one consonant slot', (_id, closed) => {

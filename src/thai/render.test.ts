@@ -94,6 +94,10 @@ describe('render (closed syllable, no tone mark)', () => {
     ['ป', 'e', 'น', 'เป็น'],
     ['ร', 'e', 'ว', 'เร็ว'],
     ['ข', 'ae', 'ง', 'แข็ง'],
+    // โ-ะ disappears before a final: the o is not written at all
+    ['ค', 'o', 'น', 'คน'],
+    ['น', 'o', 'ก', 'นก'],
+    ['ร', 'o', 'ส', 'รส'],
   ];
 
   it.each(WITH_KO_KAI_AND_NO_NUU)('ก + %s + น → %s', (id, expected) => {
@@ -133,6 +137,9 @@ describe('render (tone marks)', () => {
     ['ต', 'e', 'น', 'thoo', 'เต้น'],
     ['ก', 'e', 'ง', 'eek', 'เก่ง'],
     ['ข', 'ae', 'ง', 'eek', 'แข่ง'],
+    // With the invisible o, the mark sits right on the consonant
+    ['ต', 'o', 'น', 'thoo', 'ต้น'],
+    ['ร', 'o', 'ม', 'eek', 'ร่ม'],
     // Mark after a vowel written above the consonant
     ['ด', 'uee', 'ม', 'eek', 'ดื่ม'],
     ['ป', 'oee', 'น', 'eek', 'เปิ่น'],

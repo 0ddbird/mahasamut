@@ -23,8 +23,8 @@ export const CHANGING_VOWELS: readonly Vowel[] = [
   // Takes ็ before a final (แกะ / แข็ง), which a tone mark replaces (แข่ง)
   { id: VOWEL.Ae, length: SHORT, open: 'แ◌ะ', closed: 'แ◌็', closedMarked: 'แ◌' },
 
-  // TODO: invisible before a final (คน)
-  { id: VOWEL.O, length: SHORT, open: 'โ◌ะ', closed: null },
+  // Invisible before a final: only the consonant is written (โต๊ะ / คน)
+  { id: VOWEL.O, length: SHORT, open: 'โ◌ะ', closed: '◌' },
 
   // Becomes เ◌ิ before a final (เธอ / เดิน), and drops อ before ย (เลย)
   { id: VOWEL.Oee, length: LONG, open: 'เ◌อ', closed: 'เ◌ิ', closedBeforeY: 'เ◌' },
