@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CONSONANTS } from './index';
-import { finalKind, finalSound, liveness } from './finals';
+import { canBeFinal, finalKind, finalSound, liveness } from './finals';
 import type { FinalKind, FinalSound, Liveness, VowelLength } from '../types';
 
 const LETTERS_BY_SOUND: [FinalSound, string[]][] = [
@@ -48,6 +48,20 @@ describe('finalSound', () => {
     expect(finals).toHaveLength(35);
     expect(CANNOT_BE_FINAL).toHaveLength(7);
     for (const c of finals) expect(() => finalSound(c.char)).not.toThrow();
+  });
+});
+
+describe('canBeFinal', () => {
+  it.each(LETTERS_BY_SOUND.flatMap(([, letters]) => letters))('accepts %s', (letter) => {
+    expect(canBeFinal(letter)).toBe(true);
+  });
+
+  it.each(CANNOT_BE_FINAL)('rejects %s', (letter) => {
+    expect(canBeFinal(letter)).toBe(false);
+  });
+
+  it.each(['ฃ', 'า', 'x'])('throws on %s, which is not a supported consonant', (letter) => {
+    expect(() => canBeFinal(letter)).toThrow(/Unknown consonant/);
   });
 });
 

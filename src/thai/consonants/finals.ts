@@ -59,6 +59,17 @@ const SOUND_BY_LETTER: ReadonlyMap<string, FinalSound> = new Map([
 const STOP_SOUNDS: readonly FinalSound[] = [FINAL_SOUND.K, FINAL_SOUND.T, FINAL_SOUND.P];
 
 /**
+ * Whether a consonant letter can close a syllable. Seven letters cannot:
+ * ฉ ฌ ผ ฝ ห อ ฮ.
+ *
+ * @throws if `letter` is not a supported consonant.
+ */
+export function canBeFinal(letter: string): boolean {
+  consonant(letter);
+  return SOUND_BY_LETTER.has(letter);
+}
+
+/**
  * Returns the sound a consonant letter takes at the end of a syllable.
  *
  * @throws if `letter` is not a supported consonant, or is one of the seven

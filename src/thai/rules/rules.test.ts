@@ -44,4 +44,33 @@ describe('checkSyllable', () => {
       }
     });
   });
+
+  describe('rule 2: a final that can end a syllable, after a vowel that takes one', () => {
+    it.each([
+      ['aa', 'น'], // กาน
+      ['a', 'ก'], // กัก
+      ['o', 'ด'], // กด, invisible o
+      ['oee', 'น'], // เกิน
+    ] as [VowelId, string][])('accepts %s + final %s', (id, final) => {
+      expect(checkSyllable(parts('ก', id, final))).toBeNull();
+    });
+
+    it.each(['ฉ', 'ฌ', 'ผ', 'ฝ', 'ห', 'อ', 'ฮ'])('rejects %s as a final', (final) => {
+      expect(checkSyllable(parts('ก', 'aa', final))).toMatch(/cannot end a syllable/);
+    });
+
+    // prettier-ignore
+    const VOWELS_WITHOUT_FINAL: VowelId[] = [
+      'or', 'oe', 'ia', 'uea', 'ua', // open only
+      'am', 'ai_muan', 'ai_malai', 'ao', // sara koen
+    ];
+
+    it.each(VOWELS_WITHOUT_FINAL)('rejects %s with a final', (id) => {
+      expect(checkSyllable(parts('ก', id, 'น'))).toMatch(/takes no final/);
+    });
+
+    it.each(VOWELS_WITHOUT_FINAL)('accepts %s without a final', (id) => {
+      expect(checkSyllable(parts('ก', id))).toBeNull();
+    });
+  });
 });
