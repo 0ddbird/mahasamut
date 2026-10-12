@@ -5,72 +5,16 @@
  * `render` writes any combination it can spell. Some of them are not proper
  * Thai spelling, and some could be read in two ways, which would make the
  * expected answers ambiguous for the player. These rules leave them out.
+ * Each rule lives in its own file.
  */
-import { canBeFinal } from '../consonants/finals';
 import type { SyllableParts } from '../render';
-import { CONSONANT_CLASS, TONE_MARK, VOWEL } from '../types';
-import type { VowelId } from '../types';
+import { finalAllowed } from './final-allowed';
+import { invisibleOFinals } from './invisible-o-finals';
+import { midClassOnlyMarks } from './mid-class-only-marks';
+import { semivowelFinals } from './semivowel-finals';
 
 /** A validity rule: `null` if the syllable follows it, otherwise the reason it does not. */
 type Rule = (parts: SyllableParts) => string | null;
-
-/** Rule 1: ๊ and ๋ are only written on mid-class consonants (โต๊ะ, ก๋วย). */
-function midClassOnlyMarks({ onset, mark = TONE_MARK.None }: SyllableParts): string | null {
-  const midClassOnlyMark = mark === TONE_MARK.Trii || mark === TONE_MARK.Djattawaa;
-  if (midClassOnlyMark && onset.consonantClass !== CONSONANT_CLASS.Mid) {
-    return `Tone mark ${mark} needs a mid class onset, got ${onset.text} (${onset.consonantClass})`;
-  }
-  return null;
-}
-
-/**
- * Rule 2: a final must be a letter that can close a syllable (not ฉ ฌ ผ ฝ ห อ ฮ),
- * after a vowel that takes one (not the open-only vowels nor the sara koen).
- */
-function finalAllowed({ vowel, final = null }: SyllableParts): string | null {
-  if (final === null) return null;
-  if (!canBeFinal(final)) return `Final ${final} cannot end a syllable`;
-  if (vowel.closed === null) return `Vowel ${vowel.id} takes no final, got ${final}`;
-  return null;
-}
-
-/**
- * Vowels a final ย or ว can follow. Together they make a diphthong: สาย, คุย,
- * ลอย, โดย, เลย, สวย, เหนื่อย with ย; ขาว, หิว, เร็ว, เลว, แมว, เขียว with ว.
- *
- * @see https://en.wikipedia.org/wiki/Royal_Thai_General_System_of_Transcription (vowels table)
- */
-const VOWELS_BEFORE_SEMIVOWEL: ReadonlyMap<string, readonly VowelId[]> = new Map([
-  ['ย', [VOWEL.Aa, VOWEL.U, VOWEL.Uu, VOWEL.Oor, VOWEL.Oo, VOWEL.Oee, VOWEL.Uua, VOWEL.Ueea]],
-  ['ว', [VOWEL.Aa, VOWEL.I, VOWEL.E, VOWEL.Ee, VOWEL.Ae, VOWEL.Aee, VOWEL.Iia]],
-]);
-
-/**
- * Rule 3: a final ย or ว only follows the vowels it makes a common diphthong
- * with. Short a + /y/ is written ไ- or ใ-, and short a + /w/ is written เ-า.
- */
-function semivowelFinals({ vowel, final = null }: SyllableParts): string | null {
-  if (final === null) return null;
-  const allowedVowels = VOWELS_BEFORE_SEMIVOWEL.get(final);
-  if (allowedVowels === undefined || allowedVowels.includes(vowel.id)) return null;
-  return `Final ${final} cannot follow vowel ${vowel.id}`;
-}
-
-/** Finals never written after the invisible o. */
-const FINALS_NOT_AFTER_INVISIBLE_O: readonly string[] = ['ร', 'ว', 'ย'];
-
-/**
- * Rule 4: the invisible o never takes a ร ว ย final. A consonant followed by ร
- * alone reads with a long ɔ and a final n (พร and จร read like พอน and จอน),
- * and ว ย only close the written vowels of rule 3.
- *
- * @see https://en.wikipedia.org/wiki/Thai_script (vowels table, ◌ร)
- */
-function invisibleOFinals({ vowel, final = null }: SyllableParts): string | null {
-  if (vowel.id !== VOWEL.O || final === null) return null;
-  if (!FINALS_NOT_AFTER_INVISIBLE_O.includes(final)) return null;
-  return `Final ${final} cannot follow the invisible o`;
-}
 
 /** The rules, in the order they are checked: the first one broken gives the reason. */
 const RULES: readonly Rule[] = [midClassOnlyMarks, finalAllowed, semivowelFinals, invisibleOFinals];
