@@ -5,8 +5,8 @@
  * ้ (mai thoo), ๊ (mai trii) and ๋ (mai djattawaa). A syllable carries at most
  * one of them, and many syllables carry none.
  */
-import { TONE_MARK } from './types';
-import type { ToneMark } from './types';
+import { TONE_MARK } from '../types';
+import type { ToneMark } from '../types';
 
 /**
  * Unicode character of each tone mark; no mark is written for `none`.

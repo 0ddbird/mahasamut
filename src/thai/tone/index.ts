@@ -3,8 +3,8 @@
  * of its initial consonant, its tone mark, whether it is live or dead, and —
  * only for dead low-class syllables — its vowel length.
  */
-import { CONSONANT_CLASS, LIVENESS, TONE, TONE_MARK, VOWEL_LENGTH } from './types';
-import type { ConsonantClass, Liveness, Tone, ToneMark, VowelLength } from './types';
+import { CONSONANT_CLASS, LIVENESS, TONE, TONE_MARK, VOWEL_LENGTH } from '../types';
+import type { ConsonantClass, Liveness, Tone, ToneMark, VowelLength } from '../types';
 
 /**
  * With a tone mark, only the class and the mark count. Without one, the

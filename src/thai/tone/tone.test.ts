@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { computeTone } from './tone';
-import { LIVENESSES, VOWEL_LENGTHS } from './types';
-import type { ConsonantClass, Liveness, Tone, ToneMark, VowelLength } from './types';
+import { computeTone } from './index';
+import { LIVENESSES, VOWEL_LENGTHS } from '../types';
+import type { ConsonantClass, Liveness, Tone, ToneMark, VowelLength } from '../types';
 
 const UNMARKED: [ConsonantClass, Liveness, VowelLength, Tone][] = [
   ['mid', 'live', 'short', 'mid'],

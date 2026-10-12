@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TONE_MARK_CHAR } from './marks';
+import { TONE_MARK_CHAR } from './index';
 
 /** Code points of a string, so tests check exact characters rather than look-alike glyphs. */
 const codePoints = (text: string) => [...text].map((char) => char.codePointAt(0));
