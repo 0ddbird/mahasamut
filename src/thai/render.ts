@@ -11,7 +11,7 @@
  * the text: ก + ี + ่ gives กี่.
  */
 import { consonant } from './consonants';
-import { finalSound } from './finals';
+import { finalSound } from './consonants/finals';
 import { TONE_MARK_CHAR } from './marks';
 import { TONE_MARK } from './types';
 import type { ToneMark } from './types';

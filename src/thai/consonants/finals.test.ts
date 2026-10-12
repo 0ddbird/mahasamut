@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { CONSONANTS } from './consonants';
+import { CONSONANTS } from './index';
 import { finalKind, finalSound, liveness } from './finals';
-import type { FinalKind, FinalSound, Liveness, VowelLength } from './types';
+import type { FinalKind, FinalSound, Liveness, VowelLength } from '../types';
 
 const LETTERS_BY_SOUND: [FinalSound, string[]][] = [
   ['k', ['ก', 'ข', 'ค', 'ฆ']],

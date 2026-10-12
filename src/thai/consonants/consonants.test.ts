@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CONSONANTS, consonant } from './consonants';
-import type { ConsonantClass } from './types';
+import { CONSONANTS, HIGH_CONSONANTS, LOW_CONSONANTS, MID_CONSONANTS, consonant } from './index';
+import type { ConsonantClass } from '../types';
 
 const MID = ['ก', 'จ', 'ฎ', 'ฏ', 'ด', 'ต', 'บ', 'ป', 'อ'];
 const HIGH = ['ข', 'ฉ', 'ฐ', 'ถ', 'ผ', 'ฝ', 'ศ', 'ษ', 'ส', 'ห'];
@@ -14,6 +14,15 @@ describe('consonants', () => {
   it('contains 42 consonants with no duplicates', () => {
     expect(CONSONANTS).toHaveLength(42);
     expect(new Set(CONSONANTS.map((c) => c.char)).size).toBe(42);
+  });
+
+  it('keeps each class in its own file, with the letters in table order', () => {
+    expect(MID_CONSONANTS.map((c) => c.char)).toEqual(MID);
+    expect(HIGH_CONSONANTS.map((c) => c.char)).toEqual(HIGH);
+    expect(LOW_CONSONANTS.map((c) => c.char)).toEqual(LOW);
+    for (const c of MID_CONSONANTS) expect(c.consonantClass, c.char).toBe('mid');
+    for (const c of HIGH_CONSONANTS) expect(c.consonantClass, c.char).toBe('high');
+    for (const c of LOW_CONSONANTS) expect(c.consonantClass, c.char).toBe('low');
   });
 
   it('splits classes into 9 mid, 10 high and 23 low', () => {

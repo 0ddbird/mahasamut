@@ -9,9 +9,9 @@
  * The sound, not the letter, decides the kind of final: k, t, p are stops;
  * m, n, ng, y, w are sonorants. That kind is what makes a syllable live or dead.
  */
-import { consonant } from './consonants';
-import { FINAL_KIND, FINAL_SOUND, LIVENESS, VOWEL_LENGTH } from './types';
-import type { FinalKind, FinalSound, Liveness, VowelLength } from './types';
+import { consonant } from './index';
+import { FINAL_KIND, FINAL_SOUND, LIVENESS, VOWEL_LENGTH } from '../types';
+import type { FinalKind, FinalSound, Liveness, VowelLength } from '../types';
 
 const SOUND_BY_LETTER: ReadonlyMap<string, FinalSound> = new Map([
   ['ก', FINAL_SOUND.K],
