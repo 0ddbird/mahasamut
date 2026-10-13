@@ -25,4 +25,17 @@ describe('TonesPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Next' }));
     expect(screen.getByText(second ?? '').getAttribute('lang')).toBe('th');
   });
+
+  it('keeps the answers chosen, and clears them for the next syllable', async () => {
+    render(<TonesPage rng={seededRng(7)} />);
+    const longChoice = () => screen.getByRole('radio', { name: 'Long' }) as HTMLInputElement;
+
+    await userEvent.click(longChoice());
+    expect(longChoice().checked).toBe(true);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Next' }));
+    expect(
+      screen.getAllByRole('radio').some((choice) => (choice as HTMLInputElement).checked),
+    ).toBe(false);
+  });
 });
