@@ -9,6 +9,23 @@
   font-weight: 700;
 }
 
+.note {
+  margin: 0 0 var(--space-xs);
+  font-size: 0.875em;
+  font-style: italic;
+}
+
+// A locked row the tone does not depend on: shown, but faded.
+.row:disabled:has(.note) .options {
+  opacity: 0.4;
+}
+
+// A tone mark sign, larger than the text so it can be compared with the syllable.
+.sign {
+  font-size: 1.5em;
+  line-height: 1;
+}
+
 .options {
   display: flex;
   flex-wrap: wrap;

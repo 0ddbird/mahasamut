@@ -3,10 +3,11 @@
  *
  * The player sees whether their choice is right or wrong and, when it is
  * wrong, which choice was expected. For a homograph (เกร: ก + เ- + ร, or
- * กร + เ-), the other reading's choice is shown too, as also accepted.
+ * กร + เ-), the other reading's choice is shown too, as also accepted. The
+ * steps a tone mark makes useless are not graded, and show nothing.
  */
 import type { SyllableAnswers } from '../../thai/answers';
-import type { CheckResult, Step } from './check';
+import type { CheckResult, GameAnswers, Step } from './check';
 
 /** The states a choice can show after checking. */
 export const OPTION_FEEDBACK = {
@@ -25,21 +26,32 @@ export type OptionFeedback = (typeof OPTION_FEEDBACK)[keyof typeof OPTION_FEEDBA
 
 /** What a row needs to tell each of its choices how to look. */
 export interface RowFeedback<T extends string> {
-  /** The player's choice. */
-  chosen: T;
+  /** The player's choice, if they answered the step. */
+  chosen?: T;
   /** The answer of the closest analysis. */
   expected: T;
   /** The answer of every analysis of the text, each value once. */
   accepted: readonly T[];
 }
 
-/** Gathers the feedback of one row from the result of the check. */
+/**
+ * Gathers the feedback of one row from the result of the check.
+ *
+ * @returns `undefined` for a step that is not graded: the row shows nothing.
+ */
 export function rowFeedback<K extends Step>(
   step: K,
   result: CheckResult,
   analyses: readonly SyllableAnswers[],
-): RowFeedback<SyllableAnswers[K]> {
-  const accepted = [...new Set(analyses.map((analysis) => analysis[step]))];
+): RowFeedback<GameAnswers[K]> | undefined {
+  if (!result.graded.includes(step)) return undefined;
+
+  // Every analysis of a text has the same tone mark: the text is the same.
+  const withMark = analyses.map((analysis) => ({
+    ...analysis,
+    toneMark: result.expected.toneMark,
+  }));
+  const accepted = [...new Set(withMark.map((analysis) => analysis[step]))];
   return { chosen: result.given[step], expected: result.expected[step], accepted };
 }
 

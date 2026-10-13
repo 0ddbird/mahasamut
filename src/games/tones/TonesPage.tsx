@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { generateSyllable } from '../../thai/generator';
 import type { Rng } from '../../thai/generator';
+import { TONE_MARK } from '../../thai/types';
 import { AnswerSheet } from './AnswerSheet';
 import { checkAnswers, isComplete } from './check';
 import type { CheckResult, PlayerAnswers } from './check';
@@ -15,26 +16,30 @@ interface TonesPageProps {
   rng?: Rng;
 }
 
+/** The answers of a new syllable: nothing chosen yet, except "no tone mark". */
+const NO_ANSWERS: PlayerAnswers = { toneMark: TONE_MARK.None };
+
 /**
  * Wannayuk (วรรณยุกต์), the tone game: the player reads a syllable and finds
- * its tone, step by step. Validate checks the five answers once they are all
- * given, and locks them; Next draws another syllable and starts again.
+ * its tone, step by step. Validate checks the answers once every needed step
+ * is given, and locks them; Next draws another syllable and starts again.
  */
 export function TonesPage({ rng = Math.random }: TonesPageProps) {
   const [syllable, setSyllable] = useState(() => generateSyllable(rng));
-  const [answers, setAnswers] = useState<PlayerAnswers>({});
+  const [answers, setAnswers] = useState<PlayerAnswers>(NO_ANSWERS);
   // Null until the answers are checked.
   const [result, setResult] = useState<CheckResult | null>(null);
 
   const checked = result !== null;
 
   const validate = () => {
-    if (isComplete(answers)) setResult(checkAnswers(answers, syllable.analyses));
+    if (!isComplete(answers)) return;
+    setResult(checkAnswers(answers, syllable.analyses, syllable.parts.mark));
   };
 
   const next = () => {
     setSyllable(generateSyllable(rng));
-    setAnswers({});
+    setAnswers(NO_ANSWERS);
     setResult(null);
   };
 

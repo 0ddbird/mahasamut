@@ -1,4 +1,5 @@
 import { Check, X } from 'lucide-react';
+import { useId } from 'react';
 import styles from './AnswerRow.module.scss';
 import { OPTION_FEEDBACK, optionFeedback } from './feedback';
 import type { OptionFeedback, RowFeedback } from './feedback';
@@ -13,10 +14,12 @@ interface AnswerRowProps<T extends string> {
   /** The option chosen so far, if any. */
   selected?: T;
   onSelect: (value: T) => void;
-  /** Locks the row, once the answers are checked. */
+  /** Locks the row: once the answers are checked, or when the step is not needed. */
   disabled?: boolean;
   /** Once the answers are checked: what each choice shows. */
   feedback?: RowFeedback<T>;
+  /** A short remark under the title, e.g. why the row is locked. */
+  note?: string;
 }
 
 /**
@@ -45,11 +48,23 @@ export function AnswerRow<T extends string>({
   onSelect,
   disabled = false,
   feedback,
+  note,
 }: AnswerRowProps<T>) {
+  const noteId = useId();
+
   // A disabled fieldset disables every radio button inside it.
   return (
-    <fieldset className={styles.row} disabled={disabled}>
+    <fieldset
+      className={styles.row}
+      disabled={disabled}
+      aria-describedby={note === undefined ? undefined : noteId}
+    >
       <legend className={styles.title}>{title}</legend>
+      {note !== undefined && (
+        <p className={styles.note} id={noteId}>
+          {note}
+        </p>
+      )}
       <div className={styles.options}>
         {options.map((option) => {
           const state = feedback ? optionFeedback(option.value, feedback) : OPTION_FEEDBACK.None;
@@ -64,7 +79,7 @@ export function AnswerRow<T extends string>({
                 onChange={() => onSelect(option.value)}
               />
               <span className={`${styles.label} ${styles[state]}`}>
-                {option.label}
+                <OptionLabel option={option} />
                 {state !== OPTION_FEEDBACK.None && (
                   <>
                     <FeedbackIcon state={state} />
@@ -79,6 +94,22 @@ export function AnswerRow<T extends string>({
         })}
       </div>
     </fieldset>
+  );
+}
+
+/**
+ * The label of a choice. A Thai sign that cannot be read aloud (◌่) is shown
+ * only, and screen readers hear its name instead.
+ */
+function OptionLabel<T extends string>({ option }: { option: Option<T> }) {
+  if (option.spokenLabel === undefined) return option.label;
+  return (
+    <>
+      <span className={styles.sign} lang="th" aria-hidden="true">
+        {option.label}
+      </span>
+      <span className={styles.spoken}>{option.spokenLabel}</span>
+    </>
   );
 }
 
