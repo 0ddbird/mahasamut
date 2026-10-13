@@ -14,8 +14,10 @@ export function HomePage() {
           : find the tone of a syllable.
         </li>
         <li>
-          Akson sam mu <span lang="th">อักษรสามหมู่</span>: find the class of a consonant. Coming
-          soon.
+          <Link to="/classes">
+            Akson sam mu <span lang="th">อักษรสามหมู่</span>
+          </Link>
+          : find the class of a consonant.
         </li>
       </ul>
     </main>

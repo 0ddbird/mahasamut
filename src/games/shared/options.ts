@@ -1,6 +1,7 @@
 /**
- * The choices of each answer row, in display order, with their English labels.
- * The labels live here so that a translation can replace them later.
+ * The choices of each answer row, in display order, with their English labels,
+ * shared by the games. The labels live here so that a translation can replace
+ * them later.
  */
 import type { Option } from '../../components/AnswerRow/option';
 import { TONE_MARK_CHAR } from '../../thai/marks';

@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router';
+import { ClassesPage } from './games/classes/ClassesPage';
 import { TonesPage } from './games/tones/TonesPage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -13,6 +14,7 @@ function App() {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/tones" element={<TonesPage />} />
+      <Route path="/classes" element={<ClassesPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

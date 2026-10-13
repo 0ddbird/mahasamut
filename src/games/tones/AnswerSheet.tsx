@@ -11,7 +11,7 @@ import {
   TONE_MARK_OPTIONS,
   TONE_OPTIONS,
   VOWEL_LENGTH_OPTIONS,
-} from './options';
+} from '../shared/options';
 
 /** Once the answers are checked: the result, and the analyses it was checked against. */
 export interface Correction {

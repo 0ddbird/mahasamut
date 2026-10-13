@@ -23,16 +23,24 @@ describe('App', () => {
     expect(screen.getByRole('link', { name: /Wannayuk/ }).getAttribute('href')).toBe('/tones');
   });
 
-  it('announces the consonant class game, Akson sam mu, without a link yet', () => {
+  it('lists the consonant class game, Akson sam mu, with a link to /classes', () => {
     renderAt('/');
-    expect(screen.getByText(/Akson sam mu/).textContent).toMatch(/coming soon/i);
-    expect(screen.queryByRole('link', { name: /Akson sam mu/ })).toBeNull();
+    expect(screen.getByRole('link', { name: /Akson sam mu/ }).getAttribute('href')).toBe(
+      '/classes',
+    );
+    expect(screen.queryByText(/coming soon/i)).toBeNull();
   });
 
   it('goes to the tone game from its link', async () => {
     renderAt('/');
     await userEvent.click(screen.getByRole('link', { name: /Wannayuk/ }));
     expect(screen.getByRole('heading', { level: 1, name: /Wannayuk/ })).toBeDefined();
+  });
+
+  it('goes to the consonant class game from its link', async () => {
+    renderAt('/');
+    await userEvent.click(screen.getByRole('link', { name: /Akson sam mu/ }));
+    expect(screen.getByRole('heading', { level: 1, name: /Akson sam mu/ })).toBeDefined();
   });
 
   it('shows a not found page for an unknown path, with a way back home', async () => {

@@ -1,0 +1,19 @@
+// One column, centred, usable on a phone.
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: var(--space-m);
+}
+
+// The same space under the answer as under the tone game's answer sheet.
+.answer {
+  margin-bottom: var(--space-l);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-m);
+}
