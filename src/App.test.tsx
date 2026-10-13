@@ -17,16 +17,26 @@ const renderAt = (path: string) =>
   );
 
 describe('App', () => {
-  it('shows the home page at /', () => {
+  it('shows the site home page at /', () => {
     renderAt('/');
-    expect(screen.getByRole('heading', { name: /Wannayuk/ })).toBeDefined();
-    expect(screen.getByRole('link', { name: 'Start' }).getAttribute('href')).toBe('/play');
+    expect(screen.getByRole('heading', { level: 1, name: 'Scriptomancy - Thai' })).toBeDefined();
   });
 
-  it('goes to the play page from the Start link', async () => {
+  it('lists the tone game, Wannayuk, with a link to /tones', () => {
     renderAt('/');
-    await userEvent.click(screen.getByRole('link', { name: 'Start' }));
-    expect(screen.getByRole('heading', { name: 'Play' })).toBeDefined();
+    expect(screen.getByRole('link', { name: /Wannayuk/ }).getAttribute('href')).toBe('/tones');
+  });
+
+  it('announces the consonant class game, Akson sam mu, without a link yet', () => {
+    renderAt('/');
+    expect(screen.getByText(/Akson sam mu/).textContent).toMatch(/coming soon/i);
+    expect(screen.queryByRole('link', { name: /Akson sam mu/ })).toBeNull();
+  });
+
+  it('goes to the tone game from its link', async () => {
+    renderAt('/');
+    await userEvent.click(screen.getByRole('link', { name: /Wannayuk/ }));
+    expect(screen.getByRole('heading', { level: 1, name: /Wannayuk/ })).toBeDefined();
   });
 
   it('shows a not found page for an unknown path, with a way back home', async () => {
@@ -34,6 +44,6 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Page not found' })).toBeDefined();
 
     await userEvent.click(screen.getByRole('link', { name: 'Back to home' }));
-    expect(screen.getByRole('heading', { name: /Wannayuk/ })).toBeDefined();
+    expect(screen.getByRole('heading', { level: 1, name: 'Scriptomancy - Thai' })).toBeDefined();
   });
 });
