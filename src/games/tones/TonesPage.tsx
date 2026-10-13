@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { generateSyllable } from '../../thai/generator';
 import type { Rng } from '../../thai/generator';
 import { AnswerSheet } from './AnswerSheet';
-import type { PlayerAnswers } from './AnswerSheet';
+import type { PlayerAnswers } from './check';
 import { NextButton } from './NextButton';
 import { SyllableDisplay } from './SyllableDisplay';
 import styles from './TonesPage.module.scss';

@@ -1,6 +1,7 @@
 import type { SyllableAnswers } from '../../thai/answers';
 import { AnswerRow } from './AnswerRow';
 import styles from './AnswerSheet.module.scss';
+import type { PlayerAnswers } from './check';
 import {
   CONSONANT_CLASS_OPTIONS,
   FINAL_KIND_OPTIONS,
@@ -8,9 +9,6 @@ import {
   TONE_OPTIONS,
   VOWEL_LENGTH_OPTIONS,
 } from './options';
-
-/** The answers the player has chosen so far: any step may still be empty. */
-export type PlayerAnswers = Partial<SyllableAnswers>;
 
 interface AnswerSheetProps {
   answers: PlayerAnswers;

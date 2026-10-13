@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { AnswerSheet } from './AnswerSheet';
-import type { PlayerAnswers } from './AnswerSheet';
+import type { PlayerAnswers } from './check';
 
 /** The labels of the choices in the row titled `title`. */
 const choicesOf = (title: string) =>
