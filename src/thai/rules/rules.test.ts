@@ -107,9 +107,8 @@ describe('checkSyllable', () => {
       expect(checkSyllable(parts('ค', 'o', final))).toBeNull();
     });
 
-    // ล after the invisible o is fine when onset + ล is not a cluster (กล is rule 6).
-    it.each(['ช', 'ม'])('accepts %s + invisible o + final ล', (onsetText) => {
-      expect(checkSyllable(parts(onsetText, 'o', 'ล'))).toBeNull(); // ชล, มล
+    it.each(['ช', 'ม', 'ก', 'พ'])('accepts %s + invisible o + final ล', (onsetText) => {
+      expect(checkSyllable(parts(onsetText, 'o', 'ล'))).toBeNull(); // ชล, มล, กล, พล
     });
 
     it.each(['ค', 'ม', 'ช'])('rejects %s + invisible o + final ร', (onsetText) => {
@@ -173,8 +172,6 @@ describe('checkSyllable', () => {
       ['ข', 'aee', 'ว', 'none'], // แขว, read ขว + แ-
       ['อ', 'oo', 'ย', 'none'], // โอย, read อย + โ-
       ['ห', 'oee', 'ย', 'none'], // เหย, เ-อ is written เ- before ย
-      ['ก', 'o', 'ล', 'none'], // กล, invisible o
-      ['ก', 'e', 'ร', 'eek'], // เก่ร, เ-็ drops ็ under a mark
     ] as Case[])('rejects %s + %s + final %s, mark %s', (onsetText, id, final, mark) => {
       expect(checkSyllable(parts(onsetText, id, final, mark))).toMatch(/would read as onset/);
     });
@@ -187,6 +184,12 @@ describe('checkSyllable', () => {
       ['ม', 'ee', 'ร', 'none'], // เมร, มร is not an onset
       ['ช', 'o', 'ล', 'none'], // ชล, ชล is not an onset
       ['กร', 'ee', 'น', 'none'], // เกรน, already a cluster
+      // No open vowel is written ◌ alone, so these can only be onset + invisible o + final.
+      ['ก', 'o', 'ล', 'none'], // กล
+      ['พ', 'o', 'ล', 'none'], // พล
+      // The mark sits on the last consonant of the onset, which tells the readings apart.
+      ['ก', 'e', 'ร', 'eek'], // เก่ร, not กร + เ-: เกร่
+      ['ห', 'oo', 'ม', 'eek'], // โห่ม, not หม + โ-: โหม่
     ] as Case[])('accepts %s + %s + final %s, mark %s', (onsetText, id, final, mark) => {
       expect(checkSyllable(parts(onsetText, id, final, mark))).toBeNull();
     });
