@@ -1,14 +1,13 @@
 import { useState } from 'react';
+import { Button } from '../../components/Button/Button';
 import { generateSyllable } from '../../thai/generator';
 import type { Rng } from '../../thai/generator';
 import { TONE_MARK } from '../../thai/types';
 import { AnswerSheet } from './AnswerSheet';
 import { checkAnswers, isComplete } from './check';
 import type { CheckResult, PlayerAnswers } from './check';
-import { NextButton } from './NextButton';
 import { SyllableDisplay } from './SyllableDisplay';
 import styles from './TonesPage.module.scss';
-import { ValidateButton } from './ValidateButton';
 import { Verdict } from './Verdict';
 
 interface TonesPageProps {
@@ -56,8 +55,10 @@ export function TonesPage({ rng = Math.random }: TonesPageProps) {
       />
       {checked && <Verdict correct={result.correct} />}
       <div className={styles.actions}>
-        <ValidateButton disabled={!isComplete(answers) || checked} onClick={validate} />
-        <NextButton onClick={next} />
+        <Button disabled={!isComplete(answers) || checked} onClick={validate}>
+          Validate
+        </Button>
+        <Button onClick={next}>Next</Button>
       </div>
     </main>
   );
