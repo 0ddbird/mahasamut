@@ -1,0 +1,18 @@
+// Design tokens, as CSS custom properties so they can change at run time
+// (dark mode, the future font setting). Components use them with var().
+:root {
+  --color-text: #1f1d24;
+  --color-background: #fdfcf8;
+  --color-accent: #8a3ffc;
+  --color-accent-text: #ffffff;
+
+  --space-xs: 0.25rem;
+  --space-s: 0.5rem;
+  --space-m: 1rem;
+  --space-l: 2rem;
+
+  --radius: 0.5rem;
+
+  // The syllable is the heart of the screen: large, but never wider than a phone.
+  --syllable-size: clamp(4rem, 20vw, 8rem);
+}

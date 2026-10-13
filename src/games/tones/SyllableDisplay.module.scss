@@ -1,0 +1,8 @@
+.syllable {
+  margin: var(--space-l) 0;
+  font-size: var(--syllable-size);
+  // Thai vowel signs and tone marks stack above and below the consonants:
+  // leave them room so they are not cut off.
+  line-height: 1.6;
+  text-align: center;
+}
