@@ -1,6 +1,6 @@
+import { AnswerRow } from '../../components/AnswerRow/AnswerRow';
 import type { SyllableAnswers } from '../../thai/answers';
 import { TONE_MARK } from '../../thai/types';
-import { AnswerRow } from './AnswerRow';
 import styles from './AnswerSheet.module.scss';
 import type { CheckResult, GameAnswers, PlayerAnswers, Step } from './check';
 import { rowFeedback } from './feedback';

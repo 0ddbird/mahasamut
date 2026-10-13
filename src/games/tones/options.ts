@@ -2,6 +2,7 @@
  * The choices of each answer row, in display order, with their English labels.
  * The labels live here so that a translation can replace them later.
  */
+import type { Option } from '../../components/AnswerRow/option';
 import { TONE_MARK_CHAR } from '../../thai/marks';
 import {
   CONSONANT_CLASS,
@@ -20,17 +21,6 @@ import type {
   VowelLength,
 } from '../../thai/types';
 import { CONSONANT_SLOT } from '../../thai/vowels';
-
-/** One choice of an answer row: the answer it gives, and how it is shown. */
-export interface Option<T extends string> {
-  value: T;
-  label: string;
-  /**
-   * Set when the label is Thai that cannot be read aloud on its own (a tone
-   * mark sign): screen readers say this instead, and the label is shown only.
-   */
-  spokenLabel?: string;
-}
 
 /** A tone mark as it appears in the syllable, on the dotted circle: ◌่. */
 const markSign = (mark: Exclude<ToneMark, 'none'>) => CONSONANT_SLOT + TONE_MARK_CHAR[mark];

@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Button } from '../../components/Button/Button';
+import { ThaiDisplay } from '../../components/ThaiDisplay/ThaiDisplay';
+import { Verdict } from '../../components/Verdict/Verdict';
 import { generateSyllable } from '../../thai/generator';
 import type { Rng } from '../../thai/generator';
 import { TONE_MARK } from '../../thai/types';
 import { AnswerSheet } from './AnswerSheet';
 import { checkAnswers, isComplete } from './check';
 import type { CheckResult, PlayerAnswers } from './check';
-import { SyllableDisplay } from './SyllableDisplay';
 import styles from './TonesPage.module.scss';
-import { Verdict } from './Verdict';
 
 interface TonesPageProps {
   /** Source of random numbers for the draws; tests pass a seeded one. */
@@ -47,7 +47,7 @@ export function TonesPage({ rng = Math.random }: TonesPageProps) {
       <h1>
         Wannayuk <span lang="th">วรรณยุกต์</span>
       </h1>
-      <SyllableDisplay text={syllable.text} />
+      <ThaiDisplay text={syllable.text} />
       <AnswerSheet
         answers={answers}
         onChange={setAnswers}

@@ -3,7 +3,7 @@ import { useId } from 'react';
 import styles from './AnswerRow.module.scss';
 import { OPTION_FEEDBACK, optionFeedback } from './feedback';
 import type { OptionFeedback, RowFeedback } from './feedback';
-import type { Option } from './options';
+import type { Option } from './option';
 
 interface AnswerRowProps<T extends string> {
   /** What the row asks, e.g. "Vowel length". */
