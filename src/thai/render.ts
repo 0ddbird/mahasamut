@@ -15,7 +15,7 @@ import type { Onset } from './consonants/onsets';
 import { TONE_MARK_CHAR } from './marks';
 import { TONE_MARK } from './types';
 import type { ToneMark } from './types';
-import { CONSONANT_SLOT, VOWEL_SIGNS_ON_CONSONANT } from './vowels';
+import { closedTemplate, CONSONANT_SLOT, VOWEL_SIGNS_ON_CONSONANT } from './vowels';
 import type { Vowel } from './vowels';
 
 /** The parts of a syllable, as needed to write it. */
@@ -40,7 +40,7 @@ export function render({
   mark = TONE_MARK.None,
 }: SyllableParts): string {
   // The vowel is written differently when a final consonant follows (กะ / กัน).
-  const template = final === null ? vowel.open : closedTemplate(vowel, final, mark);
+  const template = final === null ? vowel.open : checkedClosedTemplate(vowel, final, mark);
 
   // What the vowel writes before the onset (เ in เ◌ีย) and after it (ีย).
   const [vowelPartBeforeConsonant, vowelPartAfterConsonant] = template.split(CONSONANT_SLOT);
@@ -68,11 +68,10 @@ export function render({
   );
 }
 
-function closedTemplate(vowel: Vowel, final: string, mark: ToneMark): string {
+function checkedClosedTemplate(vowel: Vowel, final: string, mark: ToneMark): string {
   // Called to raise an exception if final is not valid.
   finalSound(final);
-  if (vowel.closed === null) throw new Error(`Vowel ${vowel.id} cannot take a final consonant`);
-  if (final === 'ย' && vowel.closedBeforeY !== undefined) return vowel.closedBeforeY;
-  if (mark !== TONE_MARK.None && vowel.closedMarked !== undefined) return vowel.closedMarked;
-  return vowel.closed;
+  const template = closedTemplate(vowel, final, mark);
+  if (template === null) throw new Error(`Vowel ${vowel.id} cannot take a final consonant`);
+  return template;
 }

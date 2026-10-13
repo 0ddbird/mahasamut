@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   CHANGING_VOWELS,
+  closedTemplate,
   CONSONANT_SLOT,
   OPEN_ONLY_VOWELS,
   REGULAR_VOWELS,
@@ -10,7 +11,7 @@ import {
   vowel,
 } from './index';
 import { VOWEL_IDS } from '../types';
-import type { FinalSound, VowelId, VowelLength } from '../types';
+import type { FinalSound, ToneMark, VowelId, VowelLength } from '../types';
 
 const LENGTHS: [VowelId, VowelLength][] = [
   ['a', 'short'],
@@ -168,6 +169,28 @@ describe('closed forms (vowel written before a final consonant)', () => {
   it('has no special marked form for the other vowels', () => {
     const others = VOWELS.filter((v) => v.id !== 'e' && v.id !== 'ae');
     for (const v of others) expect(v.closedMarked, v.id).toBeUndefined();
+  });
+});
+
+describe('closedTemplate', () => {
+  it.each([
+    ['aa', 'น', 'none', '◌า'],
+    ['a', 'น', 'none', '◌ั'],
+    ['oee', 'น', 'none', 'เ◌ิ'],
+    ['oee', 'ย', 'none', 'เ◌'], // เลย
+    ['e', 'ก', 'none', 'เ◌็'], // เล็ก
+    ['e', 'น', 'eek', 'เ◌'], // เล่น
+    ['ae', 'ง', 'eek', 'แ◌'], // แข่ง
+    ['o', 'น', 'thoo', '◌'],
+  ] as [VowelId, string, ToneMark, string][])(
+    '%s before %s with mark %s is written %s',
+    (id, final, mark, template) => {
+      expect(closedTemplate(vowel(id), final, mark)).toBe(template);
+    },
+  );
+
+  it.each(['or', 'am'] as VowelId[])('is null for %s, which takes no final', (id) => {
+    expect(closedTemplate(vowel(id), 'น', 'none')).toBeNull();
   });
 });
 

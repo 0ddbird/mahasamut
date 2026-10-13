@@ -14,8 +14,8 @@
  * - open-only.ts: never followed by a final;
  * - sara-koen.ts: end with a built-in final sound (ำ ใ ไ เ-า).
  */
-import { VOWEL_IDS } from '../types';
-import type { FinalSound, VowelId, VowelLength } from '../types';
+import { TONE_MARK, VOWEL_IDS } from '../types';
+import type { FinalSound, ToneMark, VowelId, VowelLength } from '../types';
 import { CHANGING_VOWELS } from './changing';
 import { OPEN_ONLY_VOWELS } from './open-only';
 import { REGULAR_VOWELS } from './regular';
@@ -82,3 +82,17 @@ export function vowel(id: VowelId): Vowel {
 
 /** All 28 vowels: the 24 simple ones in short/long pairs, then the 4 sara koen. */
 export const VOWELS: readonly Vowel[] = VOWEL_IDS.map(vowel);
+
+/**
+ * How a vowel is written before a final consonant, which goes right after it.
+ * The form may depend on the final (เ-อ before ย: เลย) and on the tone mark
+ * (เ-็ and แ-็ lose their ็: เล่น).
+ *
+ * @returns the template, or `null` if the vowel cannot take a final.
+ */
+export function closedTemplate(vowel: Vowel, final: string, mark: ToneMark): string | null {
+  if (vowel.closed === null) return null;
+  if (final === 'ย' && vowel.closedBeforeY !== undefined) return vowel.closedBeforeY;
+  if (mark !== TONE_MARK.None && vowel.closedMarked !== undefined) return vowel.closedMarked;
+  return vowel.closed;
+}
