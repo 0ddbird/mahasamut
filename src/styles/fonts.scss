@@ -4,6 +4,7 @@
   --font-looped: 'Sarabun', sans-serif;
 }
 
+// Sarabun by default: textbooks print Thai with loops, so learners start there.
 body {
-  font-family: var(--font-loopless);
+  font-family: var(--font-looped);
 }
