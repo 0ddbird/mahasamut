@@ -11,6 +11,7 @@ import type { SyllableParts } from '../render';
 import { finalAllowed } from './final-allowed';
 import { finalFormsOnset } from './final-forms-onset';
 import { invisibleOFinals } from './invisible-o-finals';
+import { markedClosedEeAee } from './marked-closed-ee-aee';
 import { midClassOnlyMarks } from './mid-class-only-marks';
 import { onsetEndingInWo } from './onset-ending-in-wo';
 import { semivowelFinals } from './semivowel-finals';
@@ -26,6 +27,7 @@ const RULES: readonly Rule[] = [
   invisibleOFinals,
   onsetEndingInWo,
   finalFormsOnset,
+  markedClosedEeAee,
 ];
 
 /**

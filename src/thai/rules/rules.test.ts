@@ -194,4 +194,29 @@ describe('checkSyllable', () => {
       expect(checkSyllable(parts(onsetText, id, final, mark))).toBeNull();
     });
   });
+
+  describe('rule 7: long ee and aee never closed with a tone mark', () => {
+    type Case = [string, VowelId, string | null, ToneMark];
+
+    // Written like short e / ae under a mark (เล่น, แข่ง), so read as short.
+    it.each([
+      ['ก', 'ee', 'น', 'eek'], // เก่น
+      ['ก', 'ee', 'ว', 'thoo'], // เก้ว
+      ['ก', 'aee', 'ง', 'eek'], // แก่ง
+      ['ก', 'aee', 'น', 'trii'], // แก๊น
+    ] as Case[])('rejects %s + %s + final %s, mark %s', (onsetText, id, final, mark) => {
+      expect(checkSyllable(parts(onsetText, id, final, mark))).toMatch(/read as short/);
+    });
+
+    it.each([
+      ['ก', 'aee', null, 'eek'], // แก่, open
+      ['ก', 'ee', null, 'thoo'], // เก้, open
+      ['ก', 'ee', 'น', 'none'], // เกน, no mark
+      ['ม', 'aee', 'ว', 'none'], // แมว, no mark
+      ['ล', 'e', 'น', 'eek'], // เล่น, short e
+      ['ข', 'ae', 'ง', 'eek'], // แข่ง, short ae
+    ] as Case[])('accepts %s + %s + final %s, mark %s', (onsetText, id, final, mark) => {
+      expect(checkSyllable(parts(onsetText, id, final, mark))).toBeNull();
+    });
+  });
 });
