@@ -5,6 +5,13 @@
   --color-accent: #277552;
   --color-accent-text: #ffffff;
 
+  // Feedback once the answers are checked: dark text on a light background,
+  // unlike the solid green of a selected choice.
+  --color-right: #1b6b43;
+  --color-right-background: #e3f4ea;
+  --color-wrong: #b42318;
+  --color-wrong-background: #fde7e5;
+
   --space-xs: 0.25rem;
   --space-s: 0.5rem;
   --space-m: 1rem;

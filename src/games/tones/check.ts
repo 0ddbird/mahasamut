@@ -25,6 +25,8 @@ export const STEPS: readonly Step[] = [
 
 /** The outcome of checking a full set of answers. */
 export interface CheckResult {
+  /** The player's answers, as checked. */
+  given: SyllableAnswers;
   /** True only if all five steps are right. */
   correct: boolean;
   /** The analysis the answers were compared with: the one they match best. */
@@ -68,7 +70,7 @@ function compare(given: SyllableAnswers, expected: SyllableAnswers): CheckResult
     tone: given.tone === expected.tone,
   };
   const correct = STEPS.every((step) => steps[step]);
-  return { correct, expected, steps };
+  return { given, correct, expected, steps };
 }
 
 function stepsRight(result: CheckResult): number {

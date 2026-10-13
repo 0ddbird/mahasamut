@@ -65,4 +65,53 @@ describe('AnswerRow', () => {
     expect(long.matches(':disabled')).toBe(true);
     expect(chosen).toEqual([]);
   });
+
+  describe('once checked', () => {
+    // The accessible name of each choice, in display order.
+    const names = () =>
+      screen.getAllByRole('radio').map((choice) => choice.closest('label')?.textContent);
+
+    it('marks a right choice', () => {
+      render(
+        <AnswerRow
+          title="Vowel length"
+          name="length"
+          options={OPTIONS}
+          selected="long"
+          onSelect={() => {}}
+          feedback={{ chosen: 'long', expected: 'long', accepted: ['long'] }}
+        />,
+      );
+      expect(names()).toEqual(['Short', 'Long (right)']);
+    });
+
+    it('marks a wrong choice, and the right answer', () => {
+      render(
+        <AnswerRow
+          title="Vowel length"
+          name="length"
+          options={OPTIONS}
+          selected="short"
+          onSelect={() => {}}
+          feedback={{ chosen: 'short', expected: 'long', accepted: ['long'] }}
+        />,
+      );
+      expect(names()).toEqual(['Short (wrong)', 'Long (the right answer)']);
+      expect(screen.getByRole('radio', { name: 'Long (the right answer)' })).toBeDefined();
+    });
+
+    it('marks the other reading of a homograph as also accepted', () => {
+      render(
+        <AnswerRow
+          title="Vowel length"
+          name="length"
+          options={OPTIONS}
+          selected="short"
+          onSelect={() => {}}
+          feedback={{ chosen: 'short', expected: 'short', accepted: ['long', 'short'] }}
+        />,
+      );
+      expect(names()).toEqual(['Short (right)', 'Long (also accepted)']);
+    });
+  });
 });

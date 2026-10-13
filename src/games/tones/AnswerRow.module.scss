@@ -25,7 +25,9 @@
 }
 
 .label {
-  display: inline-block;
+  display: inline-flex;
+  gap: var(--space-xs);
+  align-items: center;
   padding: var(--space-s) var(--space-m);
   border: 2px solid var(--color-border);
   border-radius: var(--radius);
@@ -36,6 +38,47 @@
   border-color: var(--color-accent);
   color: var(--color-accent-text);
   background: var(--color-accent);
+}
+
+// Once checked. These come after :checked, with the same specificity, so they
+// replace the green of the selection: a selected choice and a right one must
+// not look alike.
+.input + .label.right {
+  border-color: var(--color-right);
+  color: var(--color-right);
+  background: var(--color-right-background);
+}
+
+.input + .label.wrong {
+  border-color: var(--color-wrong);
+  color: var(--color-wrong);
+  background: var(--color-wrong-background);
+}
+
+.input + .label.expected {
+  border-color: var(--color-right);
+  color: var(--color-right);
+}
+
+// Dashed, to tell it from the expected answer.
+.input + .label.alsoAccepted {
+  border-style: dashed;
+  border-color: var(--color-right);
+  color: var(--color-right);
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+// Read by screen readers only.
+.spoken {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .input:disabled + .label {

@@ -98,6 +98,27 @@ describe('TonesPage', () => {
       expect(screen.getByRole('status').textContent).toBe('Not quite');
     });
 
+    it('marks each row: the wrong tone, the right one, and the right steps', async () => {
+      render(<TonesPage rng={seededRng(7)} />);
+      const wrongTone = RIGHT.tone === 'mid' ? 'low' : 'mid';
+      await answerWith({ ...RIGHT, tone: wrongTone });
+      await userEvent.click(validateButton());
+
+      const capitalized = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
+      const toneRow = within(screen.getByRole('group', { name: 'Tone' }));
+      expect(
+        toneRow.getByRole('radio', { name: `${capitalized(wrongTone)} (wrong)` }),
+      ).toBeDefined();
+      expect(
+        toneRow.getByRole('radio', { name: `${capitalized(RIGHT.tone)} (the right answer)` }),
+      ).toBeDefined();
+
+      const lengthRow = within(screen.getByRole('group', { name: 'Vowel length' }));
+      expect(
+        lengthRow.getByRole('radio', { name: `${capitalized(RIGHT.vowelLength)} (right)` }),
+      ).toBeDefined();
+    });
+
     it('starts again on Next: no verdict, answers unlocked', async () => {
       render(<TonesPage rng={seededRng(7)} />);
       await answerWith(RIGHT);

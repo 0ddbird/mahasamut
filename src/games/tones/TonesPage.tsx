@@ -44,7 +44,11 @@ export function TonesPage({ rng = Math.random }: TonesPageProps) {
         Wannayuk <span lang="th">วรรณยุกต์</span>
       </h1>
       <SyllableDisplay text={syllable.text} />
-      <AnswerSheet answers={answers} onChange={setAnswers} disabled={checked} />
+      <AnswerSheet
+        answers={answers}
+        onChange={setAnswers}
+        correction={checked ? { result, analyses: syllable.analyses } : undefined}
+      />
       {checked && <Verdict correct={result.correct} />}
       <div className={styles.actions}>
         <ValidateButton disabled={!isComplete(answers) || checked} onClick={validate} />

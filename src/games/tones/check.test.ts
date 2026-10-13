@@ -74,6 +74,11 @@ describe('checkAnswers', () => {
     expect(result.steps.finalKind).toBe(false);
   });
 
+  it('keeps the answers it checked', () => {
+    const given: SyllableAnswers = { ...MAI, tone: 'high' };
+    expect(checkAnswers(given, [MAI]).given).toEqual(given);
+  });
+
   it('throws when the syllable has no analysis', () => {
     expect(() => checkAnswers(MAI, [])).toThrow(/no analysis/);
   });
