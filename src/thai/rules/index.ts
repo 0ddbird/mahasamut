@@ -6,10 +6,14 @@
  * Thai spelling, and some could be read in two ways, which would make the
  * expected answers ambiguous for the player. These rules leave them out.
  * Each rule lives in its own file.
+ *
+ * One kind of double reading is kept on purpose: a final written right after
+ * the onset that forms another onset with it (เกร: ก + เ- + ร, or กร + เ-).
+ * Both readings exist in real words (แขว, แปล), so the game accepts the answers
+ * of either one. There is no rule 6 any more for that reason.
  */
 import type { SyllableParts } from '../render';
 import { finalAllowed } from './final-allowed';
-import { finalFormsOnset } from './final-forms-onset';
 import { invisibleOFinals } from './invisible-o-finals';
 import { markedClosedEeAee } from './marked-closed-ee-aee';
 import { midClassOnlyMarks } from './mid-class-only-marks';
@@ -26,7 +30,6 @@ const RULES: readonly Rule[] = [
   semivowelFinals,
   invisibleOFinals,
   onsetEndingInWo,
-  finalFormsOnset,
   markedClosedEeAee,
 ];
 

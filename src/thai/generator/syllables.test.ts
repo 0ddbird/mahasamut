@@ -42,6 +42,26 @@ describe('validSyllables', () => {
     const wrong = VALID.filter((s) => !sameAnswers(syllableAnswers(s.parts), s.answers));
     expect(wrong.map((s) => s.text)).toEqual([]);
   });
+
+  it('counts the answers of its own parts among the analyses of each syllable', () => {
+    const missing = VALID.filter((s) => !s.analyses.some((a) => sameAnswers(a, s.answers)));
+    expect(missing.map((s) => s.text)).toEqual([]);
+  });
+
+  it('gives a syllable one analysis per combination that writes its text', () => {
+    const combinationsByText = new Map<string, number>();
+    for (const s of VALID)
+      combinationsByText.set(s.text, (combinationsByText.get(s.text) ?? 0) + 1);
+
+    const wrongCount = VALID.filter((s) => s.analyses.length !== combinationsByText.get(s.text));
+    expect(wrongCount.map((s) => s.text)).toEqual([]);
+  });
+
+  it('gives แขว two analyses: ข + แ- + ว with a sonorant final, ขว + แ- with none', () => {
+    const khwae = VALID.find((s) => s.text === 'แขว');
+    const finalKinds = khwae?.analyses.map((a) => a.finalKind);
+    expect(finalKinds?.sort()).toEqual(['none', 'sonorant']);
+  });
 });
 
 describe('categoryGroups', () => {

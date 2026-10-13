@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { validSyllables } from '../generator/syllables';
+import type { Syllable } from '../generator/syllables';
 import type { SyllableParts } from '../render';
 import { VOWEL_SIGNS_ON_CONSONANT } from '../vowels';
 
@@ -14,23 +15,51 @@ const describeParts = ({ onset, vowel, final, mark }: SyllableParts) =>
 // The syllables the generator draws from: every combination that passes the rules.
 const VALID_COMBINATIONS = validSyllables();
 
-describe('every valid syllable', () => {
-  it('is written by one combination only', () => {
-    const combinationsByText = new Map<string, string[]>();
-    for (const { parts, text } of VALID_COMBINATIONS) {
-      const combinations = combinationsByText.get(text) ?? [];
-      combinations.push(describeParts(parts));
-      combinationsByText.set(text, combinations);
-    }
+const syllablesByText = new Map<string, Syllable[]>();
+for (const syllable of VALID_COMBINATIONS) {
+  const syllables = syllablesByText.get(syllable.text) ?? [];
+  syllables.push(syllable);
+  syllablesByText.set(syllable.text, syllables);
+}
 
-    const textsWithCombinations = [...combinationsByText];
-    const collisions = textsWithCombinations.filter(([, combinations]) => combinations.length > 1);
-    const collisionReports = collisions.map(
-      ([text, combinations]) => `${text}: ${combinations.join(' | ')}`,
-    );
-    expect(collisionReports).toEqual([]);
+// Homographs: texts written by several combinations, such as เกร (ก + เ- + ร, or
+// the cluster กร + เ-). The game accepts the answers of either reading.
+const HOMOGRAPHS = [...syllablesByText.values()].filter((syllables) => syllables.length > 1);
+
+const report = (syllables: Syllable[]) =>
+  `${syllables[0]?.text}: ${syllables.map((s) => describeParts(s.parts)).join(' | ')}`;
+
+describe('homographs', () => {
+  it('include เกร, written ก + เ- + ร or กร + เ-', () => {
+    const readings = (syllablesByText.get('เกร') ?? []).map((s) => describeParts(s.parts));
+    expect(readings.sort()).toEqual(['ก + ee + ร + none', 'กร + ee + - + none']);
   });
 
+  it('have two readings only: one with a final, one without', () => {
+    const unexpected = HOMOGRAPHS.filter((syllables) => {
+      const withFinal = syllables.filter((s) => s.parts.final !== null);
+      return syllables.length !== 2 || withFinal.length !== 1;
+    });
+    expect(unexpected.map(report)).toEqual([]);
+  });
+
+  it('give both readings the same answers, except for the kind of final', () => {
+    const differing = HOMOGRAPHS.filter(([first, second]) => {
+      if (first === undefined || second === undefined) return true;
+      const a = first.answers;
+      const b = second.answers;
+      return (
+        a.consonantClass !== b.consonantClass ||
+        a.vowelLength !== b.vowelLength ||
+        a.liveness !== b.liveness ||
+        a.tone !== b.tone
+      );
+    });
+    expect(differing.map(report)).toEqual([]);
+  });
+});
+
+describe('every valid syllable', () => {
   it('carries at most one tone mark', () => {
     const tooManyMarks = VALID_COMBINATIONS.filter(
       ({ text }) => [...text].filter(isToneMark).length > 1,

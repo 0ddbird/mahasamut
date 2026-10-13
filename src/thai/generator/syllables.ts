@@ -5,6 +5,9 @@
  * them all (391,300), keep the valid ones, and compute their text and answers
  * once. The generator then draws from that list, so it can only return a
  * syllable that passed the rules.
+ *
+ * A few texts are written by two combinations (homographs, such as เกร), and
+ * both readings are kept: each syllable lists the analyses of its text.
  */
 import { syllableAnswers } from '../answers';
 import type { SyllableAnswers } from '../answers';
@@ -21,7 +24,14 @@ import { VOWELS } from '../vowels';
 export interface Syllable {
   parts: Required<SyllableParts>;
   text: string;
+  /** The answers of its own parts. */
   answers: SyllableAnswers;
+  /**
+   * The answers of every combination written like this syllable: one for most
+   * syllables, two for a homograph such as แขว (ข + แ- + ว, or ขว + แ-). The
+   * player is right if their answers match any of them.
+   */
+  analyses: readonly SyllableAnswers[];
 }
 
 /** Every combination of onset, vowel, final (or none) and tone mark (or none), valid or not. */
@@ -42,9 +52,24 @@ let validSyllablesCache: readonly Syllable[] | null = null;
 
 /** Every valid syllable, computed on the first call only. */
 export function validSyllables(): readonly Syllable[] {
-  validSyllablesCache ??= allCombinations()
+  if (validSyllablesCache !== null) return validSyllablesCache;
+
+  const valid = allCombinations()
     .filter((parts) => checkSyllable(parts) === null)
     .map((parts) => ({ parts, text: render(parts), answers: syllableAnswers(parts) }));
+
+  // A homograph is written by several combinations: gather their answers by text.
+  const analysesByText = new Map<string, SyllableAnswers[]>();
+  for (const { text, answers } of valid) {
+    const analyses = analysesByText.get(text) ?? [];
+    analyses.push(answers);
+    analysesByText.set(text, analyses);
+  }
+
+  validSyllablesCache = valid.map((syllable) => ({
+    ...syllable,
+    analyses: analysesByText.get(syllable.text) ?? [syllable.answers],
+  }));
   return validSyllablesCache;
 }
 

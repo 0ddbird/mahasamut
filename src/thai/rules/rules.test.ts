@@ -92,7 +92,6 @@ describe('checkSyllable', () => {
         .map((id): [VowelId, string] => [id, final]),
     );
 
-    // ม forms no onset with ย or ว, so rule 6 stays out of the way (เกว reads กว + เ-).
     it.each(allowed)('accepts %s + final %s', (id, final) => {
       expect(checkSyllable(parts('ม', id, final))).toBeNull();
     });
@@ -162,36 +161,18 @@ describe('checkSyllable', () => {
     });
   });
 
-  describe('rule 6: a final right after the onset must not form another onset', () => {
-    type Case = [string, VowelId, string, ToneMark];
-
+  // Rule 6 is gone: a final written right after the onset may form another onset.
+  // Both readings are kept, as two analyses of the same text (see syllables.ts).
+  describe('former rule 6: a final that forms another onset with the onset', () => {
     it.each([
-      ['ก', 'ee', 'ร', 'none'], // เกร, read กร + เ-
-      ['ห', 'oo', 'ม', 'none'], // โหม, read หม + โ-
-      ['ห', 'aee', 'น', 'none'], // แหน, read หน + แ-
-      ['ข', 'aee', 'ว', 'none'], // แขว, read ขว + แ-
-      ['อ', 'oo', 'ย', 'none'], // โอย, read อย + โ-
-      ['ห', 'oee', 'ย', 'none'], // เหย, เ-อ is written เ- before ย
-    ] as Case[])('rejects %s + %s + final %s, mark %s', (onsetText, id, final, mark) => {
-      expect(checkSyllable(parts(onsetText, id, final, mark))).toMatch(/would read as onset/);
-    });
-
-    it.each([
-      ['ก', 'aa', 'ร', 'none'], // การ, า between onset and final
-      ['ก', 'e', 'ร', 'none'], // เก็ร, ็ between onset and final
-      ['ก', 'oee', 'ร', 'none'], // เกิร, ิ between onset and final
-      ['ห', 'uua', 'น', 'none'], // หวน, ว between onset and final
-      ['ม', 'ee', 'ร', 'none'], // เมร, มร is not an onset
-      ['ช', 'o', 'ล', 'none'], // ชล, ชล is not an onset
-      ['กร', 'ee', 'น', 'none'], // เกรน, already a cluster
-      // No open vowel is written ◌ alone, so these can only be onset + invisible o + final.
-      ['ก', 'o', 'ล', 'none'], // กล
-      ['พ', 'o', 'ล', 'none'], // พล
-      // The mark sits on the last consonant of the onset, which tells the readings apart.
-      ['ก', 'e', 'ร', 'eek'], // เก่ร, not กร + เ-: เกร่
-      ['ห', 'oo', 'ม', 'eek'], // โห่ม, not หม + โ-: โหม่
-    ] as Case[])('accepts %s + %s + final %s, mark %s', (onsetText, id, final, mark) => {
-      expect(checkSyllable(parts(onsetText, id, final, mark))).toBeNull();
+      ['ก', 'ee', 'ร'], // เกร, also กร + เ-
+      ['ห', 'oo', 'ม'], // โหม, also หม + โ-
+      ['ห', 'aee', 'น'], // แหน, also หน + แ-
+      ['ข', 'aee', 'ว'], // แขว, also ขว + แ-
+      ['อ', 'oo', 'ย'], // โอย, also อย + โ-
+      ['ห', 'oee', 'ย'], // เหย, also หย + เ-
+    ] as [string, VowelId, string][])('accepts %s + %s + final %s', (onsetText, id, final) => {
+      expect(checkSyllable(parts(onsetText, id, final))).toBeNull();
     });
   });
 
