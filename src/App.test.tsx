@@ -1,12 +1,8 @@
-// @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import App from './App';
-
-// Vitest globals are off, so Testing Library cannot clean the DOM up by itself.
-afterEach(cleanup);
 
 /** Renders the app as if the browser had opened `path`. */
 const renderAt = (path: string) =>
