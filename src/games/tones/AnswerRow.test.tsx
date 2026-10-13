@@ -46,4 +46,23 @@ describe('AnswerRow', () => {
     const long = screen.getByRole('radio', { name: 'Long' }) as HTMLInputElement;
     expect([short.checked, long.checked]).toEqual([true, false]);
   });
+
+  it('can be locked, so that no option can be chosen any more', async () => {
+    const chosen: string[] = [];
+    render(
+      <AnswerRow
+        title="Vowel length"
+        name="length"
+        options={OPTIONS}
+        onSelect={(value) => chosen.push(value)}
+        disabled
+      />,
+    );
+    const long = screen.getByRole('radio', { name: 'Long' });
+
+    await userEvent.click(long);
+    // Disabled by its fieldset: its own `disabled` property stays false.
+    expect(long.matches(':disabled')).toBe(true);
+    expect(chosen).toEqual([]);
+  });
 });

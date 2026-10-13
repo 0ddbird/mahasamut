@@ -10,6 +10,8 @@ interface AnswerRowProps<T extends string> {
   /** The option chosen so far, if any. */
   selected?: T;
   onSelect: (value: T) => void;
+  /** Locks the row, once the answers are checked. */
+  disabled?: boolean;
 }
 
 /**
@@ -23,9 +25,11 @@ export function AnswerRow<T extends string>({
   options,
   selected,
   onSelect,
+  disabled = false,
 }: AnswerRowProps<T>) {
+  // A disabled fieldset disables every radio button inside it.
   return (
-    <fieldset className={styles.row}>
+    <fieldset className={styles.row} disabled={disabled}>
       <legend className={styles.title}>{title}</legend>
       <div className={styles.options}>
         {options.map((option) => (
