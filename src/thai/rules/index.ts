@@ -9,6 +9,7 @@
  */
 import type { SyllableParts } from '../render';
 import { finalAllowed } from './final-allowed';
+import { finalFormsOnset } from './final-forms-onset';
 import { invisibleOFinals } from './invisible-o-finals';
 import { midClassOnlyMarks } from './mid-class-only-marks';
 import { onsetEndingInWo } from './onset-ending-in-wo';
@@ -24,6 +25,7 @@ const RULES: readonly Rule[] = [
   semivowelFinals,
   invisibleOFinals,
   onsetEndingInWo,
+  finalFormsOnset,
 ];
 
 /**

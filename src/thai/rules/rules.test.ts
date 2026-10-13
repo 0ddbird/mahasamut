@@ -92,12 +92,13 @@ describe('checkSyllable', () => {
         .map((id): [VowelId, string] => [id, final]),
     );
 
+    // ม forms no onset with ย or ว, so rule 6 stays out of the way (เกว reads กว + เ-).
     it.each(allowed)('accepts %s + final %s', (id, final) => {
-      expect(checkSyllable(parts('ก', id, final))).toBeNull();
+      expect(checkSyllable(parts('ม', id, final))).toBeNull();
     });
 
     it.each(forbidden)('rejects %s + final %s', (id, final) => {
-      expect(checkSyllable(parts('ก', id, final))).toMatch(/cannot follow/);
+      expect(checkSyllable(parts('ม', id, final))).toMatch(/cannot follow/);
     });
   });
 
@@ -159,6 +160,35 @@ describe('checkSyllable', () => {
       ['ห', 'uua', 'น'], // หวน
     ] as Case[])('accepts %s + %s + final %s', (onsetText, id, final) => {
       expect(checkSyllable(parts(onsetText, id, final))).toBeNull();
+    });
+  });
+
+  describe('rule 6: a final right after the onset must not form another onset', () => {
+    type Case = [string, VowelId, string, ToneMark];
+
+    it.each([
+      ['ก', 'ee', 'ร', 'none'], // เกร, read กร + เ-
+      ['ห', 'oo', 'ม', 'none'], // โหม, read หม + โ-
+      ['ห', 'aee', 'น', 'none'], // แหน, read หน + แ-
+      ['ข', 'aee', 'ว', 'none'], // แขว, read ขว + แ-
+      ['อ', 'oo', 'ย', 'none'], // โอย, read อย + โ-
+      ['ห', 'oee', 'ย', 'none'], // เหย, เ-อ is written เ- before ย
+      ['ก', 'o', 'ล', 'none'], // กล, invisible o
+      ['ก', 'e', 'ร', 'eek'], // เก่ร, เ-็ drops ็ under a mark
+    ] as Case[])('rejects %s + %s + final %s, mark %s', (onsetText, id, final, mark) => {
+      expect(checkSyllable(parts(onsetText, id, final, mark))).toMatch(/would read as onset/);
+    });
+
+    it.each([
+      ['ก', 'aa', 'ร', 'none'], // การ, า between onset and final
+      ['ก', 'e', 'ร', 'none'], // เก็ร, ็ between onset and final
+      ['ก', 'oee', 'ร', 'none'], // เกิร, ิ between onset and final
+      ['ห', 'uua', 'น', 'none'], // หวน, ว between onset and final
+      ['ม', 'ee', 'ร', 'none'], // เมร, มร is not an onset
+      ['ช', 'o', 'ล', 'none'], // ชล, ชล is not an onset
+      ['กร', 'ee', 'น', 'none'], // เกรน, already a cluster
+    ] as Case[])('accepts %s + %s + final %s, mark %s', (onsetText, id, final, mark) => {
+      expect(checkSyllable(parts(onsetText, id, final, mark))).toBeNull();
     });
   });
 });
