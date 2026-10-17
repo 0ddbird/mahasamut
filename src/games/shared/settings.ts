@@ -1,0 +1,86 @@
+/**
+ * The settings of a game, chosen before it starts. Three settings combine
+ * freely: the length (endless, or a series of questions), the time (free, or a
+ * time per question) and, in the syllable game, the answer (the full reasoning, or
+ * the tone alone).
+ *
+ * The defaults are the game as it was before settings existed, so a regular
+ * player only has to click Play. A multiplayer room uses the same settings,
+ * with fewer combinations allowed.
+ */
+
+/** The times a question can last, in seconds. */
+export const SECONDS_PER_QUESTION_OPTIONS = [10, 15, 20, 30] as const;
+export type SecondsPerQuestion = (typeof SECONDS_PER_QUESTION_OPTIONS)[number];
+export const DEFAULT_SECONDS_PER_QUESTION: SecondsPerQuestion = 15;
+
+/** How many questions a series can have, and the number first proposed. */
+export const QUESTION_COUNT = { min: 5, max: 30, default: 10 } as const;
+
+/**
+ * What the player answers in the syllable game: every step of the reasoning (class,
+ * mark, vowel length, final, live or dead, tone), or the tone alone.
+ */
+export const ANSWER_MODE = {
+  Detailed: 'detailed',
+  ToneOnly: 'toneOnly',
+} as const;
+export type AnswerMode = (typeof ANSWER_MODE)[keyof typeof ANSWER_MODE];
+export const ANSWER_MODES: readonly AnswerMode[] = Object.values(ANSWER_MODE);
+
+export interface GameSettings {
+  /** The length of a series; null for an endless game. */
+  questionCount: number | null;
+  /** The time given for each question; null for free time. */
+  secondsPerQuestion: SecondsPerQuestion | null;
+  /** Only read by the syllable game. */
+  answerMode: AnswerMode;
+}
+
+/** Endless, free time, full reasoning: the game as it was before settings. */
+export const DEFAULT_SETTINGS: GameSettings = {
+  questionCount: null,
+  secondsPerQuestion: null,
+  answerMode: ANSWER_MODE.Detailed,
+};
+
+/**
+ * Reads settings that may come from anywhere (storage, the URL): each value
+ * the game does not accept is replaced by its default, the others are kept.
+ */
+export function parseGameSettings(raw: unknown): GameSettings {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return DEFAULT_SETTINGS;
+  const { questionCount, secondsPerQuestion, answerMode } = raw as Record<string, unknown>;
+
+  const countInRange =
+    Number.isInteger(questionCount) &&
+    (questionCount as number) >= QUESTION_COUNT.min &&
+    (questionCount as number) <= QUESTION_COUNT.max;
+  const knownTime = SECONDS_PER_QUESTION_OPTIONS.includes(secondsPerQuestion as SecondsPerQuestion);
+  const knownMode = ANSWER_MODES.includes(answerMode as AnswerMode);
+
+  return {
+    questionCount: countInRange ? (questionCount as number) : DEFAULT_SETTINGS.questionCount,
+    secondsPerQuestion: knownTime
+      ? (secondsPerQuestion as SecondsPerQuestion)
+      : DEFAULT_SETTINGS.secondsPerQuestion,
+    answerMode: knownMode ? (answerMode as AnswerMode) : DEFAULT_SETTINGS.answerMode,
+  };
+}
+
+/** Playing alone, or with others in a room. */
+export const PLAY_MODE = {
+  Solo: 'solo',
+  Multi: 'multi',
+} as const;
+export type PlayMode = (typeof PLAY_MODE)[keyof typeof PLAY_MODE];
+
+/**
+ * Whether a game can be played with these settings in `mode`. Every
+ * combination works alone. A room needs an end, for its podium, and a timer,
+ * so that a slow player never holds the others back.
+ */
+export function isAllowed(settings: GameSettings, mode: PlayMode): boolean {
+  if (mode === PLAY_MODE.Solo) return true;
+  return settings.questionCount !== null && settings.secondsPerQuestion !== null;
+}
