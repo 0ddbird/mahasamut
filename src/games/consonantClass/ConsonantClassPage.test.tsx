@@ -4,8 +4,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Consonant } from '../../thai/consonants';
 import { seededRng } from '../../thai/generator/seeded-rng.test-utils';
 import type { ConsonantClass } from '../../thai/types';
+import { GAME, GAME_NAMES } from '../shared/games';
 import { CORRECT_DELAY_MS } from '../shared/useNextWhenCorrect';
-import { ClassesPage } from './ClassesPage';
+import { ConsonantClassPage } from './ConsonantClassPage';
 import { currentCard, newDeck, nextCard } from './deck';
 
 const SEED = 7;
@@ -53,24 +54,26 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('ClassesPage', () => {
-  it('is titled Akson sam mu', () => {
-    render(<ClassesPage rng={seededRng(SEED)} />);
-    expect(screen.getByRole('heading', { level: 1, name: /Akson sam mu/ })).toBeDefined();
+describe('ConsonantClassPage', () => {
+  it('is titled with the name of the game', () => {
+    render(<ConsonantClassPage rng={seededRng(SEED)} />);
+    expect(
+      screen.getByRole('heading', { level: 1, name: new RegExp(GAME_NAMES[GAME.ConsonantClass]) }),
+    ).toBeDefined();
   });
 
   it('shows the first consonant of a shuffled deck', () => {
-    render(<ClassesPage rng={seededRng(SEED)} />);
+    render(<ConsonantClassPage rng={seededRng(SEED)} />);
     expect(screen.getByText(FIRST.char).getAttribute('lang')).toBe('th');
   });
 
   it('offers Validate only, and no Next, before the answer is checked', () => {
-    render(<ClassesPage rng={seededRng(SEED)} />);
+    render(<ConsonantClassPage rng={seededRng(SEED)} />);
     expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['Validate']);
   });
 
   it('can only validate once a class is chosen', async () => {
-    render(<ClassesPage rng={seededRng(SEED)} />);
+    render(<ConsonantClassPage rng={seededRng(SEED)} />);
     expect(validateButton().disabled).toBe(true);
 
     await choose(FIRST.consonantClass);
@@ -78,7 +81,7 @@ describe('ClassesPage', () => {
   });
 
   it('says Correct! for the right class, then locks the answer', async () => {
-    render(<ClassesPage rng={seededRng(SEED)} />);
+    render(<ConsonantClassPage rng={seededRng(SEED)} />);
     await choose(FIRST.consonantClass);
     await userEvent.click(validateButton());
 
@@ -92,7 +95,7 @@ describe('ClassesPage', () => {
   });
 
   it('shows the next consonant by itself, a moment after the right class', async () => {
-    render(<ClassesPage rng={seededRng(SEED)} />);
+    render(<ConsonantClassPage rng={seededRng(SEED)} />);
     await choose(FIRST.consonantClass);
     validateThenStopTime();
 
@@ -107,7 +110,7 @@ describe('ClassesPage', () => {
   });
 
   it('says Not quite for a wrong class, and marks the right one', async () => {
-    render(<ClassesPage rng={seededRng(SEED)} />);
+    render(<ConsonantClassPage rng={seededRng(SEED)} />);
     await choose(WRONG_CLASS);
     await userEvent.click(validateButton());
 
@@ -121,7 +124,7 @@ describe('ClassesPage', () => {
   });
 
   it('turns Validate into Next for a wrong class, keeping the focus on it', async () => {
-    render(<ClassesPage rng={seededRng(SEED)} />);
+    render(<ConsonantClassPage rng={seededRng(SEED)} />);
     await choose(WRONG_CLASS);
     await userEvent.click(validateButton());
 
@@ -130,7 +133,7 @@ describe('ClassesPage', () => {
   });
 
   it('waits for Next after a wrong class, however long the player reads', async () => {
-    render(<ClassesPage rng={seededRng(SEED)} />);
+    render(<ConsonantClassPage rng={seededRng(SEED)} />);
     await choose(WRONG_CLASS);
     validateThenStopTime();
 
@@ -140,7 +143,7 @@ describe('ClassesPage', () => {
   });
 
   it('starts again on Next: next consonant, no verdict, no choice, answer unlocked', async () => {
-    render(<ClassesPage rng={seededRng(SEED)} />);
+    render(<ConsonantClassPage rng={seededRng(SEED)} />);
     await choose(WRONG_CLASS);
     await userEvent.click(validateButton());
     await userEvent.click(nextButton());

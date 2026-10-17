@@ -1,5 +1,5 @@
 /**
- * The feedback of each answer row of the tone game, once the answers are
+ * The feedback of each answer row of the syllable game, once the answers are
  * checked.
  *
  * For a homograph (เกร: ก + เ- + ร, or กร + เ-), both readings are accepted:

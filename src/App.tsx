@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router';
-import { ClassesPage } from './games/classes/ClassesPage';
-import { TonesPage } from './games/tones/TonesPage';
+import { ConsonantClassPage } from './games/consonantClass/ConsonantClassPage';
+import { GAME, GAME_PATHS } from './games/shared/games';
+import { SyllablePage } from './games/syllable/SyllablePage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
@@ -13,8 +14,8 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
-      <Route path="/tones" element={<TonesPage />} />
-      <Route path="/classes" element={<ClassesPage />} />
+      <Route path={GAME_PATHS[GAME.Syllable]} element={<SyllablePage />} />
+      <Route path={GAME_PATHS[GAME.ConsonantClass]} element={<ConsonantClassPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

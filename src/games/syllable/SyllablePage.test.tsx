@@ -6,7 +6,7 @@ import type { Syllable } from '../../thai/generator';
 import { seededRng } from '../../thai/generator/seeded-rng.test-utils';
 import { CORRECT_DELAY_MS } from '../shared/useNextWhenCorrect';
 import type { GameAnswers, Step } from './check';
-import { TonesPage } from './TonesPage';
+import { SyllablePage } from './SyllablePage';
 
 /** The texts of the first `count` syllables drawn with `seed`. */
 const textsDrawn = (seed: number, count: number) => {
@@ -86,21 +86,21 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('TonesPage', () => {
+describe('SyllablePage', () => {
   it('shows a syllable drawn by the generator', () => {
     const [first] = textsDrawn(7, 1);
-    render(<TonesPage rng={seededRng(7)} />);
+    render(<SyllablePage rng={seededRng(7)} />);
     expect(screen.getByText(first ?? '').getAttribute('lang')).toBe('th');
   });
 
   it('starts with no tone mark chosen, and nothing else', () => {
-    render(<TonesPage rng={seededRng(7)} />);
+    render(<SyllablePage rng={seededRng(7)} />);
     const chosen = choices().filter(checked);
     expect(chosen).toEqual([rowOf('toneMark').getByRole('radio', { name: 'None' })]);
   });
 
   it('keeps the answers chosen', async () => {
-    render(<TonesPage rng={seededRng(UNMARKED_SEED)} />);
+    render(<SyllablePage rng={seededRng(UNMARKED_SEED)} />);
     const longChoice = () => rowOf('vowelLength').getByRole('radio', { name: 'Long' });
 
     await userEvent.click(longChoice());
@@ -108,7 +108,7 @@ describe('TonesPage', () => {
   });
 
   it('offers Validate only, and no Next, before the answers are checked', () => {
-    render(<TonesPage rng={seededRng(7)} />);
+    render(<SyllablePage rng={seededRng(7)} />);
     expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['Validate']);
   });
 
@@ -118,7 +118,7 @@ describe('TonesPage', () => {
     const [FIRST_TEXT, SECOND_TEXT] = textsDrawn(UNMARKED_SEED, 2);
 
     it('can only validate once all six rows have an answer', async () => {
-      render(<TonesPage rng={seededRng(UNMARKED_SEED)} />);
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} />);
       expect(validateButton().disabled).toBe(true);
 
       const { tone, ...allButTone } = RIGHT;
@@ -130,7 +130,7 @@ describe('TonesPage', () => {
     });
 
     it('says Correct! for the right answers, then locks them', async () => {
-      render(<TonesPage rng={seededRng(UNMARKED_SEED)} />);
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} />);
       await answerWith(RIGHT);
       await userEvent.click(validateButton());
 
@@ -141,7 +141,7 @@ describe('TonesPage', () => {
     });
 
     it('draws the next syllable by itself, a moment after the right answers', async () => {
-      render(<TonesPage rng={seededRng(UNMARKED_SEED)} />);
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} />);
       await answerWith(RIGHT);
       validateThenStopTime();
 
@@ -159,7 +159,7 @@ describe('TonesPage', () => {
     });
 
     it('says Not quite when a step is wrong, and marks each row', async () => {
-      render(<TonesPage rng={seededRng(UNMARKED_SEED)} />);
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} />);
       await answerWith(WRONG);
       await userEvent.click(validateButton());
 
@@ -181,7 +181,7 @@ describe('TonesPage', () => {
     });
 
     it('turns Validate into Next when a step is wrong, keeping the focus on it', async () => {
-      render(<TonesPage rng={seededRng(UNMARKED_SEED)} />);
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} />);
       await answerWith(WRONG);
       await userEvent.click(validateButton());
 
@@ -190,7 +190,7 @@ describe('TonesPage', () => {
     });
 
     it('waits for Next after a wrong answer, however long the player reads', async () => {
-      render(<TonesPage rng={seededRng(UNMARKED_SEED)} />);
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} />);
       await answerWith(WRONG);
       validateThenStopTime();
 
@@ -200,7 +200,7 @@ describe('TonesPage', () => {
     });
 
     it('starts again on Next: new syllable, no verdict, answers cleared and unlocked', async () => {
-      render(<TonesPage rng={seededRng(UNMARKED_SEED)} />);
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} />);
       await answerWith(WRONG);
       await userEvent.click(validateButton());
       await userEvent.click(nextButton());
@@ -219,7 +219,7 @@ describe('TonesPage', () => {
     const { consonantClass, toneMark, tone, ...middleSteps } = allAnswersOf(MARKED_SEED);
 
     it('locks the three middle rows once a mark is chosen', async () => {
-      render(<TonesPage rng={seededRng(MARKED_SEED)} />);
+      render(<SyllablePage rng={seededRng(MARKED_SEED)} />);
       await answerWith({ toneMark });
 
       for (const step of ['vowelLength', 'finalKind', 'liveness'] as Step[]) {
@@ -228,7 +228,7 @@ describe('TonesPage', () => {
     });
 
     it('can validate with the class, the mark and the tone only, and says Correct!', async () => {
-      render(<TonesPage rng={seededRng(MARKED_SEED)} />);
+      render(<SyllablePage rng={seededRng(MARKED_SEED)} />);
       await answerWith({ consonantClass, toneMark, tone });
       expect(validateButton().disabled).toBe(false);
 
@@ -238,7 +238,7 @@ describe('TonesPage', () => {
 
     it('marks a missed mark as wrong, and does not grade the middle rows', async () => {
       // The player keeps None, so answers all six rows.
-      render(<TonesPage rng={seededRng(MARKED_SEED)} />);
+      render(<SyllablePage rng={seededRng(MARKED_SEED)} />);
       await answerWith({ consonantClass, ...middleSteps, tone });
       await userEvent.click(validateButton());
 

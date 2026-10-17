@@ -6,22 +6,23 @@ import { Verdict } from '../../components/Verdict/Verdict';
 import type { Rng } from '../../thai/generator';
 import type { ConsonantClass } from '../../thai/types';
 import { CONSONANT_CLASS_OPTIONS } from '../shared/options';
+import { GameName } from '../shared/GameName';
+import { GAME } from '../shared/games';
 import { useNextWhenCorrect } from '../shared/useNextWhenCorrect';
 import { currentCard, newDeck, nextCard } from './deck';
-import styles from './ClassesPage.module.scss';
+import styles from './ConsonantClassPage.module.scss';
 
-interface ClassesPageProps {
+interface ConsonantClassPageProps {
   /** Source of random numbers for the shuffles; tests pass a seeded one. */
   rng?: Rng;
 }
 
 /**
- * Akson sam mu (อักษรสามหมู่), the consonant class game: the player reads a
- * consonant and finds its class. Validate checks the answer and locks it. A
- * right class moves on to the next consonant of the deck by itself; after a
- * wrong one, Validate becomes Next.
+ * The consonant class game: the player reads a consonant and finds its class.
+ * Validate checks the answer and locks it. A right class moves on to the next
+ * consonant of the deck by itself; after a wrong one, Validate becomes Next.
  */
-export function ClassesPage({ rng = Math.random }: ClassesPageProps) {
+export function ConsonantClassPage({ rng = Math.random }: ConsonantClassPageProps) {
   const [deck, setDeck] = useState(() => newDeck(rng));
   const [chosen, setChosen] = useState<ConsonantClass | undefined>(undefined);
   const [checked, setChecked] = useState(false);
@@ -42,7 +43,7 @@ export function ClassesPage({ rng = Math.random }: ClassesPageProps) {
   return (
     <main className={styles.page}>
       <h1>
-        Akson sam mu <span lang="th">อักษรสามหมู่</span>
+        <GameName game={GAME.ConsonantClass} />
       </h1>
       <ThaiDisplay text={consonant.char} />
       <div className={styles.answer}>

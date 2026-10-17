@@ -5,13 +5,15 @@ import { Verdict } from '../../components/Verdict/Verdict';
 import { generateSyllable } from '../../thai/generator';
 import type { Rng } from '../../thai/generator';
 import { TONE_MARK } from '../../thai/types';
+import { GameName } from '../shared/GameName';
+import { GAME } from '../shared/games';
 import { useNextWhenCorrect } from '../shared/useNextWhenCorrect';
 import { AnswerSheet } from './AnswerSheet';
 import { checkAnswers, isComplete } from './check';
 import type { CheckResult, PlayerAnswers } from './check';
-import styles from './TonesPage.module.scss';
+import styles from './SyllablePage.module.scss';
 
-interface TonesPageProps {
+interface SyllablePageProps {
   /** Source of random numbers for the draws; tests pass a seeded one. */
   rng?: Rng;
 }
@@ -20,13 +22,13 @@ interface TonesPageProps {
 const NO_ANSWERS: PlayerAnswers = { toneMark: TONE_MARK.None };
 
 /**
- * Wannayuk (วรรณยุกต์), the tone game: the player reads a syllable and finds
- * its tone, step by step. Validate checks the answers once every needed step
- * is given, and locks them. Right answers move on to another syllable by
- * themselves; after a wrong one, Validate becomes Next, so the player reads
- * the correction before moving on.
+ * The syllable game: the player reads a syllable and finds its tone, step by
+ * step. Validate checks the answers once every needed step is given, and locks
+ * them. Right answers move on to another syllable by themselves; after a wrong
+ * one, Validate becomes Next, so the player reads the correction before moving
+ * on.
  */
-export function TonesPage({ rng = Math.random }: TonesPageProps) {
+export function SyllablePage({ rng = Math.random }: SyllablePageProps) {
   const [syllable, setSyllable] = useState(() => generateSyllable(rng));
   const [answers, setAnswers] = useState<PlayerAnswers>(NO_ANSWERS);
   // Null until the answers are checked.
@@ -50,7 +52,7 @@ export function TonesPage({ rng = Math.random }: TonesPageProps) {
   return (
     <main className={styles.page}>
       <h1>
-        Wannayuk <span lang="th">วรรณยุกต์</span>
+        <GameName game={GAME.Syllable} />
       </h1>
       <ThaiDisplay text={syllable.text} />
       <AnswerSheet
