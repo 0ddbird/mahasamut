@@ -1,0 +1,10 @@
+// One line on a wide screen, wrapping on a phone.
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-s) var(--space-m);
+  margin-bottom: var(--space-m);
+  font-variant-numeric: tabular-nums;
+}

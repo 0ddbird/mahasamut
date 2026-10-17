@@ -1,0 +1,24 @@
+.summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-s);
+  text-align: center;
+}
+
+.score {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+// Secondary: what was played, not how it went.
+.settings {
+  margin-bottom: var(--space-m);
+  opacity: 0.75;
+}
+
+.links {
+  display: flex;
+  gap: var(--space-m);
+  margin-top: var(--space-m);
+}
