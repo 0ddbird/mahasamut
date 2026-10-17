@@ -12,4 +12,9 @@ describe('Verdict', () => {
     render(<Verdict correct={false} />);
     expect(screen.getByRole('status').textContent).toBe('Not quite');
   });
+
+  it('says the time is up', () => {
+    render(<Verdict correct={false} timeUp />);
+    expect(screen.getByRole('status').textContent).toBe("Time's up!");
+  });
 });

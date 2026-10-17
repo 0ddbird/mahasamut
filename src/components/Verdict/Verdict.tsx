@@ -1,15 +1,18 @@
 import styles from './Verdict.module.scss';
 
 interface VerdictProps {
-  /** True only if all five steps are right. */
+  /** True only if every graded step is right. */
   correct: boolean;
+  /** The time ran out before the player validated: the answer counts as wrong. */
+  timeUp?: boolean;
 }
 
 /** The overall result of the answers, announced to screen readers when it appears. */
-export function Verdict({ correct }: VerdictProps) {
+export function Verdict({ correct, timeUp = false }: VerdictProps) {
+  const message = timeUp ? "Time's up!" : correct ? 'Correct!' : 'Not quite';
   return (
     <p className={styles.verdict} role="status">
-      {correct ? 'Correct!' : 'Not quite'}
+      {message}
     </p>
   );
 }

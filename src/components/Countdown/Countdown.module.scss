@@ -1,0 +1,5 @@
+// Digits of the same width, so the countdown does not shift as it ticks.
+.countdown {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
