@@ -6,6 +6,7 @@ import { Verdict } from '../../components/Verdict/Verdict';
 import type { Rng } from '../../thai/generator';
 import type { ConsonantClass } from '../../thai/types';
 import { CONSONANT_CLASS_OPTIONS } from '../shared/options';
+import { useNextWhenCorrect } from '../shared/useNextWhenCorrect';
 import { currentCard, newDeck, nextCard } from './deck';
 import styles from './ClassesPage.module.scss';
 
@@ -16,8 +17,9 @@ interface ClassesPageProps {
 
 /**
  * Akson sam mu (อักษรสามหมู่), the consonant class game: the player reads a
- * consonant and finds its class. Validate checks the answer and locks it;
- * Next shows the next consonant of the deck.
+ * consonant and finds its class. Validate checks the answer and locks it. A
+ * right class moves on to the next consonant of the deck by itself; after a
+ * wrong one, Validate becomes Next.
  */
 export function ClassesPage({ rng = Math.random }: ClassesPageProps) {
   const [deck, setDeck] = useState(() => newDeck(rng));
@@ -27,11 +29,15 @@ export function ClassesPage({ rng = Math.random }: ClassesPageProps) {
   const consonant = currentCard(deck);
   const expected = consonant.consonantClass;
 
+  const correct = checked && chosen === expected;
+
   const next = () => {
     setDeck(nextCard(deck, rng));
     setChosen(undefined);
     setChecked(false);
   };
+
+  useNextWhenCorrect(correct, next);
 
   return (
     <main className={styles.page}>
@@ -50,13 +56,15 @@ export function ClassesPage({ rng = Math.random }: ClassesPageProps) {
           feedback={checked ? { chosen, expected, accepted: [expected] } : undefined}
         />
       </div>
-      {checked && <Verdict correct={chosen === expected} />}
-      <div className={styles.actions}>
+      {checked && <Verdict correct={correct} />}
+      {/* One button in both cases: the same element stays, and keeps the focus. */}
+      {checked && !correct ? (
+        <Button onClick={next}>Next</Button>
+      ) : (
         <Button disabled={chosen === undefined || checked} onClick={() => setChecked(true)}>
           Validate
         </Button>
-        <Button onClick={next}>Next</Button>
-      </div>
+      )}
     </main>
   );
 }

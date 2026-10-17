@@ -1,9 +1,10 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Consonant } from '../../thai/consonants';
 import { seededRng } from '../../thai/generator/seeded-rng.test-utils';
 import type { ConsonantClass } from '../../thai/types';
+import { CORRECT_DELAY_MS } from '../shared/useNextWhenCorrect';
 import { ClassesPage } from './ClassesPage';
 import { currentCard, newDeck, nextCard } from './deck';
 
@@ -21,7 +22,7 @@ const cardsShown = (seed: number, count: number): Consonant[] => {
   return shown;
 };
 
-const FIRST = cardsShown(SEED, 1)[0] as Consonant;
+const [FIRST, SECOND] = cardsShown(SEED, 2) as [Consonant, Consonant];
 const WRONG_CLASS: ConsonantClass = FIRST.consonantClass === 'mid' ? 'low' : 'mid';
 
 /** The accessible name of a class choice: 'mid' is 'Mid'. */
@@ -32,10 +33,25 @@ const choose = (value: ConsonantClass) =>
   userEvent.click(row().getByRole('radio', { name: className(value) }));
 const validateButton = () => screen.getByRole('button', { name: 'Validate' }) as HTMLButtonElement;
 const nextButton = () => screen.getByRole('button', { name: 'Next' });
+const shown = (consonant: Consonant) => screen.queryByText(consonant.char) !== null;
 const choices = () => row().getAllByRole('radio');
 // A choice is locked by its row's fieldset: its own `disabled` property stays false.
 const locked = (choice: HTMLElement) => choice.matches(':disabled');
 const checked = (choice: HTMLElement) => (choice as HTMLInputElement).checked;
+
+/**
+ * Clicks Validate, then lets time pass only through `wait`. userEvent hangs
+ * on Vitest's fake timers, so this click goes through fireEvent.
+ */
+const validateThenStopTime = () => {
+  vi.useFakeTimers();
+  fireEvent.click(validateButton());
+};
+const wait = (ms: number) => act(() => vi.advanceTimersByTime(ms));
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe('ClassesPage', () => {
   it('is titled Akson sam mu', () => {
@@ -48,12 +64,9 @@ describe('ClassesPage', () => {
     expect(screen.getByText(FIRST.char).getAttribute('lang')).toBe('th');
   });
 
-  it('shows the next consonant of the deck when Next is clicked', async () => {
-    const [, second] = cardsShown(SEED, 2);
+  it('offers Validate only, and no Next, before the answer is checked', () => {
     render(<ClassesPage rng={seededRng(SEED)} />);
-
-    await userEvent.click(nextButton());
-    expect(screen.getByText(second?.char ?? '').getAttribute('lang')).toBe('th');
+    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['Validate']);
   });
 
   it('can only validate once a class is chosen', async () => {
@@ -75,6 +88,22 @@ describe('ClassesPage', () => {
     ).toBeDefined();
     expect(choices().every(locked)).toBe(true);
     expect(validateButton().disabled).toBe(true);
+    expect(screen.queryByRole('button', { name: 'Next' })).toBeNull();
+  });
+
+  it('shows the next consonant by itself, a moment after the right class', async () => {
+    render(<ClassesPage rng={seededRng(SEED)} />);
+    await choose(FIRST.consonantClass);
+    validateThenStopTime();
+
+    wait(CORRECT_DELAY_MS - 1);
+    expect(shown(FIRST)).toBe(true);
+
+    wait(1);
+    expect(shown(SECOND)).toBe(true);
+    expect(screen.queryByRole('status')).toBeNull();
+    expect(choices().some(checked)).toBe(false);
+    expect(choices().some(locked)).toBe(false);
   });
 
   it('says Not quite for a wrong class, and marks the right one', async () => {
@@ -91,12 +120,32 @@ describe('ClassesPage', () => {
     ).toBeDefined();
   });
 
-  it('starts again on Next: no verdict, no choice, answer unlocked', async () => {
+  it('turns Validate into Next for a wrong class, keeping the focus on it', async () => {
+    render(<ClassesPage rng={seededRng(SEED)} />);
+    await choose(WRONG_CLASS);
+    await userEvent.click(validateButton());
+
+    expect(screen.queryByRole('button', { name: 'Validate' })).toBeNull();
+    expect(document.activeElement).toBe(nextButton());
+  });
+
+  it('waits for Next after a wrong class, however long the player reads', async () => {
+    render(<ClassesPage rng={seededRng(SEED)} />);
+    await choose(WRONG_CLASS);
+    validateThenStopTime();
+
+    wait(60_000);
+    expect(shown(FIRST)).toBe(true);
+    expect(screen.getByRole('status').textContent).toBe('Not quite');
+  });
+
+  it('starts again on Next: next consonant, no verdict, no choice, answer unlocked', async () => {
     render(<ClassesPage rng={seededRng(SEED)} />);
     await choose(WRONG_CLASS);
     await userEvent.click(validateButton());
     await userEvent.click(nextButton());
 
+    expect(shown(SECOND)).toBe(true);
     expect(screen.queryByRole('status')).toBeNull();
     expect(choices().some(checked)).toBe(false);
     expect(choices().some(locked)).toBe(false);
