@@ -1,0 +1,35 @@
+// One column, centred, usable on a phone: like the game pages.
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: var(--space-m);
+}
+
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+  margin-bottom: var(--space-l);
+}
+
+.count {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+
+  input {
+    width: 4rem;
+    padding: var(--space-xs) var(--space-s);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    font: inherit;
+  }
+}
+
+.error {
+  margin: 0;
+  color: var(--color-wrong);
+}
