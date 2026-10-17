@@ -1,9 +1,10 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { generateSyllable } from '../../thai/generator';
 import type { Syllable } from '../../thai/generator';
 import { seededRng } from '../../thai/generator/seeded-rng.test-utils';
+import { CORRECT_DELAY_MS } from '../shared/useNextWhenCorrect';
 import type { GameAnswers, Step } from './check';
 import { TonesPage } from './TonesPage';
 
@@ -57,6 +58,16 @@ const answerWith = async (answers: Partial<GameAnswers>) => {
   }
 };
 
+/**
+ * Clicks Validate, then lets time pass only through `wait`. userEvent hangs
+ * on Vitest's fake timers, so this click goes through fireEvent.
+ */
+const validateThenStopTime = () => {
+  vi.useFakeTimers();
+  fireEvent.click(validateButton());
+};
+const wait = (ms: number) => act(() => vi.advanceTimersByTime(ms));
+
 /** All six answers of the first syllable of `seed`, its tone mark included. */
 const allAnswersOf = (seed: number): GameAnswers => {
   const { answers, parts } = firstSyllable(seed);
@@ -64,10 +75,16 @@ const allAnswersOf = (seed: number): GameAnswers => {
 };
 
 const validateButton = () => screen.getByRole('button', { name: 'Validate' }) as HTMLButtonElement;
+const nextButton = () => screen.getByRole('button', { name: 'Next' });
+const shown = (text: string | undefined) => screen.queryByText(text ?? '') !== null;
 const choices = () => screen.getAllByRole('radio');
 // A choice is locked by its row's fieldset: its own `disabled` property stays false.
 const locked = (choice: HTMLElement) => choice.matches(':disabled');
 const checked = (choice: HTMLElement) => (choice as HTMLInputElement).checked;
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe('TonesPage', () => {
   it('shows a syllable drawn by the generator', () => {
@@ -76,35 +93,29 @@ describe('TonesPage', () => {
     expect(screen.getByText(first ?? '').getAttribute('lang')).toBe('th');
   });
 
-  it('draws the next syllable when Next is clicked', async () => {
-    const [, second] = textsDrawn(7, 2);
-    render(<TonesPage rng={seededRng(7)} />);
-
-    await userEvent.click(screen.getByRole('button', { name: 'Next' }));
-    expect(screen.getByText(second ?? '').getAttribute('lang')).toBe('th');
-  });
-
   it('starts with no tone mark chosen, and nothing else', () => {
     render(<TonesPage rng={seededRng(7)} />);
     const chosen = choices().filter(checked);
     expect(chosen).toEqual([rowOf('toneMark').getByRole('radio', { name: 'None' })]);
   });
 
-  it('keeps the answers chosen, and clears them for the next syllable', async () => {
+  it('keeps the answers chosen', async () => {
     render(<TonesPage rng={seededRng(UNMARKED_SEED)} />);
     const longChoice = () => rowOf('vowelLength').getByRole('radio', { name: 'Long' });
 
     await userEvent.click(longChoice());
     expect(checked(longChoice())).toBe(true);
+  });
 
-    await userEvent.click(screen.getByRole('button', { name: 'Next' }));
-    expect(choices().filter(checked)).toEqual([
-      rowOf('toneMark').getByRole('radio', { name: 'None' }),
-    ]);
+  it('offers Validate only, and no Next, before the answers are checked', () => {
+    render(<TonesPage rng={seededRng(7)} />);
+    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['Validate']);
   });
 
   describe('validating a syllable with no tone mark', () => {
     const RIGHT = allAnswersOf(UNMARKED_SEED);
+    const WRONG: GameAnswers = { ...RIGHT, tone: RIGHT.tone === 'mid' ? 'low' : 'mid' };
+    const [FIRST_TEXT, SECOND_TEXT] = textsDrawn(UNMARKED_SEED, 2);
 
     it('can only validate once all six rows have an answer', async () => {
       render(<TonesPage rng={seededRng(UNMARKED_SEED)} />);
@@ -126,18 +137,36 @@ describe('TonesPage', () => {
       expect(screen.getByRole('status').textContent).toBe('Correct!');
       expect(choices().every(locked)).toBe(true);
       expect(validateButton().disabled).toBe(true);
+      expect(screen.queryByRole('button', { name: 'Next' })).toBeNull();
+    });
+
+    it('draws the next syllable by itself, a moment after the right answers', async () => {
+      render(<TonesPage rng={seededRng(UNMARKED_SEED)} />);
+      await answerWith(RIGHT);
+      validateThenStopTime();
+
+      wait(CORRECT_DELAY_MS - 1);
+      expect(shown(FIRST_TEXT)).toBe(true);
+
+      wait(1);
+      expect(shown(SECOND_TEXT)).toBe(true);
+      expect(screen.queryByRole('status')).toBeNull();
+      expect(choices().filter(checked)).toEqual([
+        rowOf('toneMark').getByRole('radio', { name: 'None' }),
+      ]);
+      expect(choices().some(locked)).toBe(false);
+      expect(validateButton().disabled).toBe(true);
     });
 
     it('says Not quite when a step is wrong, and marks each row', async () => {
       render(<TonesPage rng={seededRng(UNMARKED_SEED)} />);
-      const wrongTone = RIGHT.tone === 'mid' ? 'low' : 'mid';
-      await answerWith({ ...RIGHT, tone: wrongTone });
+      await answerWith(WRONG);
       await userEvent.click(validateButton());
 
       expect(screen.getByRole('status').textContent).toBe('Not quite');
       const toneRow = rowOf('tone');
       expect(
-        toneRow.getByRole('radio', { name: `${choiceName('tone', wrongTone)} (wrong)` }),
+        toneRow.getByRole('radio', { name: `${choiceName('tone', WRONG.tone)} (wrong)` }),
       ).toBeDefined();
       expect(
         toneRow.getByRole('radio', {
@@ -151,14 +180,38 @@ describe('TonesPage', () => {
       ).toBeDefined();
     });
 
-    it('starts again on Next: no verdict, answers unlocked', async () => {
+    it('turns Validate into Next when a step is wrong, keeping the focus on it', async () => {
       render(<TonesPage rng={seededRng(UNMARKED_SEED)} />);
-      await answerWith(RIGHT);
+      await answerWith(WRONG);
       await userEvent.click(validateButton());
-      await userEvent.click(screen.getByRole('button', { name: 'Next' }));
 
+      expect(screen.queryByRole('button', { name: 'Validate' })).toBeNull();
+      expect(document.activeElement).toBe(nextButton());
+    });
+
+    it('waits for Next after a wrong answer, however long the player reads', async () => {
+      render(<TonesPage rng={seededRng(UNMARKED_SEED)} />);
+      await answerWith(WRONG);
+      validateThenStopTime();
+
+      wait(60_000);
+      expect(shown(FIRST_TEXT)).toBe(true);
+      expect(screen.getByRole('status').textContent).toBe('Not quite');
+    });
+
+    it('starts again on Next: new syllable, no verdict, answers cleared and unlocked', async () => {
+      render(<TonesPage rng={seededRng(UNMARKED_SEED)} />);
+      await answerWith(WRONG);
+      await userEvent.click(validateButton());
+      await userEvent.click(nextButton());
+
+      expect(shown(SECOND_TEXT)).toBe(true);
       expect(screen.queryByRole('status')).toBeNull();
+      expect(choices().filter(checked)).toEqual([
+        rowOf('toneMark').getByRole('radio', { name: 'None' }),
+      ]);
       expect(choices().some(locked)).toBe(false);
+      expect(validateButton().disabled).toBe(true);
     });
   });
 

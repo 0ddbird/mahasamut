@@ -5,6 +5,7 @@ import { Verdict } from '../../components/Verdict/Verdict';
 import { generateSyllable } from '../../thai/generator';
 import type { Rng } from '../../thai/generator';
 import { TONE_MARK } from '../../thai/types';
+import { useNextWhenCorrect } from '../shared/useNextWhenCorrect';
 import { AnswerSheet } from './AnswerSheet';
 import { checkAnswers, isComplete } from './check';
 import type { CheckResult, PlayerAnswers } from './check';
@@ -21,7 +22,9 @@ const NO_ANSWERS: PlayerAnswers = { toneMark: TONE_MARK.None };
 /**
  * Wannayuk (วรรณยุกต์), the tone game: the player reads a syllable and finds
  * its tone, step by step. Validate checks the answers once every needed step
- * is given, and locks them; Next draws another syllable and starts again.
+ * is given, and locks them. Right answers move on to another syllable by
+ * themselves; after a wrong one, Validate becomes Next, so the player reads
+ * the correction before moving on.
  */
 export function TonesPage({ rng = Math.random }: TonesPageProps) {
   const [syllable, setSyllable] = useState(() => generateSyllable(rng));
@@ -42,6 +45,8 @@ export function TonesPage({ rng = Math.random }: TonesPageProps) {
     setResult(null);
   };
 
+  useNextWhenCorrect(checked && result.correct, next);
+
   return (
     <main className={styles.page}>
       <h1>
@@ -54,12 +59,14 @@ export function TonesPage({ rng = Math.random }: TonesPageProps) {
         correction={checked ? { result, analyses: syllable.analyses } : undefined}
       />
       {checked && <Verdict correct={result.correct} />}
-      <div className={styles.actions}>
+      {/* One button in both cases: the same element stays, and keeps the focus. */}
+      {checked && !result.correct ? (
+        <Button onClick={next}>Next</Button>
+      ) : (
         <Button disabled={!isComplete(answers) || checked} onClick={validate}>
           Validate
         </Button>
-        <Button onClick={next}>Next</Button>
-      </div>
+      )}
     </main>
   );
 }
