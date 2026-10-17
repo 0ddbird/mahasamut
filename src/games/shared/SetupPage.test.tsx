@@ -86,6 +86,20 @@ describe('SetupPage', () => {
     expect(playButton().disabled).toBe(false);
   });
 
+  it('ties the error to the field, for screen readers', async () => {
+    renderSetup();
+    await userEvent.click(choice('Length', 'Series'));
+    const input = countInput();
+    if (input === null) throw new Error('No number of questions');
+    expect(input.getAttribute('aria-invalid')).toBe('false');
+
+    await userEvent.clear(input);
+    await userEvent.type(input, '4');
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+    const describedBy = input.getAttribute('aria-describedby') ?? '';
+    expect(document.getElementById(describedBy)?.textContent).toBe('Choose 5 to 30 questions.');
+  });
+
   it('plays with the defaults in one click', async () => {
     renderSetup();
     await userEvent.click(playButton());

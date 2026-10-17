@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { AnswerRow } from '../../components/AnswerRow/AnswerRow';
 import { Button } from '../../components/Button/Button';
@@ -43,6 +43,7 @@ export function SetupPage({ game }: { game: GameId }) {
 
   const series = length === 'series';
   const countIsValid = !series || isValidCount(countText);
+  const countErrorId = useId();
 
   const chooseLength = (value: LengthChoice) => {
     // A series always starts from the proposed number, not from one left behind.
@@ -84,11 +85,14 @@ export function SetupPage({ game }: { game: GameId }) {
               max={QUESTION_COUNT.max}
               value={countText}
               onChange={(event) => setCountText(event.target.value)}
+              // Screen readers say why Play is disabled, from the field itself.
+              aria-invalid={!countIsValid}
+              aria-describedby={countIsValid ? undefined : countErrorId}
             />
           </label>
         )}
         {!countIsValid && (
-          <p className={styles.error}>
+          <p className={styles.error} id={countErrorId}>
             Choose {QUESTION_COUNT.min} to {QUESTION_COUNT.max} questions.
           </p>
         )}

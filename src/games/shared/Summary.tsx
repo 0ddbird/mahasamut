@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import { Button } from '../../components/Button/Button';
 import { scorePercent } from './score';
@@ -28,9 +29,18 @@ export function Summary({
   const percent = scorePercent(score);
   const result = `${score.right} / ${score.played} right`;
 
+  // The button that ended the game is gone: the focus goes to the results, so
+  // that keyboard and screen reader users land on them.
+  const heading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    heading.current?.focus();
+  }, []);
+
   return (
     <section className={styles.summary}>
-      <h2>Results</h2>
+      <h2 ref={heading} tabIndex={-1}>
+        Results
+      </h2>
       <p className={styles.score}>{percent === null ? result : `${result} (${percent}%)`}</p>
       <p>{`Best streak: ${score.bestStreak}`}</p>
       <p className={styles.settings}>{describeSettings(settings, withAnswerMode)}</p>

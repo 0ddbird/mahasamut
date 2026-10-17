@@ -28,6 +28,11 @@ describe('Summary', () => {
     expect(screen.getByRole('heading', { name: 'Results' })).toBeDefined();
   });
 
+  it('takes the focus when it shows, so that the player lands on the results', () => {
+    renderSummary();
+    expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'Results' }));
+  });
+
   it('shows the score and its percentage', () => {
     renderSummary();
     expect(screen.getByText('3 / 4 right (75%)')).toBeDefined();
