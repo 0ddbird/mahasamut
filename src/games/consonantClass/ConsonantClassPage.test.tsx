@@ -1,13 +1,20 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render as renderInDom, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { ReactElement } from 'react';
+import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Consonant } from '../../thai/consonants';
 import { seededRng } from '../../thai/generator/seeded-rng.test-utils';
 import type { ConsonantClass } from '../../thai/types';
 import { GAME, GAME_NAMES } from '../shared/games';
+import { DEFAULT_SETTINGS } from '../shared/settings';
+import type { GameSettings } from '../shared/settings';
 import { CORRECT_DELAY_MS } from '../shared/useNextWhenCorrect';
 import { ConsonantClassPage } from './ConsonantClassPage';
 import { currentCard, newDeck, nextCard } from './deck';
+
+/** Renders inside a router: the results link to the settings page and home. */
+const render = (ui: ReactElement) => renderInDom(<MemoryRouter>{ui}</MemoryRouter>);
 
 const SEED = 7;
 
@@ -67,9 +74,12 @@ describe('ConsonantClassPage', () => {
     expect(screen.getByText(FIRST.char).getAttribute('lang')).toBe('th');
   });
 
-  it('offers Validate only, and no Next, before the answer is checked', () => {
+  it('offers Validate, and no Next, before the answer is checked', () => {
     render(<ConsonantClassPage rng={seededRng(SEED)} />);
-    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['Validate']);
+    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual([
+      'End',
+      'Validate',
+    ]);
   });
 
   it('can only validate once a class is chosen', async () => {
@@ -152,5 +162,89 @@ describe('ConsonantClassPage', () => {
     expect(screen.queryByRole('status')).toBeNull();
     expect(choices().some(checked)).toBe(false);
     expect(choices().some(locked)).toBe(false);
+  });
+
+  it('shows the score as the player goes', async () => {
+    render(<ConsonantClassPage rng={seededRng(SEED)} />);
+    expect(screen.getByText('Score 0 / 0')).toBeDefined();
+
+    await choose(WRONG_CLASS);
+    await userEvent.click(validateButton());
+    expect(screen.getByText('Score 0 / 1')).toBeDefined();
+  });
+
+  describe('with settings', () => {
+    const withSettings = (settings: Partial<GameSettings>) => ({
+      ...DEFAULT_SETTINGS,
+      ...settings,
+    });
+    /** Lets the time of the question run out; the timer starts when the page shows. */
+    const letTimeRunOut = () => wait(10_000);
+
+    it('shows the time left, and the correction once time is up', () => {
+      vi.useFakeTimers();
+      render(
+        <ConsonantClassPage
+          rng={seededRng(SEED)}
+          settings={withSettings({ secondsPerQuestion: 10 })}
+        />,
+      );
+      expect(screen.getByRole('timer').textContent).toBe('10 s');
+
+      letTimeRunOut();
+      expect(screen.getByRole('status').textContent).toBe("Time's up!");
+      expect(choices().every(locked)).toBe(true);
+      expect(
+        row().getByRole('radio', {
+          name: `${className(FIRST.consonantClass)} (the right answer)`,
+        }),
+      ).toBeDefined();
+      expect(nextButton()).toBeDefined();
+      expect(screen.getByText('Score 0 / 1')).toBeDefined();
+    });
+
+    it('takes a series from the deck, up to its results', () => {
+      const series = cardsShown(SEED, 5);
+      vi.useFakeTimers();
+      render(
+        <ConsonantClassPage
+          rng={seededRng(SEED)}
+          settings={withSettings({ questionCount: 5, secondsPerQuestion: 10 })}
+        />,
+      );
+      series.forEach((consonant, index) => {
+        expect(screen.getByText(`Question ${index + 1} / 5`)).toBeDefined();
+        expect(shown(consonant)).toBe(true);
+        letTimeRunOut();
+        const isLast = index === series.length - 1;
+        fireEvent.click(screen.getByRole('button', { name: isLast ? 'See results' : 'Next' }));
+      });
+
+      expect(screen.getByRole('heading', { name: 'Results' })).toBeDefined();
+      expect(screen.getByText('0 / 5 right (0%)')).toBeDefined();
+    });
+
+    it('ends the game with End', async () => {
+      render(<ConsonantClassPage rng={seededRng(SEED)} />);
+      await userEvent.click(screen.getByRole('button', { name: 'End' }));
+
+      expect(screen.getByRole('heading', { name: 'Results' })).toBeDefined();
+      expect(screen.getByText('0 / 0 right')).toBeDefined();
+      expect(screen.getByText('Endless · Free time')).toBeDefined();
+    });
+
+    it('plays again with the same settings', async () => {
+      render(
+        <ConsonantClassPage rng={seededRng(SEED)} settings={withSettings({ questionCount: 5 })} />,
+      );
+      await choose(FIRST.consonantClass);
+      await userEvent.click(validateButton());
+      await userEvent.click(screen.getByRole('button', { name: 'End' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Play again' }));
+
+      expect(screen.getByText('Question 1 / 5')).toBeDefined();
+      expect(screen.getByText('Score 0 / 0')).toBeDefined();
+      expect(validateButton().disabled).toBe(true);
+    });
   });
 });

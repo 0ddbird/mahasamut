@@ -5,46 +5,78 @@ import { ThaiDisplay } from '../../components/ThaiDisplay/ThaiDisplay';
 import { Verdict } from '../../components/Verdict/Verdict';
 import type { Rng } from '../../thai/generator';
 import type { ConsonantClass } from '../../thai/types';
-import { CONSONANT_CLASS_OPTIONS } from '../shared/options';
 import { GameName } from '../shared/GameName';
-import { GAME } from '../shared/games';
-import { useNextWhenCorrect } from '../shared/useNextWhenCorrect';
+import { GAME, GAME_PATHS } from '../shared/games';
+import { CONSONANT_CLASS_OPTIONS } from '../shared/options';
+import { ScoreBar } from '../shared/ScoreBar';
+import { DEFAULT_SETTINGS } from '../shared/settings';
+import type { GameSettings } from '../shared/settings';
+import { Summary } from '../shared/Summary';
+import { useSoloGame } from '../shared/useSoloGame';
 import { currentCard, newDeck, nextCard } from './deck';
 import styles from './ConsonantClassPage.module.scss';
 
 interface ConsonantClassPageProps {
   /** Source of random numbers for the shuffles; tests pass a seeded one. */
   rng?: Rng;
+  /** How the game is played: its length and its time. */
+  settings?: GameSettings;
 }
 
 /**
  * The consonant class game: the player reads a consonant and finds its class.
  * Validate checks the answer and locks it. A right class moves on to the next
- * consonant of the deck by itself; after a wrong one, Validate becomes Next.
+ * consonant of the deck by itself; after a wrong one, or once the time is up,
+ * Validate becomes Next. The results show at the end of a series, or when the
+ * player ends the game.
  */
-export function ConsonantClassPage({ rng = Math.random }: ConsonantClassPageProps) {
+export function ConsonantClassPage({
+  rng = Math.random,
+  settings = DEFAULT_SETTINGS,
+}: ConsonantClassPageProps) {
   const [deck, setDeck] = useState(() => newDeck(rng));
   const [chosen, setChosen] = useState<ConsonantClass | undefined>(undefined);
-  const [checked, setChecked] = useState(false);
+
+  const game = useSoloGame(settings, () => {
+    setDeck((current) => nextCard(current, rng));
+    setChosen(undefined);
+  });
 
   const consonant = currentCard(deck);
   const expected = consonant.consonantClass;
+  const checked = game.phase === 'checked';
 
-  const correct = checked && chosen === expected;
+  const title = (
+    <h1>
+      <GameName game={GAME.ConsonantClass} />
+    </h1>
+  );
 
-  const next = () => {
-    setDeck(nextCard(deck, rng));
-    setChosen(undefined);
-    setChecked(false);
-  };
-
-  useNextWhenCorrect(correct, next);
+  if (game.phase === 'finished') {
+    return (
+      <main className={styles.page}>
+        {title}
+        <Summary
+          score={game.score}
+          settings={settings}
+          withAnswerMode={false}
+          settingsPath={GAME_PATHS[GAME.ConsonantClass]}
+          onPlayAgain={game.restart}
+        />
+      </main>
+    );
+  }
 
   return (
     <main className={styles.page}>
-      <h1>
-        <GameName game={GAME.ConsonantClass} />
-      </h1>
+      {title}
+      <ScoreBar
+        questionNumber={game.questionNumber}
+        questionCount={settings.questionCount}
+        score={game.score}
+        remainingMs={game.remainingMs}
+        onEnd={game.end}
+      />
       <ThaiDisplay text={consonant.char} />
       <div className={styles.answer}>
         <AnswerRow
@@ -57,12 +89,15 @@ export function ConsonantClassPage({ rng = Math.random }: ConsonantClassPageProp
           feedback={checked ? { chosen, expected, accepted: [expected] } : undefined}
         />
       </div>
-      {checked && <Verdict correct={correct} />}
+      {checked && <Verdict correct={game.correct} timeUp={game.timedOut} />}
       {/* One button in both cases: the same element stays, and keeps the focus. */}
-      {checked && !correct ? (
-        <Button onClick={next}>Next</Button>
+      {checked && !game.correct ? (
+        <Button onClick={game.next}>{game.isLast ? 'See results' : 'Next'}</Button>
       ) : (
-        <Button disabled={chosen === undefined || checked} onClick={() => setChecked(true)}>
+        <Button
+          disabled={chosen === undefined || checked}
+          onClick={() => game.check(chosen === expected)}
+        >
           Validate
         </Button>
       )}
