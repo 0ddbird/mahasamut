@@ -1,12 +1,19 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render as renderInDom, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { ReactElement } from 'react';
+import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { generateSyllable } from '../../thai/generator';
 import type { Syllable } from '../../thai/generator';
 import { seededRng } from '../../thai/generator/seeded-rng.test-utils';
+import { DEFAULT_SETTINGS } from '../shared/settings';
+import type { GameSettings } from '../shared/settings';
 import { CORRECT_DELAY_MS } from '../shared/useNextWhenCorrect';
 import type { GameAnswers, Step } from './check';
 import { SyllablePage } from './SyllablePage';
+
+/** Renders inside a router: the results link to the settings page and home. */
+const render = (ui: ReactElement) => renderInDom(<MemoryRouter>{ui}</MemoryRouter>);
 
 /** The texts of the first `count` syllables drawn with `seed`. */
 const textsDrawn = (seed: number, count: number) => {
@@ -107,9 +114,12 @@ describe('SyllablePage', () => {
     expect(checked(longChoice())).toBe(true);
   });
 
-  it('offers Validate only, and no Next, before the answers are checked', () => {
+  it('offers Validate, and no Next, before the answers are checked', () => {
     render(<SyllablePage rng={seededRng(7)} />);
-    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['Validate']);
+    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual([
+      'End',
+      'Validate',
+    ]);
   });
 
   describe('validating a syllable with no tone mark', () => {
@@ -211,6 +221,111 @@ describe('SyllablePage', () => {
         rowOf('toneMark').getByRole('radio', { name: 'None' }),
       ]);
       expect(choices().some(locked)).toBe(false);
+      expect(validateButton().disabled).toBe(true);
+    });
+
+    it('shows the score as the player goes', async () => {
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} />);
+      expect(screen.getByText('Score 0 / 0')).toBeDefined();
+
+      await answerWith(WRONG);
+      await userEvent.click(validateButton());
+      expect(screen.getByText('Score 0 / 1')).toBeDefined();
+    });
+  });
+
+  describe('with settings', () => {
+    const RIGHT = allAnswersOf(UNMARKED_SEED);
+    const withSettings = (settings: Partial<GameSettings>) => ({
+      ...DEFAULT_SETTINGS,
+      ...settings,
+    });
+    /** Lets the time of the question run out; the timer starts when the page shows. */
+    const letTimeRunOut = () => wait(10_000);
+
+    it('asks for the tone only in tone-only mode', async () => {
+      render(
+        <SyllablePage
+          rng={seededRng(UNMARKED_SEED)}
+          settings={withSettings({ answerMode: 'toneOnly' })}
+        />,
+      );
+      const titles = screen
+        .getAllByRole('group')
+        .map((row) => row.querySelector('legend')?.textContent);
+      expect(titles).toEqual(['Tone']);
+      expect(validateButton().disabled).toBe(true);
+
+      await answerWith({ tone: RIGHT.tone });
+      await userEvent.click(validateButton());
+      expect(screen.getByRole('status').textContent).toBe('Correct!');
+    });
+
+    it('shows the time left, and the correction once time is up', () => {
+      vi.useFakeTimers();
+      render(
+        <SyllablePage
+          rng={seededRng(UNMARKED_SEED)}
+          settings={withSettings({ secondsPerQuestion: 10 })}
+        />,
+      );
+      expect(screen.getByRole('timer').textContent).toBe('10 s');
+
+      letTimeRunOut();
+      expect(screen.getByRole('status').textContent).toBe("Time's up!");
+      expect(choices().every(locked)).toBe(true);
+      expect(
+        rowOf('tone').getByRole('radio', {
+          name: `${choiceName('tone', RIGHT.tone)} (the right answer)`,
+        }),
+      ).toBeDefined();
+      expect(nextButton()).toBeDefined();
+      expect(screen.getByText('Score 0 / 1')).toBeDefined();
+    });
+
+    it('plays a series to its results', () => {
+      vi.useFakeTimers();
+      render(
+        <SyllablePage
+          rng={seededRng(UNMARKED_SEED)}
+          settings={withSettings({ questionCount: 5, secondsPerQuestion: 10 })}
+        />,
+      );
+      for (let question = 1; question < 5; question++) {
+        expect(screen.getByText(`Question ${question} / 5`)).toBeDefined();
+        letTimeRunOut();
+        fireEvent.click(nextButton());
+      }
+      letTimeRunOut();
+      fireEvent.click(screen.getByRole('button', { name: 'See results' }));
+
+      expect(screen.getByRole('heading', { name: 'Results' })).toBeDefined();
+      expect(screen.getByText('0 / 5 right (0%)')).toBeDefined();
+    });
+
+    it('ends the game with End', async () => {
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} />);
+      await userEvent.click(screen.getByRole('button', { name: 'End' }));
+
+      expect(screen.getByRole('heading', { name: 'Results' })).toBeDefined();
+      expect(screen.getByText('0 / 0 right')).toBeDefined();
+      expect(screen.queryByRole('group')).toBeNull();
+    });
+
+    it('plays again with the same settings', async () => {
+      render(
+        <SyllablePage
+          rng={seededRng(UNMARKED_SEED)}
+          settings={withSettings({ questionCount: 5 })}
+        />,
+      );
+      await answerWith(RIGHT);
+      await userEvent.click(validateButton());
+      await userEvent.click(screen.getByRole('button', { name: 'End' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Play again' }));
+
+      expect(screen.getByText('Question 1 / 5')).toBeDefined();
+      expect(screen.getByText('Score 0 / 0')).toBeDefined();
       expect(validateButton().disabled).toBe(true);
     });
   });
