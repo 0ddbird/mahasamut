@@ -1,7 +1,9 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
+import type { SyllableAnswers } from '../../thai/answers';
 import { AnswerSheet } from './AnswerSheet';
+import { checkAnswers } from './check';
 import type { PlayerAnswers } from './check';
 
 const rowTitled = (title: string) => screen.getByRole('group', { name: title });
@@ -105,6 +107,43 @@ describe('AnswerSheet', () => {
     it('leaves them open with no mark', () => {
       render(<AnswerSheet answers={{ toneMark: 'none' }} onChange={() => {}} />);
       for (const title of SKIPPED) expect(locked(title), title).toBe(false);
+    });
+  });
+
+  describe('in tone-only mode', () => {
+    // ไม่: low class, short vowel, sonorant final, live, ่ gives a falling tone.
+    const MAI: SyllableAnswers = {
+      consonantClass: 'low',
+      vowelLength: 'short',
+      finalKind: 'sonorant',
+      liveness: 'live',
+      tone: 'falling',
+    };
+
+    it('shows the Tone row only', () => {
+      render(<AnswerSheet answers={{}} onChange={() => {}} answerMode="toneOnly" />);
+      const titles = screen
+        .getAllByRole('group')
+        .map((row) => row.querySelector('legend')?.textContent);
+      expect(titles).toEqual(['Tone']);
+    });
+
+    it('shows the tone correction, and no other row', () => {
+      const answers: PlayerAnswers = { tone: 'high' };
+      const result = checkAnswers(answers, [MAI], 'eek', 'toneOnly');
+      render(
+        <AnswerSheet
+          answers={answers}
+          onChange={() => {}}
+          answerMode="toneOnly"
+          correction={{ result, analyses: [MAI] }}
+        />,
+      );
+
+      expect(screen.getAllByRole('group')).toHaveLength(1);
+      const tone = within(rowTitled('Tone'));
+      expect(tone.getByRole('radio', { name: 'High (wrong)' })).toBeDefined();
+      expect(tone.getByRole('radio', { name: 'Falling (the right answer)' })).toBeDefined();
     });
   });
 });

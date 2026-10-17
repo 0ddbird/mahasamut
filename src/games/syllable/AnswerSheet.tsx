@@ -1,6 +1,8 @@
 import { AnswerRow } from '../../components/AnswerRow/AnswerRow';
 import type { SyllableAnswers } from '../../thai/answers';
 import { TONE_MARK } from '../../thai/types';
+import { ANSWER_MODE } from '../shared/settings';
+import type { AnswerMode } from '../shared/settings';
 import styles from './AnswerSheet.module.scss';
 import type { CheckResult, GameAnswers, PlayerAnswers, Step } from './check';
 import { rowFeedback } from './feedback';
@@ -24,6 +26,8 @@ interface AnswerSheetProps {
   onChange: (answers: PlayerAnswers) => void;
   /** Once the answers are checked: the rows are locked and show what was right. */
   correction?: Correction;
+  /** The full reasoning (six rows), or the tone alone (one row). */
+  answerMode?: AnswerMode;
 }
 
 const NOT_NEEDED_WITH_A_MARK = 'Not needed with a tone mark';
@@ -33,9 +37,14 @@ const NOT_NEEDED_WITH_A_MARK = 'Not needed with a tone mark';
  * the onset, then the tone mark. With a mark, the tone follows from the class
  * and the mark alone, so the three middle steps are locked. Without one, the
  * vowel length and the final make the syllable live or dead, which gives the
- * tone.
+ * tone. In tone-only mode, the sheet is the Tone row alone.
  */
-export function AnswerSheet({ answers, onChange, correction }: AnswerSheetProps) {
+export function AnswerSheet({
+  answers,
+  onChange,
+  correction,
+  answerMode = ANSWER_MODE.Detailed,
+}: AnswerSheetProps) {
   // Keeps the type of each answer tied to its step.
   const choose = <K extends Step>(step: K, value: GameAnswers[K]) =>
     onChange({ ...answers, [step]: value });
@@ -49,6 +58,20 @@ export function AnswerSheet({ answers, onChange, correction }: AnswerSheetProps)
     disabled: checked || markChosen,
     note: markChosen ? NOT_NEEDED_WITH_A_MARK : undefined,
   };
+
+  const toneRow = (
+    <AnswerRow
+      title="Tone"
+      name="tone"
+      options={TONE_OPTIONS}
+      selected={answers.tone}
+      onSelect={(value) => choose('tone', value)}
+      disabled={checked}
+      feedback={feedbackOf('tone')}
+    />
+  );
+
+  if (answerMode === ANSWER_MODE.ToneOnly) return <div className={styles.sheet}>{toneRow}</div>;
 
   return (
     <div className={styles.sheet}>
@@ -97,15 +120,7 @@ export function AnswerSheet({ answers, onChange, correction }: AnswerSheetProps)
         feedback={feedbackOf('liveness')}
         {...middleStep}
       />
-      <AnswerRow
-        title="Tone"
-        name="tone"
-        options={TONE_OPTIONS}
-        selected={answers.tone}
-        onSelect={(value) => choose('tone', value)}
-        disabled={checked}
-        feedback={feedbackOf('tone')}
-      />
+      {toneRow}
     </div>
   );
 }

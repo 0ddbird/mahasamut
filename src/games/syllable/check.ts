@@ -10,10 +10,16 @@
  * homograph such as เกร has two (ก + เ- + ร, or the cluster กร + เ-), and the
  * player is right with either. The answers are compared with the analysis they
  * match best, so that the feedback only points at the steps really wrong.
+ *
+ * In tone-only mode, the player gives the tone alone, and only the tone is
+ * graded. Every reading of a homograph has the same tone, so the reading
+ * compared with does not matter then.
  */
 import type { SyllableAnswers } from '../../thai/answers';
 import { TONE_MARK } from '../../thai/types';
 import type { ToneMark } from '../../thai/types';
+import { ANSWER_MODE } from '../shared/settings';
+import type { AnswerMode } from '../shared/settings';
 
 /** What the game asks: the five answers of the syllable, plus its tone mark. */
 export interface GameAnswers extends SyllableAnswers {
@@ -47,14 +53,21 @@ export interface CheckResult {
   correct: boolean;
   /** The analysis the answers were compared with (the closest), with the syllable's mark. */
   expected: GameAnswers;
-  /** The steps graded: three with a tone mark, all six without. */
+  /** The steps graded: three with a tone mark, all six without, the tone alone in tone-only mode. */
   graded: readonly Step[];
   /** Whether each graded step is right; the other steps are left out. */
   steps: Partial<Record<Step, boolean>>;
 }
 
-/** The steps that count for a syllable written with `mark`. */
-export function gradedSteps(mark: ToneMark): readonly Step[] {
+/** The only step graded in tone-only mode. */
+const TONE_ONLY: readonly Step[] = ['tone'];
+
+/** The steps that count for a syllable written with `mark`, when answering in `mode`. */
+export function gradedSteps(
+  mark: ToneMark,
+  mode: AnswerMode = ANSWER_MODE.Detailed,
+): readonly Step[] {
+  if (mode === ANSWER_MODE.ToneOnly) return TONE_ONLY;
   if (mark === TONE_MARK.None) return STEPS;
   return STEPS.filter((step) => !STEPS_SKIPPED_WITH_A_MARK.includes(step));
 }
@@ -62,16 +75,21 @@ export function gradedSteps(mark: ToneMark): readonly Step[] {
 /**
  * Whether the player has answered every step their own choice of mark needs:
  * the class, the mark and the tone once a mark is chosen, all six otherwise.
+ * In tone-only mode, the tone alone is enough.
  */
-export function isComplete(answers: PlayerAnswers): boolean {
+export function isComplete(
+  answers: PlayerAnswers,
+  mode: AnswerMode = ANSWER_MODE.Detailed,
+): boolean {
+  if (mode === ANSWER_MODE.ToneOnly) return answers.tone !== undefined;
   if (answers.toneMark === undefined) return false;
   return gradedSteps(answers.toneMark).every((step) => answers[step] !== undefined);
 }
 
 /**
  * Checks the player's answers against the analyses of a syllable written with
- * `mark`. Only the steps that count for the syllable's real mark are graded; a
- * graded step left unanswered is wrong.
+ * `mark`. Only the steps that count for the syllable's real mark, in `mode`,
+ * are graded; a graded step left unanswered is wrong.
  *
  * @throws if `analyses` is empty: every valid syllable has at least one.
  */
@@ -79,8 +97,9 @@ export function checkAnswers(
   given: PlayerAnswers,
   analyses: readonly SyllableAnswers[],
   mark: ToneMark,
+  mode: AnswerMode = ANSWER_MODE.Detailed,
 ): CheckResult {
-  const graded = gradedSteps(mark);
+  const graded = gradedSteps(mark, mode);
   const results = analyses.map((analysis) =>
     compare(given, { ...analysis, toneMark: mark }, graded),
   );

@@ -161,3 +161,27 @@ describe('isComplete', () => {
     expect(isComplete({ ...KRE_WITH_FINAL, toneMark: 'none' })).toBe(true);
   });
 });
+
+describe('in tone-only mode', () => {
+  it('grades the tone only, with or without a mark', () => {
+    expect(gradedSteps('eek', 'toneOnly')).toEqual(['tone']);
+    expect(gradedSteps('none', 'toneOnly')).toEqual(['tone']);
+  });
+
+  it('is complete once a tone is chosen', () => {
+    expect(isComplete({ tone: 'falling' }, 'toneOnly')).toBe(true);
+    expect(isComplete({}, 'toneOnly')).toBe(false);
+    expect(isComplete({ tone: 'falling' })).toBe(false);
+  });
+
+  it('checks the tone only', () => {
+    const right = checkAnswers({ tone: 'falling' }, [MAI], 'eek', 'toneOnly');
+    expect(right.correct).toBe(true);
+    expect(right.graded).toEqual(['tone']);
+    expect(checkAnswers({ tone: 'high' }, [MAI], 'eek', 'toneOnly').correct).toBe(false);
+  });
+
+  it('accepts the tone of a homograph whatever the reading', () => {
+    expect(checkAnswers({ tone: 'mid' }, KRE, 'none', 'toneOnly').correct).toBe(true);
+  });
+});
