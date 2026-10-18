@@ -3,7 +3,10 @@
  * shared by the games. The labels live here so that a translation can replace
  * them later.
  */
+import { createElement } from 'react';
 import type { Option } from '../../components/AnswerRow/option';
+import type { WrittenToneMark } from '../../components/ToneMarkSign/outlines';
+import { ToneMarkSign } from '../../components/ToneMarkSign/ToneMarkSign';
 import { TONE_MARK_CHAR } from '../../thai/marks';
 import {
   CONSONANT_CLASS,
@@ -23,8 +26,16 @@ import type {
 } from '../../thai/types';
 import { CONSONANT_SLOT } from '../../thai/vowels';
 
-/** A tone mark as it appears in the syllable, on the dotted circle: ◌่. */
-const markSign = (mark: Exclude<ToneMark, 'none'>) => CONSONANT_SLOT + TONE_MARK_CHAR[mark];
+/**
+ * A tone mark as text, on the dotted circle it needs to sit on (◌่), and the
+ * same mark drawn alone, which the buttons show.
+ */
+const markChoice = (mark: WrittenToneMark, spokenLabel: string): Option<ToneMark> => ({
+  value: mark,
+  label: CONSONANT_SLOT + TONE_MARK_CHAR[mark],
+  spokenLabel,
+  icon: ({ className }) => createElement(ToneMarkSign, { mark, className }),
+});
 
 /**
  * The tone marks are shown as their sign, so that the player can compare it
@@ -32,14 +43,10 @@ const markSign = (mark: Exclude<ToneMark, 'none'>) => CONSONANT_SLOT + TONE_MARK
  */
 export const TONE_MARK_OPTIONS: readonly Option<ToneMark>[] = [
   { value: TONE_MARK.None, label: 'None' },
-  { value: TONE_MARK.Eek, label: markSign(TONE_MARK.Eek), spokenLabel: 'Mai eek' },
-  { value: TONE_MARK.Thoo, label: markSign(TONE_MARK.Thoo), spokenLabel: 'Mai tho' },
-  { value: TONE_MARK.Trii, label: markSign(TONE_MARK.Trii), spokenLabel: 'Mai trii' },
-  {
-    value: TONE_MARK.Djattawaa,
-    label: markSign(TONE_MARK.Djattawaa),
-    spokenLabel: 'Mai djattawaa',
-  },
+  markChoice(TONE_MARK.Eek, 'Mai eek'),
+  markChoice(TONE_MARK.Thoo, 'Mai tho'),
+  markChoice(TONE_MARK.Trii, 'Mai trii'),
+  markChoice(TONE_MARK.Djattawaa, 'Mai djattawaa'),
 ];
 
 export const CONSONANT_CLASS_OPTIONS: readonly Option<ConsonantClass>[] = [

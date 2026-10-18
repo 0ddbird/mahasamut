@@ -14,10 +14,6 @@ const choicesOf = (title: string) =>
     .getAllByRole('radio')
     .map((choice) => choice.closest('label')?.textContent);
 
-/** Code points of a string, so tests check exact characters rather than look-alike glyphs. */
-const codePoints = (text: string | null | undefined) =>
-  [...(text ?? '')].map((char) => char.codePointAt(0));
-
 describe('AnswerSheet', () => {
   it('shows the six steps in order', () => {
     render(<AnswerSheet answers={{}} onChange={() => {}} />);
@@ -45,21 +41,15 @@ describe('AnswerSheet', () => {
     expect(choicesOf('Tone')).toEqual(['Mid', 'Low', 'Falling', 'High', 'Rising']);
   });
 
-  it('names the tone marks for screen readers, and shows their sign on a dotted circle', () => {
+  it('names the tone marks for screen readers, and draws their sign without a dotted circle', () => {
     render(<AnswerSheet answers={{}} onChange={() => {}} />);
     const markRow = within(rowTitled('Tone mark'));
 
-    // prettier-ignore
-    const MARKS: [string, number[]][] = [
-      ['Mai eek', [0x25cc, 0x0e48]], // ◌่
-      ['Mai tho', [0x25cc, 0x0e49]], // ◌้
-      ['Mai trii', [0x25cc, 0x0e4a]], // ◌๊
-      ['Mai djattawaa', [0x25cc, 0x0e4b]], // ◌๋
-    ];
     expect(markRow.getByRole('radio', { name: 'None' })).toBeDefined();
-    for (const [name, sign] of MARKS) {
+    for (const name of ['Mai eek', 'Mai tho', 'Mai trii', 'Mai djattawaa']) {
       const label = markRow.getByRole('radio', { name }).closest('label');
-      expect(codePoints(label?.querySelector('[lang="th"]')?.textContent), name).toEqual(sign);
+      expect(label?.querySelector('svg path'), name).not.toBeNull();
+      expect(label?.textContent, name).not.toContain('◌');
     }
   });
 

@@ -1,0 +1,7 @@
+// As tall as a line of text by default; the width follows each mark's outline.
+.sign {
+  width: auto;
+  height: 1em;
+  fill: currentColor;
+  vertical-align: middle;
+}

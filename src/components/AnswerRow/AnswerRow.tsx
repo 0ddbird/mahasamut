@@ -99,9 +99,19 @@ export function AnswerRow<T extends string>({
 
 /**
  * The label of a choice. A Thai sign that cannot be read aloud (◌่) is shown
- * only, and screen readers hear its name instead.
+ * only, as text or drawn by the option's icon, and screen readers hear its
+ * name instead.
  */
 function OptionLabel<T extends string>({ option }: { option: Option<T> }) {
+  const Icon = option.icon;
+  if (Icon !== undefined) {
+    return (
+      <>
+        <Icon className={styles.drawnSign} />
+        <span className={styles.spoken}>{option.spokenLabel ?? option.label}</span>
+      </>
+    );
+  }
   if (option.spokenLabel === undefined) return option.label;
   return (
     <>

@@ -26,6 +26,12 @@
   line-height: 1;
 }
 
+// A sign drawn by the option's icon: the mark alone, as tall as the text and a
+// little more, so that its shape reads at a glance.
+.drawnSign {
+  height: 1.2em;
+}
+
 .options {
   display: flex;
   flex-wrap: wrap;

@@ -17,6 +17,24 @@ describe('AnswerRow', () => {
     expect(within(row).getByRole('radio', { name: 'Long' })).toBeDefined();
   });
 
+  it('shows an icon in place of the label, and gives screen readers its spoken label', () => {
+    const Icon = ({ className }: { className?: string }) => (
+      <svg className={className} data-testid="icon" aria-hidden="true" />
+    );
+    render(
+      <AnswerRow
+        title="Tone mark"
+        name="mark"
+        options={[{ value: 'eek', label: '◌่', spokenLabel: 'Mai eek', icon: Icon }]}
+        onSelect={() => {}}
+      />,
+    );
+    const choice = screen.getByRole('radio', { name: 'Mai eek' });
+    const label = choice.closest('label');
+    expect(label?.querySelector('[data-testid="icon"]')).not.toBeNull();
+    expect(label?.textContent).not.toContain('◌');
+  });
+
   it('reports the option chosen', async () => {
     const chosen: string[] = [];
     render(
