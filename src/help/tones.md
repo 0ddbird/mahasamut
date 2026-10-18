@@ -1,5 +1,3 @@
-# Tones
-
 The tone of a syllable comes from three things: the class of its first
 consonant, whether the syllable is live or dead, and its tone mark.
 
@@ -12,20 +10,20 @@ consonant, ◌่ gives a falling tone and ◌้ a high tone.
 
 ## Mid class
 
-| | Mid → | Low ↘ | Falling ↗↘ | High ↗ | Rising ↘↗ |
-| :-- | :-: | :-: | :-: | :-: | :-: |
-| Live | กา | ก่า | ก้า | ก๊า | ก๋า |
-| Dead | | กะ | ก้ะ | ก๊ะ | |
+|      | Mid → | Low ↘ | Falling ↗↘ | High ↗ | Rising ↘↗ |
+| :--- | :---: | :---: | :--------: | :----: | :-------: |
+| Live |  กา   |  ก่า  |    ก้า     |  ก๊า   |    ก๋า    |
+| Dead |       |  กะ   |    ก้ะ     |  ก๊ะ   |           |
 
 - Every tone has its mark: ◌่ low, ◌้ falling, ◌๊ high, ◌๋ rising.
 - A dead syllable is low without a mark.
 
 ## High class
 
-| | Mid → | Low ↘ | Falling ↗↘ | High ↗ | Rising ↘↗ |
-| :-- | :-: | :-: | :-: | :-: | :-: |
-| Live | | ข่า | ข้า | | ขา |
-| Dead | | ขะ | ข้ะ | | |
+|      | Mid → | Low ↘ | Falling ↗↘ | High ↗ | Rising ↘↗ |
+| :--- | :---: | :---: | :--------: | :----: | :-------: |
+| Live |       |  ข่า  |    ข้า     |        |    ขา     |
+| Dead |       |  ขะ   |    ข้ะ     |        |           |
 
 - A live syllable is rising without a mark.
 - A dead syllable is low without a mark.
@@ -33,10 +31,10 @@ consonant, ◌่ gives a falling tone and ◌้ a high tone.
 
 ## Low class
 
-| | Mid → | Low ↘ | Falling ↗↘ | High ↗ | Rising ↘↗ |
-| :-- | :-: | :-: | :-: | :-: | :-: |
-| Live | คา นา | | ค่า น่า | ค้า น้า | |
-| Dead | | | ค่ะ น่ะ | คะ นะ | |
+|      | Mid → | Low ↘ | Falling ↗↘ | High ↗  | Rising ↘↗ |
+| :--- | :---: | :---: | :--------: | :-----: | :-------: |
+| Live | คา นา |       |  ค่า น่า   | ค้า น้า |           |
+| Dead |       |       |  ค่ะ น่ะ   |  คะ นะ  |           |
 
 - A live syllable is mid without a mark.
 - A dead syllable without a mark depends on its vowel: high with a short vowel
@@ -49,8 +47,8 @@ A low 1 consonant and its high twin sound the same: together, they write the
 five tones.
 
 | Mid → | Low ↘ | Falling ↗↘ | High ↗ | Rising ↘↗ |
-| :-: | :-: | :-: | :-: | :-: |
-| คา | ข่า | ข้า ค่า | ค้า | ขา |
+| :---: | :---: | :--------: | :----: | :-------: |
+|  คา   |  ข่า  |  ข้า ค่า   |  ค้า   |    ขา     |
 
 ## Five tones with a silent ห
 
@@ -58,6 +56,6 @@ A low 2 consonant has no high twin. A silent ห before it makes it follow the
 high class rules, which gives the missing tones.
 
 | Mid → | Low ↘ | Falling ↗↘ | High ↗ | Rising ↘↗ |
-| :-: | :-: | :-: | :-: | :-: |
-| นา | หน่า | หน้า น่า | น้า | หนา |
-| ยา | หย่า | หย้า ย่า | ย้า | หยา |
+| :---: | :---: | :--------: | :----: | :-------: |
+|  นา   | หน่า  |  หน้า น่า  |  น้า   |    หนา    |
+|  ยา   | หย่า  |  หย้า ย่า  |  ย้า   |    หยา    |
