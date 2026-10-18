@@ -1,0 +1,129 @@
+// The width of the panel on a wide screen, and of a handle.
+$panel-width: 26rem;
+$handle-size: 2.75rem;
+// From this width, the page (a 40rem column) and the panel fit side by side.
+$side-by-side: 70rem;
+
+// On a wide screen, the page moves aside to stay visible next to the panel.
+@media (min-width: $side-by-side) {
+  .layout {
+    transition: padding-right 0.2s ease-out;
+  }
+
+  .layout[data-open] {
+    padding-right: $panel-width + $handle-size;
+  }
+}
+
+// Fixed on the right edge; only the handles and the panel catch the clicks,
+// so the page around them can still be played.
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+.handles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-top: 6rem;
+  pointer-events: auto;
+}
+
+// A square with its left corners rounded, stuck to the edge it hangs from.
+.handle {
+  display: grid;
+  place-items: center;
+  width: $handle-size;
+  height: $handle-size;
+  border: none;
+  border-radius: var(--radius) 0 0 var(--radius);
+  color: var(--color-accent-text);
+  background: var(--help-color);
+  cursor: pointer;
+  opacity: 0.85;
+
+  &:hover,
+  &[aria-expanded='true'] {
+    opacity: 1;
+  }
+
+  // The handle of the open panel reaches out a little further.
+  &[aria-expanded='true'] {
+    width: $handle-size + 0.5rem;
+    margin-left: -0.5rem;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-text);
+    outline-offset: 2px;
+  }
+}
+
+.panel {
+  box-sizing: border-box;
+  width: $panel-width;
+  height: 100%;
+  overflow-y: auto;
+  padding: var(--space-m);
+  border-left: 4px solid var(--help-color);
+  background: var(--color-background);
+  box-shadow: -4px 0 16px rgb(0 0 0 / 12%);
+  pointer-events: auto;
+  animation: slide-in 0.2s ease-out;
+}
+
+// Below the side-by-side width, the panel takes the whole width but for the
+// handles: a narrower panel would make its tables too small to read.
+@media (max-width: ($side-by-side - 0.01rem)) {
+  .panel {
+    width: calc(100vw - #{$handle-size});
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layout,
+  .panel {
+    transition: none;
+    animation: none;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-s);
+  margin-bottom: var(--space-m);
+}
+
+.title {
+  margin: 0;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  padding: var(--space-xs);
+  border: none;
+  border-radius: var(--radius);
+  color: inherit;
+  background: none;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--help-color);
+  }
+}
