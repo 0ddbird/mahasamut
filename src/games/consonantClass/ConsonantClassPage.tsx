@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { AnswerRow } from '../../components/AnswerRow/AnswerRow';
 import { Button } from '../../components/Button/Button';
+import { HelpPanels } from '../../components/HelpPanels/HelpPanels';
 import { ThaiDisplay } from '../../components/ThaiDisplay/ThaiDisplay';
+import { CONSONANTS_PANEL } from '../../help/panels';
 import { Verdict } from '../../components/Verdict/Verdict';
 import type { Rng } from '../../thai/generator';
 import type { ConsonantClass } from '../../thai/types';
@@ -15,6 +17,9 @@ import { Summary } from '../shared/Summary';
 import { useSoloGame } from '../shared/useSoloGame';
 import { currentCard, newDeck, nextCard } from './deck';
 import styles from './ConsonantClassPage.module.scss';
+
+/** In learning mode: the consonants by class, the only help this game needs. */
+const HELP_PANELS = [CONSONANTS_PANEL];
 
 interface ConsonantClassPageProps {
   /** Source of random numbers for the shuffles; tests pass a seeded one. */
@@ -67,40 +72,43 @@ export function ConsonantClassPage({
     );
   }
 
+  // A new question closes the help panel: the help stays a choice for each one.
   return (
-    <main className={styles.page}>
-      {title}
-      <ScoreBar
-        questionNumber={game.questionNumber}
-        questionCount={settings.questionCount}
-        score={game.score}
-        remainingMs={game.remainingMs}
-        onEnd={game.end}
-      />
-      <ThaiDisplay text={consonant.char} />
-      <div className={styles.answer}>
-        <AnswerRow
-          title="Consonant class"
-          name="consonantClass"
-          options={CONSONANT_CLASS_OPTIONS}
-          selected={chosen}
-          onSelect={setChosen}
-          disabled={checked}
-          feedback={checked ? { chosen, expected, accepted: [expected] } : undefined}
+    <HelpPanels panels={settings.learningMode ? HELP_PANELS : []} resetKey={game.questionNumber}>
+      <main className={styles.page}>
+        {title}
+        <ScoreBar
+          questionNumber={game.questionNumber}
+          questionCount={settings.questionCount}
+          score={game.score}
+          remainingMs={game.remainingMs}
+          onEnd={game.end}
         />
-      </div>
-      {checked && <Verdict correct={game.correct} timeUp={game.timedOut} />}
-      {/* One button in both cases: the same element stays, and keeps the focus. */}
-      {checked && !game.correct ? (
-        <Button onClick={game.next}>{game.isLast ? 'See results' : 'Next'}</Button>
-      ) : (
-        <Button
-          disabled={chosen === undefined || checked}
-          onClick={() => game.check(chosen === expected)}
-        >
-          Validate
-        </Button>
-      )}
-    </main>
+        <ThaiDisplay text={consonant.char} />
+        <div className={styles.answer}>
+          <AnswerRow
+            title="Consonant class"
+            name="consonantClass"
+            options={CONSONANT_CLASS_OPTIONS}
+            selected={chosen}
+            onSelect={setChosen}
+            disabled={checked}
+            feedback={checked ? { chosen, expected, accepted: [expected] } : undefined}
+          />
+        </div>
+        {checked && <Verdict correct={game.correct} timeUp={game.timedOut} />}
+        {/* One button in both cases: the same element stays, and keeps the focus. */}
+        {checked && !game.correct ? (
+          <Button onClick={game.next}>{game.isLast ? 'See results' : 'Next'}</Button>
+        ) : (
+          <Button
+            disabled={chosen === undefined || checked}
+            onClick={() => game.check(chosen === expected)}
+          >
+            Validate
+          </Button>
+        )}
+      </main>
+    </HelpPanels>
   );
 }

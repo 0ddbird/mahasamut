@@ -247,4 +247,23 @@ describe('ConsonantClassPage', () => {
       expect(validateButton().disabled).toBe(true);
     });
   });
+
+  describe('in learning mode', () => {
+    it('offers the consonant panel only', () => {
+      render(
+        <ConsonantClassPage
+          rng={seededRng(SEED)}
+          settings={{ ...DEFAULT_SETTINGS, learningMode: true }}
+        />,
+      );
+      expect(screen.getByRole('button', { name: 'Consonants' })).toBeDefined();
+      expect(screen.queryByRole('button', { name: 'Vowels' })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Tones' })).toBeNull();
+    });
+
+    it('offers no help panel outside learning mode', () => {
+      render(<ConsonantClassPage rng={seededRng(SEED)} />);
+      expect(screen.queryByRole('button', { name: 'Consonants' })).toBeNull();
+    });
+  });
 });

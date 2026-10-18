@@ -12,6 +12,12 @@
   --color-wrong: #b42318;
   --color-wrong-background: #fde7e5;
 
+  // Help panels, one colour each so that their handles tell apart at a glance;
+  // white text and icons stay readable on all of them.
+  --color-help-blue: #2f5f9e;
+  --color-help-purple: #6b4199;
+  --color-help-orange: #a8521a;
+
   --space-xs: 0.25rem;
   --space-s: 0.5rem;
   --space-m: 1rem;

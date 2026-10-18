@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Button } from '../../components/Button/Button';
+import { HelpPanels } from '../../components/HelpPanels/HelpPanels';
 import { ThaiDisplay } from '../../components/ThaiDisplay/ThaiDisplay';
+import { CONSONANTS_PANEL, TONES_PANEL, VOWELS_PANEL } from '../../help/panels';
 import { Verdict } from '../../components/Verdict/Verdict';
 import { generateSyllable } from '../../thai/generator';
 import type { Rng } from '../../thai/generator';
@@ -23,6 +25,9 @@ interface SyllablePageProps {
   /** How the game is played: its length, its time, and the answer asked. */
   settings?: GameSettings;
 }
+
+/** In learning mode: everything that tells the tone, from the letters to the rules. */
+const HELP_PANELS = [CONSONANTS_PANEL, VOWELS_PANEL, TONES_PANEL];
 
 /** The answers of a new syllable: nothing chosen yet, except "no tone mark". */
 const NO_ANSWERS: PlayerAnswers = { toneMark: TONE_MARK.None };
@@ -80,32 +85,35 @@ export function SyllablePage({
     );
   }
 
+  // A new question closes the help panel: the help stays a choice for each one.
   return (
-    <main className={styles.page}>
-      {title}
-      <ScoreBar
-        questionNumber={game.questionNumber}
-        questionCount={settings.questionCount}
-        score={game.score}
-        remainingMs={game.remainingMs}
-        onEnd={game.end}
-      />
-      <ThaiDisplay text={syllable.text} />
-      <AnswerSheet
-        answers={answers}
-        onChange={setAnswers}
-        answerMode={mode}
-        correction={result === null ? undefined : { result, analyses: syllable.analyses }}
-      />
-      {checked && <Verdict correct={game.correct} timeUp={game.timedOut} />}
-      {/* One button in both cases: the same element stays, and keeps the focus. */}
-      {checked && !game.correct ? (
-        <Button onClick={game.next}>{game.isLast ? 'See results' : 'Next'}</Button>
-      ) : (
-        <Button disabled={!isComplete(answers, mode) || checked} onClick={validate}>
-          Validate
-        </Button>
-      )}
-    </main>
+    <HelpPanels panels={settings.learningMode ? HELP_PANELS : []} resetKey={game.questionNumber}>
+      <main className={styles.page}>
+        {title}
+        <ScoreBar
+          questionNumber={game.questionNumber}
+          questionCount={settings.questionCount}
+          score={game.score}
+          remainingMs={game.remainingMs}
+          onEnd={game.end}
+        />
+        <ThaiDisplay text={syllable.text} />
+        <AnswerSheet
+          answers={answers}
+          onChange={setAnswers}
+          answerMode={mode}
+          correction={result === null ? undefined : { result, analyses: syllable.analyses }}
+        />
+        {checked && <Verdict correct={game.correct} timeUp={game.timedOut} />}
+        {/* One button in both cases: the same element stays, and keeps the focus. */}
+        {checked && !game.correct ? (
+          <Button onClick={game.next}>{game.isLast ? 'See results' : 'Next'}</Button>
+        ) : (
+          <Button disabled={!isComplete(answers, mode) || checked} onClick={validate}>
+            Validate
+          </Button>
+        )}
+      </main>
+    </HelpPanels>
   );
 }

@@ -372,4 +372,55 @@ describe('SyllablePage', () => {
       ).toBeDefined();
     });
   });
+
+  describe('in learning mode', () => {
+    const LEARNING: GameSettings = { ...DEFAULT_SETTINGS, learningMode: true };
+    const WRONG_TONE = allAnswersOf(UNMARKED_SEED).tone === 'mid' ? 'low' : 'mid';
+    const helpHandle = (name: string) => screen.queryByRole('button', { name });
+
+    it('offers no help panel outside learning mode', () => {
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} />);
+      expect(helpHandle('Consonants')).toBeNull();
+    });
+
+    it('offers the consonant, vowel and tone panels', () => {
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} settings={LEARNING} />);
+      for (const name of ['Consonants', 'Vowels', 'Tones']) expect(helpHandle(name)).not.toBeNull();
+    });
+
+    it('shows the consonant table in its panel', async () => {
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} settings={LEARNING} />);
+      await userEvent.click(screen.getByRole('button', { name: 'Consonants' }));
+
+      const panel = within(screen.getByRole('complementary', { name: 'Consonants' }));
+      expect(panel.getAllByRole('columnheader').map((cell) => cell.textContent)).toEqual([
+        'Mid',
+        'High',
+        'Low 1',
+        'Low 2',
+      ]);
+    });
+
+    it('closes the help panel at the next question', async () => {
+      render(
+        <SyllablePage
+          rng={seededRng(UNMARKED_SEED)}
+          settings={{ ...LEARNING, answerMode: 'toneOnly' }}
+        />,
+      );
+      await userEvent.click(screen.getByRole('button', { name: 'Tones' }));
+      await answerWith({ tone: WRONG_TONE });
+      await userEvent.click(validateButton());
+      expect(screen.getByRole('complementary', { name: 'Tones' })).toBeDefined();
+
+      await userEvent.click(nextButton());
+      expect(screen.queryByRole('complementary')).toBeNull();
+    });
+
+    it('offers no help panel on the results', async () => {
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} settings={LEARNING} />);
+      await userEvent.click(screen.getByRole('button', { name: 'End' }));
+      expect(helpHandle('Consonants')).toBeNull();
+    });
+  });
 });
