@@ -36,6 +36,14 @@ export const ANSWER_MODE_OPTIONS: readonly Option<AnswerMode>[] = [
   { value: ANSWER_MODE.ToneOnly, label: ANSWER_MODE_LABELS[ANSWER_MODE.ToneOnly] },
 ];
 
+/** The learning mode, as the settings page asks it: off or on. */
+export type LearningChoice = 'off' | 'on';
+
+export const LEARNING_MODE_OPTIONS: readonly Option<LearningChoice>[] = [
+  { value: 'off', label: 'Off' },
+  { value: 'on', label: 'On' },
+];
+
 /**
  * The settings of a game in one line, e.g. "Series of 10 · 15 s per question ·
  * Tone only".
@@ -50,5 +58,6 @@ export function describeSettings(settings: GameSettings, withAnswerMode: boolean
       : `${settings.secondsPerQuestion} s per question`,
   ];
   if (withAnswerMode) parts.push(ANSWER_MODE_LABELS[settings.answerMode]);
+  if (settings.learningMode) parts.push('Learning mode');
   return parts.join(' · ');
 }

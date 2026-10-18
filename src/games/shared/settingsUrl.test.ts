@@ -7,6 +7,7 @@ const TIMED_SERIES: GameSettings = {
   questionCount: 10,
   secondsPerQuestion: 15,
   answerMode: 'toneOnly',
+  learningMode: false,
 };
 
 describe('settingsToSearch', () => {
@@ -17,6 +18,7 @@ describe('settingsToSearch', () => {
   it('writes the settings that differ from the defaults', () => {
     expect(settingsToSearch(TIMED_SERIES)).toBe('count=10&time=15&answer=toneOnly');
     expect(settingsToSearch({ ...DEFAULT_SETTINGS, secondsPerQuestion: 30 })).toBe('time=30');
+    expect(settingsToSearch({ ...DEFAULT_SETTINGS, learningMode: true })).toBe('learn=1');
   });
 });
 
@@ -26,6 +28,7 @@ describe('settingsFromSearch', () => {
       DEFAULT_SETTINGS,
       TIMED_SERIES,
       { ...DEFAULT_SETTINGS, questionCount: 30 },
+      { ...TIMED_SERIES, learningMode: true },
     ];
     for (const settings of combinations) {
       expect(settingsFromSearch(new URLSearchParams(settingsToSearch(settings)))).toEqual(settings);
@@ -33,8 +36,8 @@ describe('settingsFromSearch', () => {
   });
 
   it('falls back to the defaults on a bad parameter', () => {
-    expect(settingsFromSearch(new URLSearchParams('count=abc&time=12&answer=x'))).toEqual(
-      DEFAULT_SETTINGS,
-    );
+    expect(
+      settingsFromSearch(new URLSearchParams('count=abc&time=12&answer=x&learn=maybe')),
+    ).toEqual(DEFAULT_SETTINGS);
   });
 });

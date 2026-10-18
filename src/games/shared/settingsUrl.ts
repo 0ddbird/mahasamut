@@ -18,6 +18,9 @@ export function settingsToSearch(settings: GameSettings): string {
   if (settings.answerMode !== DEFAULT_SETTINGS.answerMode) {
     params.set('answer', settings.answerMode);
   }
+  if (settings.learningMode !== DEFAULT_SETTINGS.learningMode) {
+    params.set('learn', settings.learningMode ? '1' : '0');
+  }
   return params.toString();
 }
 
@@ -31,5 +34,7 @@ export function settingsFromSearch(params: URLSearchParams): GameSettings {
     questionCount: numberParam('count'),
     secondsPerQuestion: numberParam('time'),
     answerMode: params.get('answer') ?? undefined,
+    // Only `learn=1` turns the help on; anything else leaves the default.
+    learningMode: params.get('learn') === '1' ? true : undefined,
   });
 }

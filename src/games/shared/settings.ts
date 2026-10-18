@@ -35,13 +35,19 @@ export interface GameSettings {
   secondsPerQuestion: SecondsPerQuestion | null;
   /** Only read by the syllable game. */
   answerMode: AnswerMode;
+  /**
+   * Whether the game's help panels can be opened while playing; each game has
+   * its own. They give part of the answer away: for learning, alone only.
+   */
+  learningMode: boolean;
 }
 
-/** Endless, free time, full reasoning: the game as it was before settings. */
+/** Endless, free time, full reasoning, no help: the game as it was before settings. */
 export const DEFAULT_SETTINGS: GameSettings = {
   questionCount: null,
   secondsPerQuestion: null,
   answerMode: ANSWER_MODE.Detailed,
+  learningMode: false,
 };
 
 /**
@@ -50,7 +56,10 @@ export const DEFAULT_SETTINGS: GameSettings = {
  */
 export function parseGameSettings(raw: unknown): GameSettings {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return DEFAULT_SETTINGS;
-  const { questionCount, secondsPerQuestion, answerMode } = raw as Record<string, unknown>;
+  const { questionCount, secondsPerQuestion, answerMode, learningMode } = raw as Record<
+    string,
+    unknown
+  >;
 
   const countInRange =
     Number.isInteger(questionCount) &&
@@ -65,6 +74,7 @@ export function parseGameSettings(raw: unknown): GameSettings {
       ? (secondsPerQuestion as SecondsPerQuestion)
       : DEFAULT_SETTINGS.secondsPerQuestion,
     answerMode: knownMode ? (answerMode as AnswerMode) : DEFAULT_SETTINGS.answerMode,
+    learningMode: typeof learningMode === 'boolean' ? learningMode : DEFAULT_SETTINGS.learningMode,
   };
 }
 
@@ -78,9 +88,14 @@ export type PlayMode = (typeof PLAY_MODE)[keyof typeof PLAY_MODE];
 /**
  * Whether a game can be played with these settings in `mode`. Every
  * combination works alone. A room needs an end, for its podium, and a timer,
- * so that a slow player never holds the others back.
+ * so that a slow player never holds the others back; the help panels would give
+ * answers away in a ranking, so a room has none.
  */
 export function isAllowed(settings: GameSettings, mode: PlayMode): boolean {
   if (mode === PLAY_MODE.Solo) return true;
-  return settings.questionCount !== null && settings.secondsPerQuestion !== null;
+  return (
+    settings.questionCount !== null &&
+    settings.secondsPerQuestion !== null &&
+    !settings.learningMode
+  );
 }

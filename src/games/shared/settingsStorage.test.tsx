@@ -9,6 +9,7 @@ const SERIES_OF_10: GameSettings = {
   questionCount: 10,
   secondsPerQuestion: null,
   answerMode: 'detailed',
+  learningMode: true,
 };
 
 afterEach(() => {
@@ -36,6 +37,7 @@ describe('loadSettings', () => {
       questionCount: 10,
       secondsPerQuestion: null,
       answerMode: 'detailed',
+      learningMode: false,
     });
   });
 

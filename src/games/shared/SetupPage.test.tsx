@@ -41,6 +41,7 @@ describe('SetupPage', () => {
     expect(isChecked('Length', 'Endless')).toBe(true);
     expect(isChecked('Time per question', 'Free')).toBe(true);
     expect(isChecked('Answer', 'Full reasoning')).toBe(true);
+    expect(isChecked('Learning mode', 'Off')).toBe(true);
     expect(countInput()).toBeNull();
   });
 
@@ -49,6 +50,7 @@ describe('SetupPage', () => {
       questionCount: 20,
       secondsPerQuestion: 15,
       answerMode: 'toneOnly',
+      learningMode: true,
     });
     renderSetup();
 
@@ -56,6 +58,12 @@ describe('SetupPage', () => {
     expect(countInput()?.value).toBe('20');
     expect(isChecked('Time per question', '15 s')).toBe(true);
     expect(isChecked('Answer', 'Tone only')).toBe(true);
+    expect(isChecked('Learning mode', 'On')).toBe(true);
+  });
+
+  it('offers the learning mode for both games', () => {
+    renderSetup(GAME.ConsonantClass);
+    expect(screen.getByRole('group', { name: 'Learning mode' })).toBeDefined();
   });
 
   it('offers the answer mode for the syllable game only', () => {
@@ -111,13 +119,17 @@ describe('SetupPage', () => {
     await userEvent.click(choice('Length', 'Series'));
     await userEvent.click(choice('Time per question', '15 s'));
     await userEvent.click(choice('Answer', 'Tone only'));
+    await userEvent.click(choice('Learning mode', 'On'));
     await userEvent.click(playButton());
 
-    expect(screen.getByText('At /syllable/play?count=10&time=15&answer=toneOnly')).toBeDefined();
+    expect(
+      screen.getByText('At /syllable/play?count=10&time=15&answer=toneOnly&learn=1'),
+    ).toBeDefined();
     expect(loadSettings(GAME.Syllable)).toEqual({
       questionCount: 10,
       secondsPerQuestion: 15,
       answerMode: 'toneOnly',
+      learningMode: true,
     });
   });
 

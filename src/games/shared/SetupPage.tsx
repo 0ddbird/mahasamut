@@ -7,8 +7,13 @@ import { GAME, GAME_PATHS } from './games';
 import type { GameId } from './games';
 import { QUESTION_COUNT } from './settings';
 import type { AnswerMode, GameSettings, SecondsPerQuestion } from './settings';
-import { ANSWER_MODE_OPTIONS, LENGTH_OPTIONS, TIME_OPTIONS } from './settingsLabels';
-import type { LengthChoice, TimeChoice } from './settingsLabels';
+import {
+  ANSWER_MODE_OPTIONS,
+  LEARNING_MODE_OPTIONS,
+  LENGTH_OPTIONS,
+  TIME_OPTIONS,
+} from './settingsLabels';
+import type { LearningChoice, LengthChoice, TimeChoice } from './settingsLabels';
 import { loadSettings, saveSettings } from './settingsStorage';
 import { settingsToSearch } from './settingsUrl';
 import styles from './SetupPage.module.scss';
@@ -40,6 +45,7 @@ export function SetupPage({ game }: { game: GameId }) {
     initial.secondsPerQuestion === null ? 'free' : `${initial.secondsPerQuestion}`,
   );
   const [answerMode, setAnswerMode] = useState<AnswerMode>(initial.answerMode);
+  const [learning, setLearning] = useState<LearningChoice>(initial.learningMode ? 'on' : 'off');
 
   const series = length === 'series';
   const countIsValid = !series || isValidCount(countText);
@@ -57,6 +63,7 @@ export function SetupPage({ game }: { game: GameId }) {
       questionCount: series ? Number(countText) : null,
       secondsPerQuestion: time === 'free' ? null : (Number(time) as SecondsPerQuestion),
       answerMode,
+      learningMode: learning === 'on',
     };
     saveSettings(game, settings);
     const search = settingsToSearch(settings);
@@ -112,6 +119,14 @@ export function SetupPage({ game }: { game: GameId }) {
             onSelect={setAnswerMode}
           />
         )}
+        <AnswerRow
+          title="Learning mode"
+          name="learningMode"
+          options={LEARNING_MODE_OPTIONS}
+          selected={learning}
+          onSelect={setLearning}
+          note="Help panels to open during the game"
+        />
       </div>
       <Button disabled={!countIsValid} onClick={play}>
         Play

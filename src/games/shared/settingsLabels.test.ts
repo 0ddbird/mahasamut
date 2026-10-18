@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_SETTINGS } from './settings';
+import type { GameSettings } from './settings';
 import {
   ANSWER_MODE_OPTIONS,
   describeSettings,
+  LEARNING_MODE_OPTIONS,
   LENGTH_OPTIONS,
   TIME_OPTIONS,
 } from './settingsLabels';
@@ -14,8 +16,19 @@ describe('describeSettings', () => {
   });
 
   it('describes a timed series in tone-only mode', () => {
-    const settings = { questionCount: 10, secondsPerQuestion: 15, answerMode: 'toneOnly' } as const;
+    const settings: GameSettings = {
+      questionCount: 10,
+      secondsPerQuestion: 15,
+      answerMode: 'toneOnly',
+      learningMode: false,
+    };
     expect(describeSettings(settings, true)).toBe('Series of 10 · 15 s per question · Tone only');
+  });
+
+  it('says when the game was played in learning mode', () => {
+    expect(describeSettings({ ...DEFAULT_SETTINGS, learningMode: true }, false)).toBe(
+      'Endless · Free time · Learning mode',
+    );
   });
 });
 
@@ -39,5 +52,9 @@ describe('the choices of the settings page', () => {
       'Full reasoning',
       'Tone only',
     ]);
+  });
+
+  it('offers the learning mode off or on', () => {
+    expect(LEARNING_MODE_OPTIONS.map((option) => option.label)).toEqual(['Off', 'On']);
   });
 });
