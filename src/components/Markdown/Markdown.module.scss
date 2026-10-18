@@ -16,7 +16,6 @@
 
   table {
     width: 100%;
-    margin: var(--space-m) 0;
     border-collapse: collapse;
   }
 
@@ -35,5 +34,26 @@
   td {
     font-size: 1.5rem;
     line-height: 1.8;
+  }
+
+  // On a phone, tighter cells: most tables then fit without scrolling.
+  @media (max-width: 30rem) {
+    th,
+    td {
+      padding: var(--space-xs);
+    }
+
+    td {
+      font-size: 1.25rem;
+    }
+  }
+}
+
+.tableBox {
+  margin: var(--space-m) 0;
+  overflow-x: auto;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
   }
 }

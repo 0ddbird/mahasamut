@@ -1,8 +1,8 @@
 // The width of the panel on a wide screen, and of a handle.
-$panel-width: 26rem;
+$panel-width: 30rem;
 $handle-size: 2.75rem;
 // From this width, the page (a 40rem column) and the panel fit side by side.
-$side-by-side: 70rem;
+$side-by-side: 74rem;
 
 // On a wide screen, the page moves aside to stay visible next to the panel.
 @media (min-width: $side-by-side) {
@@ -82,8 +82,30 @@ $side-by-side: 70rem;
 // Below the side-by-side width, the panel takes the whole width but for the
 // handles: a narrower panel would make its tables too small to read.
 @media (max-width: ($side-by-side - 0.01rem)) {
+  // The drawer spans the window from edge to edge, scrollbar left out (which
+  // 100vw would count), and the panel takes what the handles leave.
+  .layout[data-open] .drawer {
+    left: 0;
+  }
+
+  // The column of the handles hides the page behind it, as the panel does.
+  .layout[data-open] .handles {
+    align-self: stretch;
+    margin-top: 0;
+    padding-top: 6rem;
+    background: var(--color-background);
+  }
+
   .panel {
-    width: calc(100vw - #{$handle-size});
+    flex: 1;
+    min-width: 0;
+    width: auto;
+  }
+
+  // No room to reach out further: the handles sit on the very edge.
+  .handle[aria-expanded='true'] {
+    width: $handle-size;
+    margin-left: 0;
   }
 }
 

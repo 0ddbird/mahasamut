@@ -18,6 +18,13 @@ describe('Markdown', () => {
     expect(screen.getAllByRole('cell').map((cell) => cell.textContent)).toEqual(['ก', 'ข']);
   });
 
+  it('puts a table in a box of its own, which keyboard users can scroll when it is too wide', () => {
+    render(<Markdown text={'| Mid | High |\n| :-: | :-: |\n| ก | ข |'} />);
+    const box = screen.getByRole('table').parentElement;
+    expect(box?.tagName).toBe('DIV');
+    expect(box?.getAttribute('tabindex')).toBe('0');
+  });
+
   it('turns its sections into sub-headings of the panel they sit in', () => {
     render(<Markdown text={'## Simple vowels\n\n### Details'} />);
     expect(screen.getByRole('heading', { level: 3, name: 'Simple vowels' })).toBeDefined();
