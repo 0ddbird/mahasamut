@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
-import { GAME_IDS, GAME_NAMES, GAME_PATHS, GAME_SAMPLES } from '../games/shared/games';
+import { GAME, GAME_IDS, GAME_NAMES, GAME_PATHS, GAME_SAMPLES } from '../games/shared/games';
 import { HomePage } from './HomePage';
 
 const renderHome = () =>
@@ -24,6 +24,12 @@ describe('HomePage', () => {
     expect(tile.getAttribute('href')).toBe(GAME_PATHS[game]);
     expect(within(tile).getByText(GAME_SAMPLES[game]).getAttribute('lang')).toBe('th');
     expect(within(tile).getByText(/^Find the .+\.$/)).toBeDefined();
+  });
+
+  it('lists the consonant class game first: the classes come before the tones', () => {
+    renderHome();
+    const [first] = screen.getAllByRole('link');
+    expect(first?.getAttribute('href')).toBe(GAME_PATHS[GAME.ConsonantClass]);
   });
 
   it('has no navigation bar: the logo is the way home', () => {

@@ -2,12 +2,15 @@
  * The games of the site, named in the code by what they are about. Their
  * displayed names live here only: the rest of the code and the tests read them
  * from GAME_NAMES, so that a game can be renamed in one place.
+ *
+ * In the order the site lists them: the classes first, since the tone of a
+ * syllable starts from the class of its consonant.
  */
 export const GAME = {
-  /** Read a syllable and find its tone, step by step. */
-  Syllable: 'syllable',
   /** Read a consonant and find its class. */
   ConsonantClass: 'consonantClass',
+  /** Read a syllable and find its tone, step by step. */
+  Syllable: 'syllable',
 } as const;
 export type GameId = (typeof GAME)[keyof typeof GAME];
 export const GAME_IDS: readonly GameId[] = Object.values(GAME);
