@@ -590,6 +590,7 @@ function onKeyDown(event) {
   const row = rows[current];
   if (!row) return;
 
+  // A held key repeats: moving may repeat, deciding and playing must not.
   const handled = () => event.preventDefault();
   const decided = () => {
     if (advanceBox.checked) setCurrent(current + 1);
@@ -600,6 +601,7 @@ function onKeyDown(event) {
     const take = takesOf(row.text).find(({ n }) => n === Number(digit));
     if (!take) return;
     handled();
+    if (event.repeat) return;
     if (event.shiftKey) togglePlay(row.text, take);
     else {
       chooseTake(row, take.n);
@@ -629,15 +631,18 @@ function onKeyDown(event) {
     case 'p':
     case 'P':
       handled();
+      if (event.repeat) return;
       return togglePlayAll(row);
     case 'n':
     case 'N':
       handled();
+      if (event.repeat) return;
       chooseKind(row, 'none');
       return decided();
     case 'r':
     case 'R':
       handled();
+      if (event.repeat) return;
       chooseKind(row, 'remove');
       return decided();
     case 'e':
