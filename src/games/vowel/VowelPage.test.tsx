@@ -126,6 +126,14 @@ describe('VowelPage', () => {
     expect(play).toHaveBeenLastCalledWith(vowelSoundUrl(FIRST.vowel.id));
   });
 
+  // Listen appearing would push the answers down just as the correction shows.
+  it('keeps the room of Listen before the check, hidden, so the answers do not move', () => {
+    renderPage();
+    expect(screen.queryByRole('button', { name: 'Listen' })).toBeNull();
+    // A hidden element has no accessible name: found by its text instead.
+    expect(screen.getByText('Listen').closest('button')).not.toBeNull();
+  });
+
   it('plays a series to its results', async () => {
     renderPage({ ...DEFAULT_SETTINGS, questionCount: 5 });
     await userEvent.click(screen.getByRole('button', { name: 'End' }));
