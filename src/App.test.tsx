@@ -89,4 +89,18 @@ describe('App', () => {
     await userEvent.click(screen.getByRole('link', { name: 'Back to home' }));
     expect(screen.getByRole('heading', { level: 1, name: 'Scriptomancy Thai' })).toBeDefined();
   });
+
+  it('shows the bar on game pages and the not found page, not on the home page', () => {
+    for (const path of [
+      GAME_PATHS[GAME.Syllable],
+      `${GAME_PATHS[GAME.ConsonantClass]}/play`,
+      '/nowhere',
+    ]) {
+      const { unmount } = renderAt(path);
+      expect(screen.getByRole('navigation', { name: 'Games' })).toBeDefined();
+      unmount();
+    }
+    renderAt('/');
+    expect(screen.queryByRole('navigation')).toBeNull();
+  });
 });

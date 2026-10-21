@@ -1,0 +1,115 @@
+// Below this width, the games fold into a menu.
+$wide: 40rem;
+
+// Scrolls with the page: a phone has little height to spare for the game.
+// Above the help handles (z-index 10) and the shade of the open menu, so the
+// menu and its close button stay clear.
+.bar {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-m);
+  padding: var(--space-s) var(--space-m);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.home {
+  text-decoration: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent-light);
+    outline-offset: 2px;
+  }
+}
+
+.links {
+  display: flex;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  display: block;
+  padding: var(--space-xs) var(--space-s);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  text-decoration: none;
+
+  &:hover {
+    background: var(--color-surface);
+  }
+
+  &[aria-current='page'] {
+    color: var(--color-accent-light);
+    background: color-mix(in srgb, var(--color-accent-light) 14%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent-light);
+  }
+}
+
+.menuButton {
+  display: none;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  background: var(--color-surface);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent-light);
+    outline-offset: 2px;
+  }
+}
+
+.shade {
+  display: none;
+}
+
+@media (max-width: ($wide - 0.01rem)) {
+  .menuButton {
+    display: grid;
+  }
+
+  // The menu drops down under the bar, over the page and the help handles,
+  // away from the right edge they hang from.
+  .links {
+    display: none;
+
+    &[data-open] {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      padding: var(--space-s);
+      border-bottom: 1px solid var(--color-border);
+      background: var(--color-surface-raised);
+    }
+  }
+
+  .link {
+    padding: var(--space-s) var(--space-m);
+  }
+
+  // The page behind the open menu, dimmed: a click on it closes the menu. It
+  // lies inside the bar, so under the menu, and covers the rest of the window.
+  .shade {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    display: block;
+    background: rgb(0 0 0 / 50%);
+  }
+}
