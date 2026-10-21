@@ -9,12 +9,13 @@
  * refuses to overwrite candidates.json without --force. The answers already
  * written in the `exists` column of the CSV survive a new run.
  */
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { validSyllables } from '../../src/thai/generator/syllables';
 import { selectCandidates, toneCaseKey } from './candidates';
 import type { Candidate } from './candidates';
+import { writeFileAtomic } from './files';
 import { readSources } from './sources';
 
 const DEFAULT_OUT_DIR = fileURLToPath(new URL('../../data/words/', import.meta.url));
@@ -57,15 +58,38 @@ function parseCsvLine(line: string): string[] {
   return fields;
 }
 
+/** The lines of a CSV after its header, without blank lines. */
+function bodyLines(csv: string | null): string[] {
+  return (csv ?? '')
+    .split(/\r?\n/)
+    .slice(1)
+    .filter((line) => line !== '');
+}
+
+/**
+ * The rows of the previous CSV that have an answer but whose word is no longer
+ * in level 2, exactly as they were written.
+ */
+export function orphanedAnswerRows(
+  previous: string | null,
+  level2: readonly Candidate[],
+): string[] {
+  const current = new Set(level2.map((candidate) => candidate.text));
+  return bodyLines(previous).filter((line) => {
+    const fields = parseCsvLine(line);
+    return (fields[5] ?? '') !== '' && !current.has(fields[0]!);
+  });
+}
+
 /**
  * The CSV of the level 2 candidates, one row each, with the `exists` answers
  * of the previous CSV (if any) kept next to their words. A new word gets an
- * empty answer.
+ * empty answer. A row with an answer whose word has left level 2 is never
+ * erased: it stays, unchanged, after the current rows.
  */
 export function mergeCorpusCsv(previous: string | null, level2: readonly Candidate[]): string {
   const answers = new Map<string, string>();
-  for (const line of (previous ?? '').split(/\r?\n/).slice(1)) {
-    if (line === '') continue;
+  for (const line of bodyLines(previous)) {
     const fields = parseCsvLine(line);
     answers.set(fields[0]!, fields[5] ?? '');
   }
@@ -82,7 +106,7 @@ export function mergeCorpusCsv(previous: string | null, level2: readonly Candida
       .map(csvField)
       .join(','),
   );
-  return [CSV_HEADER, ...rows].join('\n') + '\n';
+  return [CSV_HEADER, ...rows, ...orphanedAnswerRows(previous, level2)].join('\n') + '\n';
 }
 
 export interface BuildOptions {
@@ -97,7 +121,8 @@ export interface BuildOptions {
 /**
  * Chooses the candidates and writes both files.
  *
- * @returns how many candidates each level has.
+ * @returns how many candidates each level has, and how many answered rows of words
+ *   that left level 2 were kept in the CSV.
  * @throws if candidates.json exists and `force` is false; nothing is written then.
  */
 export function buildCandidates({ outDir, force, sourcesDir = DEFAULT_SOURCES_DIR }: BuildOptions) {
@@ -113,29 +138,40 @@ export function buildCandidates({ outDir, force, sourcesDir = DEFAULT_SOURCES_DI
   const candidates = selectCandidates(readSources(sourcesDir), validSyllables());
   const level2 = candidates.filter((candidate) => candidate.level === 2);
 
+  // The CSV first: candidates.json is what freezes the list, so a run that
+  // stops half way leaves no frozen list behind.
+  const previousCsv = existsSync(csvFile) ? readFileSync(csvFile, 'utf8') : null;
+  writeFileAtomic(csvFile, mergeCorpusCsv(previousCsv, level2));
+
   // One candidate per line: a new list shows in git as the words that changed.
   const lines = candidates.map((candidate) => `    ${JSON.stringify(candidate)}`).join(',\n');
   const generated = new Date().toISOString().slice(0, 10);
-  writeFileSync(
+  writeFileAtomic(
     candidatesFile,
     `{\n  "generated": "${generated}",\n  "candidates": [\n${lines}\n  ]\n}\n`,
   );
 
-  const previousCsv = existsSync(csvFile) ? readFileSync(csvFile, 'utf8') : null;
-  writeFileSync(csvFile, mergeCorpusCsv(previousCsv, level2));
-
-  return { level1: candidates.length - level2.length, level2: level2.length };
+  return {
+    level1: candidates.length - level2.length,
+    level2: level2.length,
+    keptAnswers: orphanedAnswerRows(previousCsv, level2).length,
+  };
 }
 
 // Run as a command, not when a test imports this file.
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
-    const { level1, level2 } = buildCandidates({
+    const { level1, level2, keptAnswers } = buildCandidates({
       outDir: DEFAULT_OUT_DIR,
       force: process.argv.includes('--force'),
     });
     console.log(`Level 1: ${level1} candidates (data/words/candidates.json)`);
     console.log(`Level 2: ${level2} candidates (data/words/corpus-check.csv)`);
+    if (keptAnswers > 0) {
+      console.error(
+        `${keptAnswers} answered row(s) of words that left level 2 were kept at the end of corpus-check.csv`,
+      );
+    }
   } catch (error) {
     console.error(error instanceof Error ? error.message : error);
     process.exitCode = 1;

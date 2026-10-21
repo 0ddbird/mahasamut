@@ -1,8 +1,8 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { buildCandidates, mergeCorpusCsv } from './build-candidates';
+import { buildCandidates, mergeCorpusCsv, orphanedAnswerRows } from './build-candidates';
 import type { Candidate } from './candidates';
 import { wordId } from './ids';
 
@@ -37,10 +37,27 @@ describe('mergeCorpusCsv', () => {
     const merged = mergeCorpusCsv(previous, [level2('อั๊ว', 14), level2('ตั๊ว')]);
 
     const rows = merged.trimEnd().split('\n').slice(1);
-    expect(rows.map((row) => row.split(',')[0])).toEqual(['อั๊ว', 'ตั๊ว']);
+    // ก๊อ left the list with an answer, so its row stays at the end.
+    expect(rows.map((row) => row.split(',')[0])).toEqual(['อั๊ว', 'ตั๊ว', 'ก๊อ']);
     expect(rows[0]!.endsWith(',yes')).toBe(true);
     expect(rows[0]!.split(',')[1]).toBe('14');
     expect(rows[1]!.endsWith(',')).toBe(true);
+  });
+
+  it('keeps, unchanged and after the current rows, the answered rows of words that left the list', () => {
+    const answered = 'ก๊อ,9,mid dead short trii,high,https://en.wiktionary.org/wiki/ก๊อ,no';
+    const previous =
+      `${HEADER}\n` +
+      'อั๊ว,12,mid dead short trii,high,https://en.wiktionary.org/wiki/อั๊ว,\n' +
+      `${answered}\n` +
+      'ปั๊ว,5,mid dead short trii,high,https://en.wiktionary.org/wiki/ปั๊ว,\n';
+    const current = [level2('ตั๊ว')];
+
+    expect(orphanedAnswerRows(previous, current)).toEqual([answered]);
+    // The unanswered rows of words that left are dropped, the answered one stays.
+    expect(mergeCorpusCsv(previous, current)).toBe(
+      `${HEADER}\nตั๊ว,7,mid dead short trii,high,https://en.wiktionary.org/wiki/ตั๊ว,\n${answered}\n`,
+    );
   });
 
   it('quotes a field that holds a comma, and reads it back', () => {
@@ -87,5 +104,29 @@ describe('buildCandidates', () => {
     expect(csv.trimEnd().split('\n')).toHaveLength(counts.level2 + 1);
 
     expect(buildCandidates({ outDir, force: true })).toEqual(counts);
+  });
+
+  it('leaves no temporary file in the folder', () => {
+    const outDir = tempDir();
+    buildCandidates({ outDir, force: false });
+    expect(readdirSync(outDir).sort()).toEqual(['candidates.json', 'corpus-check.csv']);
+  });
+
+  it('keeps the answers of the CSV through --force, those of words that left level 2 too', () => {
+    const outDir = tempDir();
+    const { level2 } = buildCandidates({ outDir, force: false });
+    const csvFile = join(outDir, 'corpus-check.csv');
+
+    // The reviewer answers the first word, and a word the list no longer holds.
+    const rows = readFileSync(csvFile, 'utf8').trimEnd().split('\n');
+    const gone = 'ก๊อกแก๊ก,9,mid dead short trii,high,https://en.wiktionary.org/wiki/ก๊อกแก๊ก,yes';
+    rows[1] += 'no';
+    writeFileSync(csvFile, [...rows, gone].join('\n') + '\n');
+
+    expect(buildCandidates({ outDir, force: true })).toMatchObject({ level2, keptAnswers: 1 });
+    const after = readFileSync(csvFile, 'utf8').trimEnd().split('\n');
+    expect(after).toHaveLength(level2 + 2);
+    expect(after[1]!.endsWith(',no')).toBe(true);
+    expect(after.at(-1)).toBe(gone);
   });
 });
