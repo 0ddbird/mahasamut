@@ -5,6 +5,16 @@ import { defineConfig } from 'vite';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      // Two pages from one build: the Thai site, and Scriptomancy's home page
+      // (dist/home/), which Caddy serves on the root domain.
+      input: {
+        main: 'index.html',
+        home: 'home/index.html',
+      },
+    },
+  },
   test: {
     // Two kinds of tests, told apart by their file extension:
     // - logic (*.test.ts) runs in Node, with no DOM and no React;
