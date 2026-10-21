@@ -1,4 +1,10 @@
+// Read by screen readers only: on screen, the colours and marks of the
+// correction already tell the result.
 .verdict {
-  margin: 0 0 var(--space-m);
-  font-weight: 700;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
