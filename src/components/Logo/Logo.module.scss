@@ -1,0 +1,25 @@
+.logo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--color-text);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.large {
+  // Small enough on a phone for the name to fit on one line.
+  font-size: clamp(1.5rem, 7.5vw, 3rem);
+}
+
+.small {
+  font-size: 1rem;
+}
+
+// The language of the site, smaller and in green after its name.
+.language {
+  margin-left: 0.15em;
+  font-size: 0.55em;
+  font-weight: 500;
+  color: var(--color-accent-light);
+}

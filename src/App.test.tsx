@@ -24,7 +24,7 @@ afterEach(() => {
 describe('App', () => {
   it('shows the site home page at /', () => {
     renderAt('/');
-    expect(screen.getByRole('heading', { level: 1, name: 'Scriptomancy - Thai' })).toBeDefined();
+    expect(screen.getByRole('heading', { level: 1, name: 'Scriptomancy Thai' })).toBeDefined();
   });
 
   it('names the games in English only', () => {
@@ -87,6 +87,6 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Page not found' })).toBeDefined();
 
     await userEvent.click(screen.getByRole('link', { name: 'Back to home' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Scriptomancy - Thai' })).toBeDefined();
+    expect(screen.getByRole('heading', { level: 1, name: 'Scriptomancy Thai' })).toBeDefined();
   });
 });

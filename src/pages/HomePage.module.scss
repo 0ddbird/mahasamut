@@ -1,0 +1,98 @@
+// From this width, the tiles stand side by side.
+$two-columns: 40rem;
+
+.page {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: var(--space-l) var(--space-m);
+  text-align: center;
+}
+
+.title {
+  margin: var(--space-m) 0 var(--space-xs);
+}
+
+.tagline {
+  margin: 0 0 var(--space-l);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.tiles {
+  display: grid;
+  gap: var(--space-m);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @media (min-width: $two-columns) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+// A see-through card on the dark page, the whole of it a link.
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  height: 100%;
+  padding: var(--space-l) var(--space-m);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) * 1.5);
+  color: var(--color-text);
+  background: var(--color-surface);
+  text-decoration: none;
+  transition: border-color 0.15s ease-out;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--color-accent-light);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent-light);
+    outline-offset: 2px;
+  }
+}
+
+.sample {
+  font-size: 4rem;
+  // Room for the tone mark above the consonant.
+  line-height: 1.5;
+  color: var(--color-accent-light);
+}
+
+.name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-accent-light);
+  text-transform: uppercase;
+}
+
+.goal {
+  margin-bottom: var(--space-m);
+  color: var(--color-text-muted);
+}
+
+// Looks like the app's Button; pushed to the bottom so both tiles line up.
+.play {
+  margin-top: auto;
+  padding: var(--space-s) var(--space-l);
+  border-radius: var(--radius);
+  color: var(--color-accent-text);
+  background: var(--color-accent);
+  box-shadow: 0 3px 0 var(--color-glow);
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile {
+    transition: none;
+  }
+}

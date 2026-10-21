@@ -18,6 +18,12 @@ export const GAME_NAMES: Record<GameId, string> = {
   [GAME.ConsonantClass]: 'Consonant classes',
 };
 
+/** A sample of the Thai text each game shows, for its tile on the home page. */
+export const GAME_SAMPLES: Record<GameId, string> = {
+  [GAME.Syllable]: 'ก่า',
+  [GAME.ConsonantClass]: 'ข',
+};
+
 /** Where each game is served. */
 export const GAME_PATHS: Record<GameId, string> = {
   [GAME.Syllable]: '/syllable',
