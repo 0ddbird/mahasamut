@@ -8,6 +8,7 @@ import styles from './HomePage.module.scss';
 const GAME_GOALS: Record<GameId, string> = {
   syllable: 'Find the tone of a syllable.',
   consonantClass: 'Find the class of a consonant.',
+  vowel: 'Find how a vowel sounds.',
 };
 
 /**

@@ -23,7 +23,7 @@ describe('HomePage', () => {
     const tile = screen.getByRole('link', { name: new RegExp(GAME_NAMES[game]) });
     expect(tile.getAttribute('href')).toBe(GAME_PATHS[game]);
     expect(within(tile).getByText(GAME_SAMPLES[game]).getAttribute('lang')).toBe('th');
-    expect(within(tile).getByText(/^Find the .+\.$/)).toBeDefined();
+    expect(within(tile).getByText(/^Find .+\.$/)).toBeDefined();
   });
 
   it('lists the consonant class game first: the classes come before the tones', () => {

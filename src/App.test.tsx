@@ -31,13 +31,15 @@ describe('App', () => {
     expect(GAME_NAMES).toEqual({
       [GAME.Syllable]: 'Find the tone',
       [GAME.ConsonantClass]: 'Consonant classes',
+      [GAME.Vowel]: 'Vowel sounds',
     });
   });
 
-  it('serves the games at /syllable and /consonant-class', () => {
+  it('serves the games at /syllable, /consonant-class and /vowel', () => {
     expect(GAME_PATHS).toEqual({
       [GAME.Syllable]: '/syllable',
       [GAME.ConsonantClass]: '/consonant-class',
+      [GAME.Vowel]: '/vowel',
     });
   });
 
@@ -45,6 +47,7 @@ describe('App', () => {
     renderAt('/');
     expect(linkTo(GAME.Syllable).getAttribute('href')).toBe('/syllable');
     expect(linkTo(GAME.ConsonantClass).getAttribute('href')).toBe('/consonant-class');
+    expect(linkTo(GAME.Vowel).getAttribute('href')).toBe('/vowel');
     expect(screen.queryByText(/coming soon/i)).toBeNull();
   });
 
