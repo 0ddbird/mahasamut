@@ -14,7 +14,8 @@ import { DEFAULT_SETTINGS } from '../shared/settings';
 import type { GameSettings } from '../shared/settings';
 import { Summary } from '../shared/Summary';
 import { useSoloGame } from '../shared/useSoloGame';
-import { currentCard, newDeck, nextCard } from './deck';
+import { CONSONANTS } from '../../thai/consonants';
+import { currentCard, newDeck, nextCard } from '../shared/deck';
 import styles from './ConsonantClassPage.module.scss';
 
 /** In learning mode: the consonants by class, the only help this game needs. */
@@ -38,7 +39,9 @@ export function ConsonantClassPage({
   rng = Math.random,
   settings = DEFAULT_SETTINGS,
 }: ConsonantClassPageProps) {
-  const [deck, setDeck] = useState(() => newDeck(rng));
+  // Each consonant comes up as often as the others, so the low class (23 of
+  // the 42) is the answer a bit more than half the time.
+  const [deck, setDeck] = useState(() => newDeck(CONSONANTS, rng));
   const [chosen, setChosen] = useState<ConsonantClass | undefined>(undefined);
 
   const game = useSoloGame(settings, () => {

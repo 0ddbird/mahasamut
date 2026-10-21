@@ -11,7 +11,8 @@ import { DEFAULT_SETTINGS } from '../shared/settings';
 import type { GameSettings } from '../shared/settings';
 import { CORRECT_DELAY_MS } from '../shared/useNextWhenCorrect';
 import { ConsonantClassPage } from './ConsonantClassPage';
-import { currentCard, newDeck, nextCard } from './deck';
+import { CONSONANTS } from '../../thai/consonants';
+import { currentCard, newDeck, nextCard } from '../shared/deck';
 
 /** Renders inside a router: the results link to the settings page and home. */
 const render = (ui: ReactElement) => renderInDom(<MemoryRouter>{ui}</MemoryRouter>);
@@ -21,7 +22,7 @@ const SEED = 7;
 /** The first `count` consonants the page shows with `seed`. */
 const cardsShown = (seed: number, count: number): Consonant[] => {
   const rng = seededRng(seed);
-  let deck = newDeck(rng);
+  let deck = newDeck(CONSONANTS, rng);
   const shown = [currentCard(deck)];
   while (shown.length < count) {
     deck = nextCard(deck, rng);

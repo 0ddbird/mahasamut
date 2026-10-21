@@ -11,7 +11,7 @@ const chars = (cards: readonly Consonant[]) => cards.map((c) => c.char);
 const sorted = (cards: readonly Consonant[]) => chars(cards).sort();
 
 /** The deck after `count` calls to `nextCard`. */
-const drawn = (deck: Deck, count: number, rng: () => number) => {
+const drawn = (deck: Deck<Consonant>, count: number, rng: () => number) => {
   for (let i = 0; i < count; i++) deck = nextCard(deck, rng);
   return deck;
 };
@@ -46,8 +46,14 @@ describe('shuffle', () => {
 });
 
 describe('newDeck', () => {
+  it('deals any list of items', () => {
+    const deck = newDeck([1, 2, 3], seededRng(1));
+    expect([...deck.cards].sort()).toEqual([1, 2, 3]);
+    expect(deck.cards).toContain(currentCard(deck));
+  });
+
   it('holds the 42 consonants once each, and starts at the first card', () => {
-    const deck = newDeck(seededRng(1));
+    const deck = newDeck(CONSONANTS, seededRng(1));
     expect(deck.cards).toHaveLength(42);
     expect(sorted(deck.cards)).toEqual(sorted(CONSONANTS));
     expect(currentCard(deck)).toBe(deck.cards[0]);
@@ -56,8 +62,8 @@ describe('newDeck', () => {
   it('never starts with the card to avoid, even when the shuffle put it first', () => {
     for (const seed of SEEDS) {
       // With the same seed, the shuffle puts this card first again.
-      const avoided = currentCard(newDeck(seededRng(seed)));
-      const deck = newDeck(seededRng(seed), avoided);
+      const avoided = currentCard(newDeck(CONSONANTS, seededRng(seed)));
+      const deck = newDeck(CONSONANTS, seededRng(seed), avoided);
 
       expect(currentCard(deck)).not.toBe(avoided);
       expect(sorted(deck.cards)).toEqual(sorted(CONSONANTS));
@@ -67,7 +73,7 @@ describe('newDeck', () => {
 
 describe('nextCard', () => {
   it('moves to the next card of the same deck', () => {
-    const deck = newDeck(seededRng(1));
+    const deck = newDeck(CONSONANTS, seededRng(1));
     const next = nextCard(deck, seededRng(2));
     expect(next.cards).toBe(deck.cards);
     expect(currentCard(next)).toBe(deck.cards[1]);
@@ -75,7 +81,7 @@ describe('nextCard', () => {
 
   it('shows every consonant once before showing one again', () => {
     const rng = seededRng(4);
-    let deck = newDeck(rng);
+    let deck = newDeck(CONSONANTS, rng);
     const shown: Consonant[] = [];
     for (let i = 0; i < 42 * 3; i++) {
       shown.push(currentCard(deck));
@@ -89,7 +95,7 @@ describe('nextCard', () => {
   it('shuffles a new deck after the last card, never starting with that card', () => {
     for (const seed of SEEDS) {
       const rng = seededRng(seed);
-      const last = drawn(newDeck(rng), 41, rng);
+      const last = drawn(newDeck(CONSONANTS, rng), 41, rng);
       const next = nextCard(last, rng);
 
       expect(next.cards).not.toBe(last.cards);
