@@ -7,7 +7,7 @@ import { Verdict } from '../../components/Verdict/Verdict';
 import { generateSyllable } from '../../thai/generator';
 import type { Rng } from '../../thai/generator';
 import { TONE_MARK } from '../../thai/types';
-import { GAME, GAME_NAMES, GAME_PATHS } from '../shared/games';
+import { GAME, GAME_NAMES } from '../shared/games';
 import { ScoreBar } from '../shared/ScoreBar';
 import { DEFAULT_SETTINGS } from '../shared/settings';
 import type { GameSettings } from '../shared/settings';
@@ -69,13 +69,7 @@ export function SyllablePage({
     return (
       <main className={styles.page}>
         {title}
-        <Summary
-          score={game.score}
-          settings={settings}
-          withAnswerMode
-          settingsPath={GAME_PATHS[GAME.Syllable]}
-          onPlayAgain={game.restart}
-        />
+        <Summary score={game.score} settings={settings} withAnswerMode onPlayAgain={game.restart} />
       </main>
     );
   }

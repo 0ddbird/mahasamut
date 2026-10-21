@@ -1,6 +1,5 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 import { EMPTY_SCORE } from './score';
 import type { Score } from './score';
@@ -11,42 +10,32 @@ const SCORE: Score = { right: 3, played: 4, streak: 0, bestStreak: 2 };
 
 const renderSummary = (score: Score = SCORE, onPlayAgain = () => {}) =>
   render(
-    <MemoryRouter>
-      <Summary
-        score={score}
-        settings={DEFAULT_SETTINGS}
-        withAnswerMode
-        settingsPath="/syllable"
-        onPlayAgain={onPlayAgain}
-      />
-    </MemoryRouter>,
+    <Summary score={score} settings={DEFAULT_SETTINGS} withAnswerMode onPlayAgain={onPlayAgain} />,
   );
 
 describe('Summary', () => {
-  it('is titled Results', () => {
+  it('is titled by how the game went', () => {
     renderSummary();
-    expect(screen.getByRole('heading', { name: 'Results' })).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Well done!' })).toBeDefined();
   });
 
   it('takes the focus when it shows, so that the player lands on the results', () => {
     renderSummary();
-    expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'Results' }));
+    expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'Well done!' }));
   });
 
-  it('shows the score and its percentage', () => {
+  it('gives the score in a sentence, then the best streak and the settings played', () => {
     renderSummary();
-    expect(screen.getByText('3 / 4 right (75%)')).toBeDefined();
-  });
-
-  it('shows no percentage before any question', () => {
-    renderSummary(EMPTY_SCORE);
-    expect(screen.getByText('0 / 0 right')).toBeDefined();
-  });
-
-  it('shows the best streak and the settings played', () => {
-    renderSummary();
-    expect(screen.getByText('Best streak: 2')).toBeDefined();
+    expect(screen.getByText('You got 3 out of 4 right (75%).')).toBeDefined();
+    expect(screen.getByText('Best streak: 2 in a row.')).toBeDefined();
     expect(screen.getByText('Endless · Free time · Full reasoning')).toBeDefined();
+  });
+
+  it('says only that there were no answers before any question', () => {
+    renderSummary(EMPTY_SCORE);
+    expect(screen.getByRole('heading', { name: 'No answers this time.' })).toBeDefined();
+    expect(screen.queryByText(/You got/)).toBeNull();
+    expect(screen.queryByText(/Best streak/)).toBeNull();
   });
 
   it('plays again', async () => {
@@ -56,11 +45,9 @@ describe('Summary', () => {
     expect(onPlayAgain).toHaveBeenCalledOnce();
   });
 
-  it('links back to the settings and home', () => {
+  // The bar above the page already leads home and to each game's settings.
+  it('has no links of its own', () => {
     renderSummary();
-    expect(screen.getByRole('link', { name: 'Change settings' }).getAttribute('href')).toBe(
-      '/syllable',
-    );
-    expect(screen.getByRole('link', { name: 'Home' }).getAttribute('href')).toBe('/');
+    expect(screen.queryByRole('link')).toBeNull();
   });
 });

@@ -220,16 +220,15 @@ describe('ConsonantClassPage', () => {
         fireEvent.click(screen.getByRole('button', { name: isLast ? 'See results' : 'Next' }));
       });
 
-      expect(screen.getByRole('heading', { name: 'Results' })).toBeDefined();
-      expect(screen.getByText('0 / 5 right (0%)')).toBeDefined();
+      expect(screen.getByRole('heading', { name: 'Keep practising!' })).toBeDefined();
+      expect(screen.getByText('You got 0 out of 5 right (0%).')).toBeDefined();
     });
 
     it('ends the game with End', async () => {
       render(<ConsonantClassPage rng={seededRng(SEED)} />);
       await userEvent.click(screen.getByRole('button', { name: 'End' }));
 
-      expect(screen.getByRole('heading', { name: 'Results' })).toBeDefined();
-      expect(screen.getByText('0 / 0 right')).toBeDefined();
+      expect(screen.getByRole('heading', { name: 'No answers this time.' })).toBeDefined();
       expect(screen.getByText('Endless · Free time')).toBeDefined();
     });
 

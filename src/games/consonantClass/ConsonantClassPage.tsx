@@ -7,7 +7,7 @@ import { CONSONANTS_PANEL } from '../../help/panels';
 import { Verdict } from '../../components/Verdict/Verdict';
 import type { Rng } from '../../thai/generator';
 import type { ConsonantClass } from '../../thai/types';
-import { GAME, GAME_NAMES, GAME_PATHS } from '../shared/games';
+import { GAME, GAME_NAMES } from '../shared/games';
 import { CONSONANT_CLASS_OPTIONS } from '../shared/options';
 import { ScoreBar } from '../shared/ScoreBar';
 import { DEFAULT_SETTINGS } from '../shared/settings';
@@ -60,7 +60,6 @@ export function ConsonantClassPage({
           score={game.score}
           settings={settings}
           withAnswerMode={false}
-          settingsPath={GAME_PATHS[GAME.ConsonantClass]}
           onPlayAgain={game.restart}
         />
       </main>
