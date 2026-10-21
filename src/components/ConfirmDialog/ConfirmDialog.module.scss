@@ -1,0 +1,67 @@
+// Over everything: the page, the help panels (10) and the bar (20).
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: var(--space-m);
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 60%);
+}
+
+.dialog {
+  position: relative;
+  width: min(100%, 24rem);
+  padding: var(--space-l) var(--space-m) var(--space-m);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) * 1.5);
+  background: var(--color-surface-raised);
+  text-align: center;
+}
+
+.title {
+  margin: 0 0 var(--space-s);
+  font-family: var(--font-display);
+}
+
+.message {
+  margin: 0 0 var(--space-l);
+  color: var(--color-text-muted);
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-s);
+}
+
+.confirm,
+.cancel {
+  padding: var(--space-s) var(--space-l);
+  border-radius: var(--radius);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent-light);
+    outline-offset: 2px;
+  }
+}
+
+// The quiet choice: leaving is not what the player came for.
+.confirm {
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  background: none;
+}
+
+// Like the app's Button: staying is the safe choice.
+.cancel {
+  border: none;
+  color: var(--color-accent-text);
+  background: var(--color-accent);
+}

@@ -8,6 +8,7 @@
  * asks the game for a new question (`onNewQuestion`) when one starts.
  */
 import { useEffect, useRef, useState } from 'react';
+import { useLeaveGuard } from '../../site/leaveGuard';
 import { addResult, EMPTY_SCORE } from './score';
 import type { Score } from './score';
 import type { GameSettings } from './settings';
@@ -117,6 +118,10 @@ export function useSoloGame(settings: GameSettings, onNewQuestion: () => void): 
   };
 
   useNextWhenCorrect(phase === 'checked' && correct, next);
+
+  // The game is not saved: once a question counts, leaving it would lose the
+  // score, until the results show.
+  useLeaveGuard(score.played > 0 && phase !== 'finished');
 
   const end = () => {
     answering.current = false;
