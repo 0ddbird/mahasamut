@@ -16,24 +16,29 @@
   --color-surface-raised: #1a201d;
   --color-border: rgb(255 255 255 / 16%);
 
-  // The site's green: solid behind white text (buttons, selected choices), and
-  // lighter as a text colour on the dark page.
-  --color-accent: #25804f;
-  --color-accent-text: #ffffff;
-  --color-accent-light: #6fd6a2;
+  // The accent, yellow so that it stands out on the green-tinted page: solid
+  // behind dark text (buttons, selected choices), and a little lighter as a
+  // text colour on the page.
+  --color-accent: #f2c14e;
+  --color-accent-text: #1a1708;
+  --color-accent-light: #f7d36b;
 
-  // Feedback once the answers are checked: light text on a dark tint, unlike
-  // the solid green of a selected choice.
-  --color-right: #7ee0ad;
-  --color-right-background: #143826;
+  // Feedback once the answers are checked. A right answer is yellow like the
+  // accent, but outlined on a dark tint, unlike the solid yellow of a selected
+  // choice. A wrong one is solid red: a dark red tint melts into the page.
+  // --color-wrong is also the red of text on the page (errors, the last seconds).
+  --color-right: #f7d36b;
+  --color-right-background: #3a2f0c;
   --color-wrong: #ff8a80;
-  --color-wrong-background: #3d1714;
+  --color-wrong-background: #c9372c;
+  --color-wrong-text: #ffffff;
 
   // Help panels, one colour each so that their handles tell apart at a glance;
   // white text and icons stay readable on all of them.
   --color-help-blue: #2f5f9e;
   --color-help-purple: #6b4199;
   --color-help-orange: #a8521a;
+  --color-help-text: #ffffff;
 
   --space-xs: 0.25rem;
   --space-s: 0.5rem;

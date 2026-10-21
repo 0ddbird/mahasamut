@@ -64,8 +64,8 @@
 }
 
 // Once checked. These come after :checked, with the same specificity, so they
-// replace the green of the selection: a selected choice and a right one must
-// not look alike.
+// replace the solid yellow of the selection: a selected choice and a right one
+// must not look alike.
 .input + .label.right {
   border-color: var(--color-right);
   color: var(--color-right);
@@ -74,7 +74,7 @@
 
 .input + .label.wrong {
   border-color: var(--color-wrong);
-  color: var(--color-wrong);
+  color: var(--color-wrong-text);
   background: var(--color-wrong-background);
 }
 
