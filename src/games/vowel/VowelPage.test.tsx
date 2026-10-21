@@ -11,6 +11,7 @@ import { DEFAULT_SETTINGS } from '../shared/settings';
 import type { GameSettings } from '../shared/settings';
 import { CORRECT_DELAY_MS } from '../shared/useNextWhenCorrect';
 import { vowelChoices } from './choices';
+import { SOUND_VOWEL, vowelSoundUrl } from './sounds';
 import { VowelPage } from './VowelPage';
 
 const SEED = 7;
@@ -34,13 +35,13 @@ const [FIRST, SECOND] = questionsShown(SEED, 2) as [
 const RIGHT = VOWEL_IPA[FIRST.vowel.id];
 const WRONG = FIRST.choices.find((choice) => choice !== RIGHT)!;
 
-/** The Thai text read aloud for a sound: the first vowel that has it, on อ. */
-const textOf = (sound: string) => vowelOnCarrier(VOWELS.find((v) => VOWEL_IPA[v.id] === sound)!);
+/** The file played for a sound: the recording of the vowel chosen for it. */
+const urlOf = (sound: string) => vowelSoundUrl(SOUND_VOWEL.get(sound)!);
 
 const renderPage = (settings: GameSettings = DEFAULT_SETTINGS) => {
-  const speak = vi.fn();
-  render(<VowelPage rng={seededRng(SEED)} settings={settings} speak={speak} />);
-  return speak;
+  const play = vi.fn();
+  render(<VowelPage rng={seededRng(SEED)} settings={settings} play={play} />);
+  return play;
 };
 
 const row = () => within(screen.getByRole('group', { name: 'Sound' }));
@@ -69,20 +70,20 @@ describe('VowelPage', () => {
   });
 
   it('plays the sound of an answer when it is chosen', async () => {
-    const speak = renderPage();
+    const play = renderPage();
     await choose(WRONG);
-    expect(speak).toHaveBeenLastCalledWith(textOf(WRONG));
+    expect(play).toHaveBeenLastCalledWith(urlOf(WRONG));
     await choose(RIGHT);
-    expect(speak).toHaveBeenLastCalledWith(textOf(RIGHT));
+    expect(play).toHaveBeenLastCalledWith(urlOf(RIGHT));
   });
 
   // A radio already checked fires no change: the click itself plays the sound.
   it('plays the chosen sound again when it is clicked again', async () => {
-    const speak = renderPage();
+    const play = renderPage();
     await choose(RIGHT);
     await choose(RIGHT);
-    expect(speak).toHaveBeenCalledTimes(2);
-    expect(speak).toHaveBeenLastCalledWith(textOf(RIGHT));
+    expect(play).toHaveBeenCalledTimes(2);
+    expect(play).toHaveBeenLastCalledWith(urlOf(RIGHT));
   });
 
   it('can only validate once a sound is chosen', async () => {
@@ -116,13 +117,13 @@ describe('VowelPage', () => {
   });
 
   it('replays the right answer once checked, and only then', async () => {
-    const speak = renderPage();
+    const play = renderPage();
     expect(screen.queryByRole('button', { name: 'Listen' })).toBeNull();
 
     await choose(WRONG);
     await userEvent.click(validateButton());
     await userEvent.click(screen.getByRole('button', { name: 'Listen' }));
-    expect(speak).toHaveBeenLastCalledWith(vowelOnCarrier(FIRST.vowel));
+    expect(play).toHaveBeenLastCalledWith(vowelSoundUrl(FIRST.vowel.id));
   });
 
   it('plays a series to its results', async () => {

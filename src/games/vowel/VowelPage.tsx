@@ -1,7 +1,7 @@
 import { Volume2 } from 'lucide-react';
 import { useState } from 'react';
-import { speakThai } from '../../audio/speak';
-import type { Speak } from '../../audio/speak';
+import { playSound } from '../../audio/playSound';
+import type { PlaySound } from '../../audio/playSound';
 import { AnswerRow } from '../../components/AnswerRow/AnswerRow';
 import type { Option } from '../../components/AnswerRow/option';
 import { Button } from '../../components/Button/Button';
@@ -22,16 +22,11 @@ import type { GameSettings } from '../shared/settings';
 import { Summary } from '../shared/Summary';
 import { useSoloGame } from '../shared/useSoloGame';
 import { vowelChoices } from './choices';
+import { SOUND_VOWEL, vowelSoundUrl } from './sounds';
 import styles from './VowelPage.module.scss';
 
 /** In learning mode: how each vowel is written, the only help this game needs. */
 const HELP_PANELS = [VOWELS_PANEL];
-
-/** The Thai read aloud for each sound: the first vowel that has it, on อ. */
-const SOUND_TEXT = new Map<string, string>();
-for (const v of VOWELS) {
-  if (!SOUND_TEXT.has(VOWEL_IPA[v.id])) SOUND_TEXT.set(VOWEL_IPA[v.id], vowelOnCarrier(v));
-}
 
 /** A question: the deck at the vowel shown, and the sounds offered for it. */
 interface Question {
@@ -52,8 +47,8 @@ interface VowelPageProps {
   rng?: Rng;
   /** How the game is played: its length and its time. */
   settings?: GameSettings;
-  /** Reads a sound aloud; tests pass a mock. */
-  speak?: Speak;
+  /** Plays a recorded sound; tests pass a mock. */
+  play?: PlaySound;
 }
 
 /**
@@ -66,7 +61,7 @@ interface VowelPageProps {
 export function VowelPage({
   rng = Math.random,
   settings = DEFAULT_SETTINGS,
-  speak = speakThai,
+  play = playSound,
 }: VowelPageProps) {
   const [question, setQuestion] = useState(() => questionAt(newDeck(VOWELS, rng), rng));
   const [chosen, setChosen] = useState<string | undefined>(undefined);
@@ -82,9 +77,9 @@ export function VowelPage({
   const checked = game.phase === 'checked';
 
   // Every click plays the sound, the answer already chosen included.
-  const play = (sound: string) => {
-    const text = SOUND_TEXT.get(sound);
-    if (text !== undefined) speak(text);
+  const playAnswer = (sound: string) => {
+    const id = SOUND_VOWEL.get(sound);
+    if (id !== undefined) play(vowelSoundUrl(id));
   };
 
   const title = <h1>{GAME_NAMES[GAME.Vowel]}</h1>;
@@ -120,7 +115,7 @@ export function VowelPage({
           <button
             type="button"
             className={styles.listen}
-            onClick={() => speak(vowelOnCarrier(vowel))}
+            onClick={() => play(vowelSoundUrl(vowel.id))}
           >
             <Volume2 size={18} aria-hidden="true" />
             Listen
@@ -133,7 +128,7 @@ export function VowelPage({
             options={question.choices.map(toOption)}
             selected={chosen}
             onSelect={setChosen}
-            onActivate={play}
+            onActivate={playAnswer}
             disabled={checked}
             feedback={checked ? { chosen, expected, accepted: [expected] } : undefined}
           />
