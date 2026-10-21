@@ -14,6 +14,11 @@ interface AnswerRowProps<T extends string> {
   /** The option chosen so far, if any. */
   selected?: T;
   onSelect: (value: T) => void;
+  /**
+   * Called on every click of a choice, the one already chosen included, which
+   * fires no change: for a choice that does something each time (plays a sound).
+   */
+  onActivate?: (value: T) => void;
   /** Locks the row: once the answers are checked, or when the step is not needed. */
   disabled?: boolean;
   /** Once the answers are checked: what each choice shows. */
@@ -46,6 +51,7 @@ export function AnswerRow<T extends string>({
   options,
   selected,
   onSelect,
+  onActivate,
   disabled = false,
   feedback,
   note,
@@ -77,6 +83,7 @@ export function AnswerRow<T extends string>({
                 value={option.value}
                 checked={selected === option.value}
                 onChange={() => onSelect(option.value)}
+                onClick={() => onActivate?.(option.value)}
               />
               <span className={`${styles.label} ${styles[state]}`}>
                 <OptionLabel option={option} />

@@ -76,6 +76,15 @@ describe('VowelPage', () => {
     expect(speak).toHaveBeenLastCalledWith(textOf(RIGHT));
   });
 
+  // A radio already checked fires no change: the click itself plays the sound.
+  it('plays the chosen sound again when it is clicked again', async () => {
+    const speak = renderPage();
+    await choose(RIGHT);
+    await choose(RIGHT);
+    expect(speak).toHaveBeenCalledTimes(2);
+    expect(speak).toHaveBeenLastCalledWith(textOf(RIGHT));
+  });
+
   it('can only validate once a sound is chosen', async () => {
     renderPage();
     expect(validateButton().disabled).toBe(true);

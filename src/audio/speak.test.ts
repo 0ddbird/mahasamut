@@ -60,6 +60,21 @@ describe('speakThai', () => {
     expect(synthesis.calls).toEqual(['cancel', 'speak', 'cancel', 'speak']);
   });
 
+  // A wrong voice would teach a wrong sound: silence is better.
+  it('stays silent when the browser has voices, but no Thai one', () => {
+    const synthesis = fakeSynthesis([{ lang: 'en-US', name: 'English' }]);
+    install(synthesis);
+    speakThai('อา');
+    expect(synthesis.spoken).toEqual([]);
+  });
+
+  it('still tries in Thai while the voices are not loaded yet', () => {
+    const synthesis = fakeSynthesis([]);
+    install(synthesis);
+    speakThai('อา');
+    expect(synthesis.spoken.map((u) => u.lang)).toEqual(['th-TH']);
+  });
+
   it('does nothing, without an error, where the browser cannot speak', () => {
     vi.stubGlobal('speechSynthesis', undefined);
     expect(() => speakThai('อา')).not.toThrow();

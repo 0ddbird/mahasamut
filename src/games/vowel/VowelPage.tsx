@@ -81,8 +81,8 @@ export function VowelPage({
   const expected = VOWEL_IPA[vowel.id];
   const checked = game.phase === 'checked';
 
-  const choose = (sound: string) => {
-    setChosen(sound);
+  // Every click plays the sound, the answer already chosen included.
+  const play = (sound: string) => {
     const text = SOUND_TEXT.get(sound);
     if (text !== undefined) speak(text);
   };
@@ -132,7 +132,8 @@ export function VowelPage({
             name="sound"
             options={question.choices.map(toOption)}
             selected={chosen}
-            onSelect={choose}
+            onSelect={setChosen}
+            onActivate={play}
             disabled={checked}
             feedback={checked ? { chosen, expected, accepted: [expected] } : undefined}
           />
