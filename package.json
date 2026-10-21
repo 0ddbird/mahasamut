@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "home:tiles": "node scripts/home-tiles.mjs"
   },
   "dependencies": {
     "@fontsource/fredoka": "^5.3.0",
@@ -37,6 +38,7 @@
     "oxlint": "^1.81.0",
     "prettier": "3.9.10",
     "sass-embedded": "^1.105.1",
+    "sharp": "^0.34.5",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
     "vitest": "^5.0.4"
