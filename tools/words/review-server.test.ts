@@ -1,3 +1,4 @@
+import { request } from 'node:http';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -315,7 +316,7 @@ describe('the review server', () => {
       const status = await new Promise<string>((resolve, reject) => {
         const socket = net.connect(Number(port), hostname, () => {
           socket.write(
-            'GET /takes/../review.json HTTP/1.1\r\nHost: x\r\nConnection: close\r\n\r\n',
+            `GET /takes/../review.json HTTP/1.1\r\nHost: ${hostname}:${port}\r\nConnection: close\r\n\r\n`,
           );
         });
         let data = '';
@@ -324,6 +325,106 @@ describe('the review server', () => {
         socket.on('error', reject);
       });
       expect(status).toContain('404');
+    });
+  });
+
+  describe('answering its own address only', () => {
+    /** A request with the headers given (fetch does not let a script choose its Host). */
+    const send = (
+      server: Running,
+      method: 'GET' | 'POST',
+      path: string,
+      headers: Record<string, string>,
+      body?: string,
+    ) =>
+      new Promise<{ status: number; body: string }>((resolve, reject) => {
+        const { port } = new URL(server.url);
+        const outgoing = request(
+          { host: '127.0.0.1', port: Number(port), method, path, headers },
+          (response) => {
+            let data = '';
+            response.on('data', (chunk) => (data += chunk));
+            response.on('end', () => resolve({ status: response.statusCode ?? 0, body: data }));
+          },
+        );
+        outgoing.on('error', reject);
+        outgoing.end(body);
+      });
+    const json = { 'content-type': 'application/json' };
+    const decision = JSON.stringify({ text: 'กา', decision: 'none' });
+
+    it('answers 403 to a request whose Host is another name, as a rebound DNS name sends', async () => {
+      const server = await start();
+      for (const path of ['/api/state', '/', '/takes/a-1.mp3']) {
+        const { status, body } = await send(server, 'GET', path, { host: 'evil.example' });
+        expect(status, path).toBe(403);
+        expect(typeof (JSON.parse(body) as { error: string }).error).toBe('string');
+      }
+      const port = new URL(server.url).port;
+      const wrongPort = await send(server, 'GET', '/api/state', {
+        host: `localhost:${Number(port) + 1}`,
+      });
+      expect(wrongPort.status).toBe(403);
+    });
+
+    it('answers 403 to a request without a Host', async () => {
+      const server = await start();
+      const { port } = new URL(server.url);
+      const net = await import('node:net');
+      // HTTP/1.0 allows a request with no Host header at all.
+      const statusLine = await new Promise<string>((resolve, reject) => {
+        const socket = net.connect(Number(port), '127.0.0.1', () => {
+          socket.write('GET /api/state HTTP/1.0\r\n\r\n');
+        });
+        let data = '';
+        socket.on('data', (chunk) => (data += chunk));
+        socket.on('end', () => resolve(data.split('\r\n')[0]));
+        socket.on('error', reject);
+      });
+      expect(statusLine).toContain('403');
+    });
+
+    it('answers a Host of 127.0.0.1 or localhost with the listening port', async () => {
+      const server = await start();
+      const port = new URL(server.url).port;
+      for (const host of [`127.0.0.1:${port}`, `localhost:${port}`]) {
+        expect((await send(server, 'GET', '/api/state', { host })).status, host).toBe(200);
+      }
+    });
+
+    it('answers 403 to a POST from another origin, and writes nothing', async () => {
+      const server = await start();
+      const host = `127.0.0.1:${new URL(server.url).port}`;
+      for (const origin of ['http://evil.example', 'http://127.0.0.1:1', 'null']) {
+        const { status } = await send(
+          server,
+          'POST',
+          '/api/decision',
+          { ...json, host, origin },
+          decision,
+        );
+        expect(status, origin).toBe(403);
+      }
+      expect(savedReview()).toEqual({});
+    });
+
+    it('accepts a POST from its own origin, or with no Origin', async () => {
+      const server = await start();
+      const port = new URL(server.url).port;
+      const host = `127.0.0.1:${port}`;
+      for (const origin of [`http://127.0.0.1:${port}`, `http://localhost:${port}`]) {
+        const { status } = await send(
+          server,
+          'POST',
+          '/api/decision',
+          { ...json, host: `localhost:${port}`, origin },
+          decision,
+        );
+        expect(status, origin).toBe(200);
+      }
+      expect(
+        (await send(server, 'POST', '/api/decision', { ...json, host }, decision)).status,
+      ).toBe(200);
     });
   });
 });

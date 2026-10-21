@@ -6,7 +6,8 @@
  * It serves the review page (tools/words/review-page/), the level 1 words with
  * their takes, and the takes' MP3s, and saves every decision at once in
  * data/words/review.json. It listens on 127.0.0.1 only: the tool is for one
- * person on one machine.
+ * person on one machine. It also answers only requests addressed to
+ * 127.0.0.1 or localhost on its port, and decisions posted from its own page.
  */
 import { readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
@@ -201,6 +202,20 @@ export async function startReviewServer({
   async function route(request: IncomingMessage, response: ServerResponse) {
     const path = (request.url ?? '/').split('?')[0];
     const method = request.method ?? 'GET';
+
+    // A web page that rebinds its own name to 127.0.0.1 is same-origin with this
+    // server, so no preflight protects it: only our own address is answered.
+    const { port: own } = server.address() as AddressInfo;
+    const hosts = [`127.0.0.1:${own}`, `localhost:${own}`];
+    if (!hosts.includes(request.headers.host ?? ''))
+      throw new HttpError(403, 'This server answers only at its own address.');
+    const { origin } = request.headers;
+    if (
+      method === 'POST' &&
+      origin !== undefined &&
+      !hosts.some((host) => origin === `http://${host}`)
+    )
+      throw new HttpError(403, 'This server takes decisions only from its own page.');
 
     if (path === '/api/decision') {
       if (method !== 'POST') throw new HttpError(405, 'Use POST.');
