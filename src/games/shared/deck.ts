@@ -37,7 +37,10 @@ export function shuffle<T>(items: readonly T[], rng: Rng): T[] {
  */
 export function newDeck<T>(items: readonly T[], rng: Rng, avoidFirst?: T): Deck<T> {
   const cards = shuffle(items, rng);
-  if (cards[0] === avoidFirst) swap(cards, 0, 1 + Math.floor(rng() * (cards.length - 1)));
+  // A single card has no other to swap with: it comes up again.
+  if (cards.length > 1 && cards[0] === avoidFirst) {
+    swap(cards, 0, 1 + Math.floor(rng() * (cards.length - 1)));
+  }
   return { cards, position: 0 };
 }
 

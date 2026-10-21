@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it } from 'vitest';
 import App from './App';
-import { GAME, GAME_NAMES, GAME_PATHS } from './games/shared/games';
+import { GAME, GAME_IDS, GAME_NAMES, GAME_PATHS } from './games/shared/games';
 import type { GameId } from './games/shared/games';
 
 /** Renders the app as if the browser had opened `path`. */
@@ -73,6 +73,19 @@ describe('App', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Play' }));
     expect(screen.getByRole('group', { name: 'Consonant class' })).toBeDefined();
+  });
+
+  it('plays each game at its own play path', () => {
+    const groups = {
+      [GAME.ConsonantClass]: 'Consonant class',
+      [GAME.Vowel]: 'Sound',
+      [GAME.Syllable]: 'Tone',
+    };
+    for (const game of GAME_IDS) {
+      const { unmount } = renderAt(`${GAME_PATHS[game]}/play`);
+      expect(screen.getByRole('group', { name: groups[game] })).toBeDefined();
+      unmount();
+    }
   });
 
   it('plays a game with the settings in its URL', () => {

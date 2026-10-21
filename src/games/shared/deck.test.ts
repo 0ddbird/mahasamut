@@ -46,6 +46,14 @@ describe('shuffle', () => {
 });
 
 describe('newDeck', () => {
+  it('deals a single item over and over, having no other to show', () => {
+    let deck = newDeck(['only'], seededRng(1));
+    for (let i = 0; i < 3; i++) {
+      expect(currentCard(deck)).toBe('only');
+      deck = nextCard(deck, seededRng(i));
+    }
+  });
+
   it('deals any list of items', () => {
     const deck = newDeck([1, 2, 3], seededRng(1));
     expect([...deck.cards].sort()).toEqual([1, 2, 3]);
