@@ -10,6 +10,11 @@
 
 .answer {
   margin-bottom: var(--space-l);
+
+  // The answers are IPA: a font that draws all its letters.
+  label {
+    font-family: var(--font-ipa);
+  }
 }
 
 // Under the vowel, once checked: quiet, as it only replays the answer.

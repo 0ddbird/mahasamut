@@ -12,6 +12,12 @@
  */
 import '@fontsource/fredoka/latin-500.css';
 import '@fontsource/fredoka/latin-700.css';
+// Noto Sans draws the answers in IPA (ɛ ɔ ɯ ɤ ː), which Sarabun has not:
+// basic and extended Latin, so that a whole answer is in the one font.
+import '@fontsource/noto-sans/latin-400.css';
+import '@fontsource/noto-sans/latin-700.css';
+import '@fontsource/noto-sans/latin-ext-400.css';
+import '@fontsource/noto-sans/latin-ext-700.css';
 import '@fontsource/noto-sans-thai/thai-400.css';
 import '@fontsource/noto-sans-thai/thai-700.css';
 import '@fontsource/noto-sans-thai/latin-400.css';

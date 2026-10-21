@@ -4,6 +4,8 @@
   --font-loopless: 'Noto Sans Thai', sans-serif;
   --font-looped: 'Sarabun', sans-serif;
   --font-display: 'Fredoka', sans-serif;
+  // For IPA, whose letters Sarabun has not.
+  --font-ipa: 'Noto Sans', sans-serif;
 }
 
 // Sarabun by default: textbooks print Thai with loops, so learners start there.
