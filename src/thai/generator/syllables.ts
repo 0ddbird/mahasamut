@@ -86,21 +86,15 @@ export interface CategoryGroup {
   syllables: readonly Syllable[];
 }
 
-let categoryGroupsCache: readonly CategoryGroup[] | null = null;
-
 /**
- * The valid syllables grouped by category, computed on the first call only.
+ * The syllables grouped by category.
  *
- * There are 24 groups: 8 pairs of class and kind of onset, × 3 kinds of final.
- * Of the 4 kinds of onset (single consonant, cluster, leading ห, leading อ),
- * each class has single consonants and clusters; leading ห only makes high
- * class onsets, and leading อ only mid class ones.
+ * Groups come in the order their first syllable appears, and each keeps its
+ * syllables in the order given. A category without any syllable has no group.
  */
-export function categoryGroups(): readonly CategoryGroup[] {
-  if (categoryGroupsCache !== null) return categoryGroupsCache;
-
+export function groupByCategory(syllables: readonly Syllable[]): CategoryGroup[] {
   const groups = new Map<string, { category: Category; syllables: Syllable[] }>();
-  for (const syllable of validSyllables()) {
+  for (const syllable of syllables) {
     const category = {
       consonantClass: syllable.answers.consonantClass,
       onsetKind: syllable.parts.onset.kind,
@@ -116,6 +110,20 @@ export function categoryGroups(): readonly CategoryGroup[] {
     group.syllables.push(syllable);
   }
 
-  categoryGroupsCache = [...groups.values()];
+  return [...groups.values()];
+}
+
+let categoryGroupsCache: readonly CategoryGroup[] | null = null;
+
+/**
+ * The valid syllables grouped by category, computed on the first call only.
+ *
+ * There are 24 groups: 8 pairs of class and kind of onset, × 3 kinds of final.
+ * Of the 4 kinds of onset (single consonant, cluster, leading ห, leading อ),
+ * each class has single consonants and clusters; leading ห only makes high
+ * class onsets, and leading อ only mid class ones.
+ */
+export function categoryGroups(): readonly CategoryGroup[] {
+  categoryGroupsCache ??= groupByCategory(validSyllables());
   return categoryGroupsCache;
 }

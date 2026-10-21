@@ -16,7 +16,8 @@
     "home:fonts": "node scripts/home-fonts.mjs",
     "words:candidates": "tsx tools/words/build-candidates.ts",
     "words:takes": "tsx tools/words/record-takes.ts",
-    "words:review": "tsx tools/words/review-server.ts"
+    "words:review": "tsx tools/words/review-server.ts",
+    "words:pool": "tsx tools/words/build-pool.ts"
   },
   "dependencies": {
     "@fontsource/fredoka": "^5.3.0",
