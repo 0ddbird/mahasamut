@@ -22,10 +22,12 @@ export function SiteBar() {
   const navigate = useNavigate();
   const guarded = useIsLeaveGuarded();
 
-  // Where a link was about to go while the player confirms, and the link
-  // itself, which gets the focus back if they stay.
+  // Where a link was about to go while the player confirms, and what gets the
+  // focus back if they stay: the link, or the menu button when the link was in
+  // the menu, which closes and hides it.
   const [leavingTo, setLeavingTo] = useState<string | null>(null);
-  const clickedLink = useRef<HTMLAnchorElement | null>(null);
+  const focusOnStay = useRef<HTMLElement | null>(null);
+  const menuButton = useRef<HTMLButtonElement>(null);
 
   // Another page closes the menu. Done while rendering, when the path
   // changes, rather than in an effect that would show it open once more.
@@ -42,18 +44,25 @@ export function SiteBar() {
     if (event.key === 'Escape') close();
   };
 
-  /** The click on a link of the bar to `to`: asks first during a game. */
+  /**
+   * The click on a link of the bar to `to`: asks first during a game. A click
+   * that opens the link elsewhere (a modifier key, another button) leaves the
+   * game where it is, so it goes through.
+   */
   const leaveFor = (to: string) => (event: MouseEvent<HTMLAnchorElement>) => {
+    const inMenu = menuOpen;
     close();
-    if (!guarded) return;
+    const elsewhere =
+      event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
+    if (!guarded || elsewhere) return;
     event.preventDefault();
-    clickedLink.current = event.currentTarget;
+    focusOnStay.current = inMenu ? menuButton.current : event.currentTarget;
     setLeavingTo(to);
   };
 
   const stay = () => {
     setLeavingTo(null);
-    clickedLink.current?.focus();
+    focusOnStay.current?.focus();
   };
 
   const leave = () => {
@@ -63,36 +72,40 @@ export function SiteBar() {
   };
 
   return (
-    <header className={styles.bar}>
-      <Link to="/" className={styles.home} onClick={leaveFor('/')}>
-        <Logo size="small" />
-      </Link>
-      <nav aria-label="Games" onKeyDown={closeOnEscape}>
-        <button
-          type="button"
-          className={styles.menuButton}
-          aria-label="Games menu"
-          aria-expanded={menuOpen}
-          aria-controls={listId}
-          onClick={() => setMenuOpen((open) => !open)}
-        >
-          {menuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
-        </button>
-        <ul id={listId} className={styles.links} data-open={menuOpen || undefined}>
-          {GAME_IDS.map((game) => (
-            <li key={game}>
-              <NavLink
-                to={GAME_PATHS[game]}
-                className={styles.link}
-                onClick={leaveFor(GAME_PATHS[game])}
-              >
-                {GAME_NAMES[game]}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      {menuOpen && <div data-testid="menu-shade" className={styles.shade} onClick={close} />}
+    <>
+      <header className={styles.bar} data-menu-open={menuOpen || undefined}>
+        <Link to="/" className={styles.home} onClick={leaveFor('/')}>
+          <Logo size="small" />
+        </Link>
+        <nav aria-label="Games" onKeyDown={closeOnEscape}>
+          <button
+            ref={menuButton}
+            type="button"
+            className={styles.menuButton}
+            aria-label="Games menu"
+            aria-expanded={menuOpen}
+            aria-controls={listId}
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            {menuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
+          </button>
+          <ul id={listId} className={styles.links} data-open={menuOpen || undefined}>
+            {GAME_IDS.map((game) => (
+              <li key={game}>
+                <NavLink
+                  to={GAME_PATHS[game]}
+                  className={styles.link}
+                  onClick={leaveFor(GAME_PATHS[game])}
+                >
+                  {GAME_NAMES[game]}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        {menuOpen && <div data-testid="menu-shade" className={styles.shade} onClick={close} />}
+      </header>
+      {/* Outside the bar, which stays behind the help panels: the dialog goes over both. */}
       {leavingTo !== null && (
         <ConfirmDialog
           title="Leave the game?"
@@ -103,6 +116,6 @@ export function SiteBar() {
           onCancel={stay}
         />
       )}
-    </header>
+    </>
   );
 }

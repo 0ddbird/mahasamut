@@ -2,11 +2,14 @@
 $wide: 40rem;
 
 // Scrolls with the page: a phone has little height to spare for the game.
-// Above the help handles (z-index 10) and the shade of the open menu, so the
-// menu and its close button stay clear.
+// Behind the help panels, which hang from the top of the window over it; only
+// with its menu open does it come above them (z-index 10), menu and shade too.
 .bar {
   position: relative;
-  z-index: 20;
+
+  &[data-menu-open] {
+    z-index: 20;
+  }
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -81,8 +84,7 @@ $wide: 40rem;
     display: grid;
   }
 
-  // The menu drops down under the bar, over the page and the help handles,
-  // away from the right edge they hang from.
+  // The menu drops down under the bar, over the page and the help handles.
   .links {
     display: none;
 
