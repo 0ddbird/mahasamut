@@ -52,8 +52,11 @@ export function ConfirmDialog({
   return (
     <div className={styles.layer} onKeyDown={onKeyDown}>
       <div data-testid="dialog-backdrop" className={styles.backdrop} onClick={onCancel} />
+      {/* Focusable by script only: a click on its text keeps the focus in the
+          dialog, where Tab and Escape still work, rather than on the page. */}
       <div
         role="alertdialog"
+        tabIndex={-1}
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={messageId}

@@ -1,6 +1,6 @@
 import { Menu, X } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
-import type { KeyboardEvent, MouseEvent } from 'react';
+import type { FocusEvent, KeyboardEvent, MouseEvent } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router';
 import { ConfirmDialog } from '../components/ConfirmDialog/ConfirmDialog';
 import { Logo } from '../components/Logo/Logo';
@@ -44,6 +44,12 @@ export function SiteBar() {
     if (event.key === 'Escape') close();
   };
 
+  // Tab past the last game would reach the page behind the shade: the menu
+  // closes as soon as the focus leaves it.
+  const closeOnFocusOut = (event: FocusEvent) => {
+    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) close();
+  };
+
   /**
    * The click on a link of the bar to `to`: asks first during a game. A click
    * that opens the link elsewhere (a modifier key, another button) leaves the
@@ -77,7 +83,7 @@ export function SiteBar() {
         <Link to="/" className={styles.home} onClick={leaveFor('/')}>
           <Logo size="small" />
         </Link>
-        <nav aria-label="Games" onKeyDown={closeOnEscape}>
+        <nav aria-label="Games" onKeyDown={closeOnEscape} onBlur={closeOnFocusOut}>
           <button
             ref={menuButton}
             type="button"

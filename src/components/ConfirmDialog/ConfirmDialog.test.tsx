@@ -56,6 +56,17 @@ describe('ConfirmDialog', () => {
     expect(document.activeElement).toBe(confirmButton());
   });
 
+  it('keeps the focus inside after a click on its text', async () => {
+    const { onCancel } = renderDialog();
+    await userEvent.click(screen.getByText('Your score will be lost.'));
+    await userEvent.tab();
+    expect(document.activeElement).toBe(confirmButton());
+
+    await userEvent.click(screen.getByText('Your score will be lost.'));
+    await userEvent.keyboard('{Escape}');
+    expect(onCancel).toHaveBeenCalledOnce();
+  });
+
   it('confirms with its confirm button', async () => {
     const { onConfirm, onCancel } = renderDialog();
     await userEvent.click(confirmButton());

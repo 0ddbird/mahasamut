@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { GAME, GAME_IDS, GAME_NAMES, GAME_PATHS } from '../games/shared/games';
 import { SiteBar } from './SiteBar';
 
-/** The bar above stand-in pages, each one only a title, opened at `path`. */
+/** The bar above stand-in pages, each a title and a button, opened at `path`. */
 const renderAt = (path: string) =>
   render(
     <MemoryRouter initialEntries={[path]}>
@@ -13,7 +13,16 @@ const renderAt = (path: string) =>
       <Routes>
         <Route path="/" element={<h1>Home</h1>} />
         {GAME_IDS.map((game) => (
-          <Route key={game} path={`${GAME_PATHS[game]}/*`} element={<h1>{game}</h1>} />
+          <Route
+            key={game}
+            path={`${GAME_PATHS[game]}/*`}
+            element={
+              <>
+                <h1>{game}</h1>
+                <button type="button">On the page</button>
+              </>
+            }
+          />
         ))}
       </Routes>
     </MemoryRouter>,
@@ -62,6 +71,16 @@ describe('SiteBar', () => {
     await userEvent.click(screen.getByTestId('menu-shade'));
     expect(menuButton().getAttribute('aria-expanded')).toBe('false');
     expect(screen.queryByTestId('menu-shade')).toBeNull();
+  });
+
+  // Otherwise Tab would reach the page behind the shade, the menu still open.
+  it('closes the menu once the focus leaves it', async () => {
+    renderAt(GAME_PATHS[GAME.Syllable]);
+    await userEvent.click(menuButton());
+    for (let i = 0; i <= GAME_IDS.length; i++) await userEvent.tab();
+
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'On the page' }));
+    expect(menuButton().getAttribute('aria-expanded')).toBe('false');
   });
 
   it('closes the menu once a game is chosen', async () => {
