@@ -20,6 +20,13 @@ body {
     fixed;
 }
 
+// The app fills the window, so that the footer sits at its bottom on a short page.
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 h1 {
   font-family: var(--font-display);
 }

@@ -1,0 +1,9 @@
+// At the bottom of the window when the page is short (see #root in base.scss),
+// after the page when it is long.
+.footer {
+  margin-top: auto;
+  padding: var(--space-l) var(--space-m) var(--space-m);
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  text-align: center;
+}
