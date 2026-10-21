@@ -27,6 +27,13 @@ describe('App', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Scriptomancy - Thai' })).toBeDefined();
   });
 
+  it('names the games in English only', () => {
+    expect(GAME_NAMES).toEqual({
+      [GAME.Syllable]: 'Find the tone',
+      [GAME.ConsonantClass]: 'Consonant classes',
+    });
+  });
+
   it('serves the games at /syllable and /consonant-class', () => {
     expect(GAME_PATHS).toEqual({
       [GAME.Syllable]: '/syllable',

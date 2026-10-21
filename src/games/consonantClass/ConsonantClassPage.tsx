@@ -7,8 +7,7 @@ import { CONSONANTS_PANEL } from '../../help/panels';
 import { Verdict } from '../../components/Verdict/Verdict';
 import type { Rng } from '../../thai/generator';
 import type { ConsonantClass } from '../../thai/types';
-import { GameName } from '../shared/GameName';
-import { GAME, GAME_PATHS } from '../shared/games';
+import { GAME, GAME_NAMES, GAME_PATHS } from '../shared/games';
 import { CONSONANT_CLASS_OPTIONS } from '../shared/options';
 import { ScoreBar } from '../shared/ScoreBar';
 import { DEFAULT_SETTINGS } from '../shared/settings';
@@ -51,11 +50,7 @@ export function ConsonantClassPage({
   const expected = consonant.consonantClass;
   const checked = game.phase === 'checked';
 
-  const title = (
-    <h1>
-      <GameName game={GAME.ConsonantClass} />
-    </h1>
-  );
+  const title = <h1>{GAME_NAMES[GAME.ConsonantClass]}</h1>;
 
   if (game.phase === 'finished') {
     return (

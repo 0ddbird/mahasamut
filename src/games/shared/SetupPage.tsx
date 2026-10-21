@@ -2,8 +2,7 @@ import { useId, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { AnswerRow } from '../../components/AnswerRow/AnswerRow';
 import { Button } from '../../components/Button/Button';
-import { GameName } from './GameName';
-import { GAME, GAME_PATHS } from './games';
+import { GAME, GAME_NAMES, GAME_PATHS } from './games';
 import type { GameId } from './games';
 import { QUESTION_COUNT } from './settings';
 import type { AnswerMode, GameSettings, SecondsPerQuestion } from './settings';
@@ -72,9 +71,7 @@ export function SetupPage({ game }: { game: GameId }) {
 
   return (
     <main className={styles.page}>
-      <h1>
-        <GameName game={game} />
-      </h1>
+      <h1>{GAME_NAMES[game]}</h1>
       <div className={styles.settings}>
         <AnswerRow
           title="Length"

@@ -7,8 +7,7 @@ import { Verdict } from '../../components/Verdict/Verdict';
 import { generateSyllable } from '../../thai/generator';
 import type { Rng } from '../../thai/generator';
 import { TONE_MARK } from '../../thai/types';
-import { GameName } from '../shared/GameName';
-import { GAME, GAME_PATHS } from '../shared/games';
+import { GAME, GAME_NAMES, GAME_PATHS } from '../shared/games';
 import { ScoreBar } from '../shared/ScoreBar';
 import { DEFAULT_SETTINGS } from '../shared/settings';
 import type { GameSettings } from '../shared/settings';
@@ -64,11 +63,7 @@ export function SyllablePage({
     game.check(check().correct);
   };
 
-  const title = (
-    <h1>
-      <GameName game={GAME.Syllable} />
-    </h1>
-  );
+  const title = <h1>{GAME_NAMES[GAME.Syllable]}</h1>;
 
   if (game.phase === 'finished') {
     return (

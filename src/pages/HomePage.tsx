@@ -1,6 +1,5 @@
 import { Link } from 'react-router';
-import { GameName } from '../games/shared/GameName';
-import { GAME_IDS, GAME_PATHS } from '../games/shared/games';
+import { GAME_IDS, GAME_NAMES, GAME_PATHS } from '../games/shared/games';
 import type { GameId } from '../games/shared/games';
 
 /** What each game asks, after its name in the list. */
@@ -18,9 +17,7 @@ export function HomePage() {
       <ul>
         {GAME_IDS.map((game) => (
           <li key={game}>
-            <Link to={GAME_PATHS[game]}>
-              <GameName game={game} />
-            </Link>
+            <Link to={GAME_PATHS[game]}>{GAME_NAMES[game]}</Link>
             : {GAME_GOALS[game]}
           </li>
         ))}
