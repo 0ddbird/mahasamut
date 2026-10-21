@@ -45,6 +45,25 @@ export const VOWEL_IPA: Record<VowelId, string> = {
   [VOWEL.Ao]: 'aw',
 };
 
+/** How screen readers can say each IPA letter, which they mostly cannot read. */
+const SPOKEN_LETTERS: Record<string, string> = {
+  ɛ: 'open e',
+  ɔ: 'open o',
+  ɯ: 'unrounded u',
+  ɤ: 'unrounded o',
+  j: 'y',
+};
+
+/**
+ * A sound in IPA named for screen readers: its letters, then its length, as
+ * "unrounded u a, long" for /ɯːa/. They often say nothing for ː, which would
+ * make /a/ and /aː/ sound alike.
+ */
+export function spokenIpa(ipa: string): string {
+  const letters = [...ipa.replaceAll('ː', '')].map((letter) => SPOKEN_LETTERS[letter] ?? letter);
+  return `${letters.join(' ')}, ${ipa.includes('ː') ? 'long' : 'short'}`;
+}
+
 /** The silent consonant อ, on which textbooks write a vowel alone. */
 const CARRIER = 'อ';
 

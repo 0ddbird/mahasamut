@@ -104,10 +104,14 @@ export function AnswerRow<T extends string>({
   );
 }
 
+/** Thai letters and signs, which a label may hold. */
+const THAI = /[฀-๿]/;
+
 /**
- * The label of a choice. A Thai sign that cannot be read aloud (◌่) is shown
- * only, as text or drawn by the option's icon, and screen readers hear its
- * name instead.
+ * The label of a choice. A label with a spoken name is shown only, and screen
+ * readers hear the name instead: a Thai sign that cannot be read aloud (◌่),
+ * shown larger, as text or drawn by the option's icon, or any other label they
+ * would read badly (IPA).
  */
 function OptionLabel<T extends string>({ option }: { option: Option<T> }) {
   const Icon = option.icon;
@@ -120,9 +124,14 @@ function OptionLabel<T extends string>({ option }: { option: Option<T> }) {
     );
   }
   if (option.spokenLabel === undefined) return option.label;
+  const thai = THAI.test(option.label);
   return (
     <>
-      <span className={styles.sign} lang="th" aria-hidden="true">
+      <span
+        className={thai ? styles.sign : undefined}
+        lang={thai ? 'th' : undefined}
+        aria-hidden="true"
+      >
         {option.label}
       </span>
       <span className={styles.spoken}>{option.spokenLabel}</span>

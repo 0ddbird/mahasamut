@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { VOWEL, VOWEL_IDS, VOWEL_LENGTH } from '../types';
 import { vowel, VOWELS } from './index';
-import { VOWEL_IPA, vowelOnCarrier } from './ipa';
+import { spokenIpa, VOWEL_IPA, vowelOnCarrier } from './ipa';
 
 describe('VOWEL_IPA', () => {
   it('transcribes every vowel', () => {
@@ -32,6 +32,23 @@ describe('VOWEL_IPA', () => {
     for (const v of VOWELS) {
       expect(VOWEL_IPA[v.id].includes('ː')).toBe(v.length === VOWEL_LENGTH.Long);
     }
+  });
+});
+
+describe('spokenIpa', () => {
+  it.each([
+    ['aː', 'a, long'],
+    ['ɛ', 'open e, short'],
+    ['ɯːa', 'unrounded u a, long'],
+    ['aj', 'a y, short'],
+  ])('names /%s/ "%s" for screen readers', (ipa, spoken) => {
+    expect(spokenIpa(ipa)).toBe(spoken);
+  });
+
+  // Screen readers say little for ɯ or ː: the names must still tell every sound apart.
+  it('gives every sound its own name', () => {
+    const sounds = [...new Set(VOWEL_IDS.map((id) => VOWEL_IPA[id]))];
+    expect(new Set(sounds.map(spokenIpa)).size).toBe(sounds.length);
   });
 });
 

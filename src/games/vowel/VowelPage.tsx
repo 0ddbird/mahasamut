@@ -12,7 +12,7 @@ import { VOWELS_PANEL } from '../../help/panels';
 import type { Rng } from '../../thai/generator';
 import { VOWELS } from '../../thai/vowels';
 import type { Vowel } from '../../thai/vowels';
-import { VOWEL_IPA, vowelOnCarrier } from '../../thai/vowels/ipa';
+import { spokenIpa, VOWEL_IPA, vowelOnCarrier } from '../../thai/vowels/ipa';
 import { currentCard, newDeck, nextCard } from '../shared/deck';
 import type { Deck } from '../shared/deck';
 import { GAME, GAME_NAMES } from '../shared/games';
@@ -39,8 +39,12 @@ const questionAt = (deck: Deck<Vowel>, rng: Rng): Question => ({
   choices: vowelChoices(currentCard(deck), rng),
 });
 
-/** A choice shows its sound in IPA, between slashes. */
-const toOption = (sound: string): Option<string> => ({ value: sound, label: `/${sound}/` });
+/** A choice shows its sound in IPA, between slashes, and screen readers say its name. */
+const toOption = (sound: string): Option<string> => ({
+  value: sound,
+  label: `/${sound}/`,
+  spokenLabel: spokenIpa(sound),
+});
 
 interface VowelPageProps {
   /** Source of random numbers for the shuffles; tests pass a seeded one. */

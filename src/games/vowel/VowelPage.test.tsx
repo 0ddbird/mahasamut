@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { seededRng } from '../../thai/generator/seeded-rng.test-utils';
 import { VOWELS } from '../../thai/vowels';
 import type { Vowel } from '../../thai/vowels';
-import { VOWEL_IPA, vowelOnCarrier } from '../../thai/vowels/ipa';
+import { spokenIpa, VOWEL_IPA, vowelOnCarrier } from '../../thai/vowels/ipa';
 import { currentCard, newDeck, nextCard } from '../shared/deck';
 import { GAME, GAME_NAMES } from '../shared/games';
 import { DEFAULT_SETTINGS } from '../shared/settings';
@@ -45,7 +45,8 @@ const renderPage = (settings: GameSettings = DEFAULT_SETTINGS) => {
 };
 
 const row = () => within(screen.getByRole('group', { name: 'Sound' }));
-const choose = (sound: string) => userEvent.click(row().getByRole('radio', { name: `/${sound}/` }));
+const choose = (sound: string) =>
+  userEvent.click(row().getByRole('radio', { name: spokenIpa(sound) }));
 const validateButton = () => screen.getByRole('button', { name: 'Validate' }) as HTMLButtonElement;
 
 afterEach(() => {
@@ -66,7 +67,7 @@ describe('VowelPage', () => {
         .getAllByRole('radio')
         .map((radio) => radio.getAttribute('value')),
     ).toEqual(FIRST.choices);
-    expect(row().getByRole('radio', { name: `/${RIGHT}/` })).toBeDefined();
+    expect(row().getByRole('radio', { name: spokenIpa(RIGHT) })).toBeDefined();
   });
 
   it('plays the sound of an answer when it is chosen', async () => {
@@ -99,7 +100,7 @@ describe('VowelPage', () => {
     vi.useFakeTimers();
     fireEvent.click(validateButton());
     expect(screen.getByRole('status').textContent).toBe('Correct!');
-    expect(row().getByRole('radio', { name: `/${RIGHT}/ (right)` })).toBeDefined();
+    expect(row().getByRole('radio', { name: `${spokenIpa(RIGHT)} (right)` })).toBeDefined();
 
     act(() => vi.advanceTimersByTime(CORRECT_DELAY_MS));
     expect(screen.getByText(vowelOnCarrier(SECOND.vowel))).toBeDefined();
@@ -110,8 +111,10 @@ describe('VowelPage', () => {
     await choose(WRONG);
     await userEvent.click(validateButton());
 
-    expect(row().getByRole('radio', { name: `/${WRONG}/ (wrong)` })).toBeDefined();
-    expect(row().getByRole('radio', { name: `/${RIGHT}/ (the right answer)` })).toBeDefined();
+    expect(row().getByRole('radio', { name: `${spokenIpa(WRONG)} (wrong)` })).toBeDefined();
+    expect(
+      row().getByRole('radio', { name: `${spokenIpa(RIGHT)} (the right answer)` }),
+    ).toBeDefined();
     await userEvent.click(screen.getByRole('button', { name: 'Next' }));
     expect(screen.getByText(vowelOnCarrier(SECOND.vowel))).toBeDefined();
   });

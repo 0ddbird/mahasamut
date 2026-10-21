@@ -35,6 +35,33 @@ describe('AnswerRow', () => {
     expect(label?.textContent).not.toContain('◌');
   });
 
+  it('shows a Thai sign marked as Thai, and gives screen readers its spoken label', () => {
+    render(
+      <AnswerRow
+        title="Tone mark"
+        name="mark"
+        options={[{ value: 'eek', label: '◌่', spokenLabel: 'Mai eek' }]}
+        onSelect={() => {}}
+      />,
+    );
+    const label = screen.getByRole('radio', { name: 'Mai eek' }).closest('label');
+    expect(label?.querySelector('[lang="th"]')?.textContent).toBe('◌่');
+  });
+
+  it('shows any other label as it is, not marked as Thai, under its spoken label', () => {
+    render(
+      <AnswerRow
+        title="Sound"
+        name="sound"
+        options={[{ value: 'aː', label: '/aː/', spokenLabel: 'a, long' }]}
+        onSelect={() => {}}
+      />,
+    );
+    const label = screen.getByRole('radio', { name: 'a, long' }).closest('label');
+    expect(label?.textContent).toContain('/aː/');
+    expect(label?.querySelector('[lang="th"]')).toBeNull();
+  });
+
   it('reports the option chosen', async () => {
     const chosen: string[] = [];
     render(
