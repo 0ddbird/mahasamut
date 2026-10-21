@@ -12,7 +12,11 @@
  * Frequency choices: each step picks one of the values still possible
  * uniformly, whatever the number of syllables behind each value. A rare value
  * therefore comes out as often as a common one at its step. The consequences
- * of each step are spelled out in `generateSyllable`.
+ * of each step are spelled out in `generateSyllable`, for the draw over every
+ * valid syllable (the default). Over another set, such as the words of the
+ * pool, the steps are the same but each one only sees the values that set has:
+ * a category or a vowel missing from the pool is never drawn, and the shares
+ * quoted there change with the set.
  *
  * TODO: draw more often the syllables the player got wrong, grouped by their
  * five answers (two syllables with the same answers need the same reasoning),
@@ -20,7 +24,7 @@
  */
 import { TONE_MARK } from '../types';
 import { categoryGroups } from './syllables';
-import type { Syllable } from './syllables';
+import type { CategoryGroup, Syllable } from './syllables';
 
 export type { Syllable } from './syllables';
 
@@ -38,12 +42,17 @@ const NO_MARK_PROBABILITY = 0.4;
  * Draws a random syllable, balanced by category.
  *
  * @param rng source of random numbers in [0, 1), such as `Math.random`.
- * @throws if `rng` returns a number outside [0, 1).
+ * @param groups the syllables to draw from, grouped by category: every valid
+ *   syllable by default, or for instance the words of the pool.
+ * @throws if `rng` returns a number outside [0, 1), or if `groups` is empty.
  */
-export function generateSyllable(rng: Rng): Syllable {
-  // The first three steps choose among the category groups, not every syllable.
-  const groups = categoryGroups();
+export function generateSyllable(
+  rng: Rng,
+  groups: readonly CategoryGroup[] = categoryGroups(),
+): Syllable {
+  if (groups.length === 0) throw new Error('Cannot draw a syllable: no syllable group given');
 
+  // The first three steps choose among the category groups, not every syllable.
   // Frequency choice: each class a third of the time, although low class
   // consonants are the most numerous.
   const byClass = keepOneValue(groups, (g) => g.category.consonantClass, rng);

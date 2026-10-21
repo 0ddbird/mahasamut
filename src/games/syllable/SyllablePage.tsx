@@ -6,7 +6,9 @@ import { CONSONANTS_PANEL, TONES_PANEL, VOWELS_PANEL } from '../../help/panels';
 import { Verdict } from '../../components/Verdict/Verdict';
 import { generateSyllable } from '../../thai/generator';
 import type { Rng } from '../../thai/generator';
+import type { CategoryGroup } from '../../thai/generator/syllables';
 import { TONE_MARK } from '../../thai/types';
+import { wordGroups } from '../../thai/words';
 import { GAME, GAME_NAMES } from '../shared/games';
 import { QuestionBar } from '../shared/QuestionBar';
 import { DEFAULT_SETTINGS } from '../shared/settings';
@@ -23,6 +25,11 @@ interface SyllablePageProps {
   rng?: Rng;
   /** How the game is played: its length, its time, and the answer asked. */
   settings?: GameSettings;
+  /**
+   * The syllables drawn, grouped by category: the words of the pool by default.
+   * Passing `categoryGroups()` brings back every valid syllable.
+   */
+  groups?: readonly CategoryGroup[];
 }
 
 /** In learning mode: everything that tells the tone, from the letters to the rules. */
@@ -32,7 +39,7 @@ const HELP_PANELS = [CONSONANTS_PANEL, VOWELS_PANEL, TONES_PANEL];
 const NO_ANSWERS: PlayerAnswers = { toneMark: TONE_MARK.None };
 
 /**
- * The syllable game: the player reads a syllable and finds its tone, step by
+ * The syllable game: the player reads a real word of the pool and finds its tone, step by
  * step, or the tone alone in tone-only mode. Validate checks the answers once
  * every needed step is given, and locks them. Right answers move on to another
  * syllable by themselves; after a wrong one, or once the time is up, Validate
@@ -42,13 +49,14 @@ const NO_ANSWERS: PlayerAnswers = { toneMark: TONE_MARK.None };
 export function SyllablePage({
   rng = Math.random,
   settings = DEFAULT_SETTINGS,
+  groups = wordGroups(),
 }: SyllablePageProps) {
-  const [syllable, setSyllable] = useState(() => generateSyllable(rng));
+  const [syllable, setSyllable] = useState(() => generateSyllable(rng, groups));
   const [answers, setAnswers] = useState<PlayerAnswers>(NO_ANSWERS);
   const mode = settings.answerMode;
 
   const game = useSoloGame(settings, () => {
-    setSyllable(generateSyllable(rng));
+    setSyllable(generateSyllable(rng, groups));
     setAnswers(NO_ANSWERS);
   });
 

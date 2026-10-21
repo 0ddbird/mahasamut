@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateSyllable } from './index';
 import { seededRng } from './seeded-rng.test-utils';
-import { validSyllables } from './syllables';
+import { groupByCategory, validSyllables } from './syllables';
 import type { Syllable } from './syllables';
 
 // A fixed seed: every run sees the same 5000 syllables, so a failure can be
@@ -67,5 +67,33 @@ describe('generateSyllable', () => {
 
   it('throws if the rng returns a number outside [0, 1)', () => {
     expect(() => generateSyllable(() => 1)).toThrow(/\[0, 1\)/);
+  });
+
+  describe('with given groups', () => {
+    // A few syllables of different categories: mid and low class, open and closed.
+    const HANDPICKED = ['กา', 'มี', 'นก', 'ข้าว'];
+    const handpicked = validSyllables().filter((s) => HANDPICKED.includes(s.text));
+    const groups = groupByCategory(handpicked);
+
+    it('finds the hand-picked syllables among the valid ones', () => {
+      expect(new Set(handpicked.map((s) => s.text))).toEqual(new Set(HANDPICKED));
+    });
+
+    it('only draws syllables of those groups', () => {
+      const rng = seededRng(3);
+      const drawn = Array.from({ length: 500 }, () => generateSyllable(rng, groups));
+      const outside = drawn.filter((s) => !handpicked.includes(s));
+      expect(outside.map((s) => s.text)).toEqual([]);
+    });
+
+    it('can draw each of them', () => {
+      const rng = seededRng(3);
+      const drawn = new Set(Array.from({ length: 500 }, () => generateSyllable(rng, groups).text));
+      expect(drawn).toEqual(new Set(HANDPICKED));
+    });
+
+    it('throws a clear error when there are no groups', () => {
+      expect(() => generateSyllable(seededRng(1), [])).toThrow(/no syllable group/i);
+    });
   });
 });

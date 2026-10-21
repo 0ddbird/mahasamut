@@ -6,6 +6,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { generateSyllable } from '../../thai/generator';
 import type { Syllable } from '../../thai/generator';
 import { seededRng } from '../../thai/generator/seeded-rng.test-utils';
+import { wordGroups } from '../../thai/words';
+import pool from '../../thai/words/pool.json';
 import { DEFAULT_SETTINGS } from '../shared/settings';
 import type { GameSettings } from '../shared/settings';
 import { CORRECT_DELAY_MS } from '../shared/useNextWhenCorrect';
@@ -15,14 +17,14 @@ import { SyllablePage } from './SyllablePage';
 /** Renders inside a router: the results link to the settings page and home. */
 const render = (ui: ReactElement) => renderInDom(<MemoryRouter>{ui}</MemoryRouter>);
 
-/** The texts of the first `count` syllables drawn with `seed`. */
+/** The texts of the first `count` syllables the page draws with `seed`: it draws from the pool. */
 const textsDrawn = (seed: number, count: number) => {
   const rng = seededRng(seed);
-  return Array.from({ length: count }, () => generateSyllable(rng).text);
+  return Array.from({ length: count }, () => generateSyllable(rng, wordGroups()).text);
 };
 
 /** The first syllable the page draws with `seed`. */
-const firstSyllable = (seed: number) => generateSyllable(seededRng(seed));
+const firstSyllable = (seed: number) => generateSyllable(seededRng(seed), wordGroups());
 
 /** The smallest seed whose first syllable passes `test`. */
 const seedWhere = (test: (syllable: Syllable) => boolean) => {
@@ -98,6 +100,32 @@ describe('SyllablePage', () => {
     const [first] = textsDrawn(7, 1);
     render(<SyllablePage rng={seededRng(7)} />);
     expect(screen.getByText(first ?? '').getAttribute('lang')).toBe('th');
+  });
+
+  it('asks about real words only: 50 questions in a row are all in the pool', () => {
+    vi.useFakeTimers();
+    render(
+      <SyllablePage
+        rng={seededRng(11)}
+        settings={{ ...DEFAULT_SETTINGS, secondsPerQuestion: 1 }}
+      />,
+    );
+    const words = new Set<string>(pool);
+    const asked: string[] = [];
+    for (let question = 0; question < 50; question++) {
+      asked.push(document.querySelector('[lang="th"]')?.textContent ?? '');
+      act(() => vi.advanceTimersByTime(1000));
+      fireEvent.click(nextButton());
+    }
+    expect(asked.filter((text) => !words.has(text))).toEqual([]);
+    expect(new Set(asked).size).toBeGreaterThan(10);
+  });
+
+  it('can be given other groups to draw from', () => {
+    const groups = wordGroups().slice(0, 1);
+    const only = new Set(groups[0]?.syllables.map((s) => s.text));
+    render(<SyllablePage rng={seededRng(7)} groups={groups} />);
+    expect(only.has(document.querySelector('[lang="th"]')?.textContent ?? '')).toBe(true);
   });
 
   it('starts with no tone mark chosen, and nothing else', () => {
