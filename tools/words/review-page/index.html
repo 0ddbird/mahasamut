@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Word review</title>
+    <link rel="stylesheet" href="review.css" />
+    <script type="module" src="review.js"></script>
+  </head>
+  <body>
+    <header class="top">
+      <div class="top-line">
+        <h1>Word review</h1>
+        <div class="progress">
+          <p id="progress-text">Loading…</p>
+          <progress id="progress-bar" max="1" value="0"></progress>
+          <p id="progress-detail" class="muted"></p>
+        </div>
+        <div class="pager" id="pager-top"></div>
+      </div>
+
+      <form id="filters" class="filters" autocomplete="off">
+        <label>
+          <span>Status</span>
+          <select name="status">
+            <option value="all">All</option>
+            <option value="todo">To do</option>
+            <option value="validated">Validated</option>
+            <option value="none">No good take</option>
+            <option value="removed">Removed</option>
+          </select>
+        </label>
+        <label>
+          <span>Takes</span>
+          <select name="takes">
+            <option value="all">Any</option>
+            <option value="with">With takes</option>
+            <option value="without">No take yet</option>
+          </select>
+        </label>
+        <label>
+          <span>Expected tone</span>
+          <select name="tone">
+            <option value="all">Any</option>
+            <option value="mid">Mid</option>
+            <option value="low">Low</option>
+            <option value="falling">Falling</option>
+            <option value="high">High</option>
+            <option value="rising">Rising</option>
+          </select>
+        </label>
+        <label>
+          <span>Class</span>
+          <select name="consonantClass">
+            <option value="all">Any</option>
+            <option value="high">High</option>
+            <option value="mid">Mid</option>
+            <option value="low">Low</option>
+          </select>
+        </label>
+        <label>
+          <span>Liveness</span>
+          <select name="liveness">
+            <option value="all">Any</option>
+            <option value="live">Live</option>
+            <option value="dead">Dead</option>
+          </select>
+        </label>
+        <label>
+          <span>Vowel</span>
+          <select name="vowelLength">
+            <option value="all">Any</option>
+            <option value="short">Short</option>
+            <option value="long">Long</option>
+          </select>
+        </label>
+        <label>
+          <span>Mark</span>
+          <select name="mark">
+            <option value="all">Any</option>
+            <option value="none">No mark</option>
+            <option value="eek">Mai eek</option>
+            <option value="thoo">Mai tho</option>
+            <option value="trii">Mai trii</option>
+            <option value="djattawaa">Mai djattawaa</option>
+          </select>
+        </label>
+        <button type="button" id="reload" title="Read the words, takes and decisions again">
+          Reload data
+        </button>
+      </form>
+
+      <p class="legend">
+        <span><kbd>↑</kbd><kbd>↓</kbd> or <kbd>J</kbd><kbd>K</kbd> move</span>
+        <span><kbd>Space</kbd> or <kbd>P</kbd> play the takes in turn</span>
+        <span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> choose that take</span>
+        <span><kbd>Shift</kbd>+<kbd>1</kbd>… play only that take</span>
+        <span><kbd>N</kbd> none right</span>
+        <span><kbd>R</kbd> remove</span>
+        <span><kbd>E</kbd> note (<kbd>Enter</kbd> saves)</span>
+        <span><kbd>←</kbd><kbd>→</kbd> page</span>
+        <label class="advance">
+          <input type="checkbox" id="advance" checked />
+          Go to the next word after a key decision
+        </label>
+      </p>
+    </header>
+
+    <main>
+      <p id="banner" class="banner" role="alert" hidden></p>
+      <section id="orphans" class="orphans" hidden></section>
+      <p id="empty" class="empty" hidden>No word matches these filters.</p>
+      <ol id="rows" class="rows"></ol>
+    </main>
+
+    <footer class="bottom">
+      <div class="pager" id="pager-bottom"></div>
+    </footer>
+
+    <noscript>This page needs JavaScript.</noscript>
+  </body>
+</html>
