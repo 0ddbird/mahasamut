@@ -4,8 +4,8 @@ import { AnswerRow } from '../../components/AnswerRow/AnswerRow';
 import { Button } from '../../components/Button/Button';
 import { GAME, GAME_NAMES, GAME_PATHS } from './games';
 import type { GameId } from './games';
-import { QUESTION_COUNT } from './settings';
-import type { AnswerMode, GameSettings, SecondsPerQuestion } from './settings';
+import { isWholeIn, QUESTION_COUNT, SECONDS_PER_QUESTION } from './settings';
+import type { AnswerMode, GameSettings } from './settings';
 import {
   ANSWER_MODE_OPTIONS,
   LEARNING_MODE_OPTIONS,
@@ -17,11 +17,43 @@ import { loadSettings, saveSettings } from './settingsStorage';
 import { settingsToSearch } from './settingsUrl';
 import styles from './SetupPage.module.scss';
 
-/** Whether `text` is a number of questions a series can have. */
-const isValidCount = (text: string) => {
-  const count = Number(text);
-  return Number.isInteger(count) && count >= QUESTION_COUNT.min && count <= QUESTION_COUNT.max;
-};
+interface WholeNumberFieldProps {
+  label: string;
+  range: { min: number; max: number };
+  /** What the error says the player can choose, after the range: "questions". */
+  unit: string;
+  /** Kept as typed, so the field can be empty or wrong while the player edits it. */
+  text: string;
+  onChange: (text: string) => void;
+}
+
+/** A whole number within `range`, with the error that says why Play is disabled. */
+function WholeNumberField({ label, range, unit, text, onChange }: WholeNumberFieldProps) {
+  const valid = isWholeIn(Number(text), range);
+  const errorId = useId();
+  return (
+    <>
+      <label className={styles.count}>
+        {label}
+        <input
+          type="number"
+          min={range.min}
+          max={range.max}
+          value={text}
+          onChange={(event) => onChange(event.target.value)}
+          // Screen readers say why Play is disabled, from the field itself.
+          aria-invalid={!valid}
+          aria-describedby={valid ? undefined : errorId}
+        />
+      </label>
+      {!valid && (
+        <p className={styles.error} id={errorId}>
+          Choose {range.min} to {range.max} {unit}.
+        </p>
+      )}
+    </>
+  );
+}
 
 /**
  * The settings of a game, chosen before it starts: its length, its time and,
@@ -36,31 +68,40 @@ export function SetupPage({ game }: { game: GameId }) {
   const [length, setLength] = useState<LengthChoice>(
     initial.questionCount === null ? 'endless' : 'series',
   );
-  // Kept as typed, so the field can be empty or wrong while the player edits it.
   const [countText, setCountText] = useState(
     String(initial.questionCount ?? QUESTION_COUNT.default),
   );
   const [time, setTime] = useState<TimeChoice>(
-    initial.secondsPerQuestion === null ? 'free' : `${initial.secondsPerQuestion}`,
+    initial.secondsPerQuestion === null ? 'free' : 'timed',
+  );
+  const [secondsText, setSecondsText] = useState(
+    String(initial.secondsPerQuestion ?? SECONDS_PER_QUESTION.default),
   );
   const [answerMode, setAnswerMode] = useState<AnswerMode>(initial.answerMode);
   const [learning, setLearning] = useState<LearningChoice>(initial.learningMode ? 'on' : 'off');
 
   const series = length === 'series';
-  const countIsValid = !series || isValidCount(countText);
-  const countErrorId = useId();
+  const timed = time === 'timed';
+  const valid =
+    (!series || isWholeIn(Number(countText), QUESTION_COUNT)) &&
+    (!timed || isWholeIn(Number(secondsText), SECONDS_PER_QUESTION));
 
+  // A series or a timed game always starts from the proposed number, not from
+  // one left behind.
   const chooseLength = (value: LengthChoice) => {
-    // A series always starts from the proposed number, not from one left behind.
-    if (value === 'series' && length !== 'series') setCountText(String(QUESTION_COUNT.default));
+    if (value === 'series' && !series) setCountText(String(QUESTION_COUNT.default));
     setLength(value);
+  };
+  const chooseTime = (value: TimeChoice) => {
+    if (value === 'timed' && !timed) setSecondsText(String(SECONDS_PER_QUESTION.default));
+    setTime(value);
   };
 
   const play = () => {
-    if (!countIsValid) return;
+    if (!valid) return;
     const settings: GameSettings = {
       questionCount: series ? Number(countText) : null,
-      secondsPerQuestion: time === 'free' ? null : (Number(time) as SecondsPerQuestion),
+      secondsPerQuestion: timed ? Number(secondsText) : null,
       answerMode,
       learningMode: learning === 'on',
     };
@@ -81,32 +122,30 @@ export function SetupPage({ game }: { game: GameId }) {
           onSelect={chooseLength}
         />
         {series && (
-          <label className={styles.count}>
-            Number of questions
-            <input
-              type="number"
-              min={QUESTION_COUNT.min}
-              max={QUESTION_COUNT.max}
-              value={countText}
-              onChange={(event) => setCountText(event.target.value)}
-              // Screen readers say why Play is disabled, from the field itself.
-              aria-invalid={!countIsValid}
-              aria-describedby={countIsValid ? undefined : countErrorId}
-            />
-          </label>
-        )}
-        {!countIsValid && (
-          <p className={styles.error} id={countErrorId}>
-            Choose {QUESTION_COUNT.min} to {QUESTION_COUNT.max} questions.
-          </p>
+          <WholeNumberField
+            label="Number of questions"
+            range={QUESTION_COUNT}
+            unit="questions"
+            text={countText}
+            onChange={setCountText}
+          />
         )}
         <AnswerRow
           title="Time per question"
           name="time"
           options={TIME_OPTIONS}
           selected={time}
-          onSelect={setTime}
+          onSelect={chooseTime}
         />
+        {timed && (
+          <WholeNumberField
+            label="Seconds per question"
+            range={SECONDS_PER_QUESTION}
+            unit="seconds"
+            text={secondsText}
+            onChange={setSecondsText}
+          />
+        )}
         {game === GAME.Syllable && (
           <AnswerRow
             title="Answer"
@@ -125,7 +164,7 @@ export function SetupPage({ game }: { game: GameId }) {
           note="Help panels to open during the game"
         />
       </div>
-      <Button disabled={!countIsValid} onClick={play}>
+      <Button disabled={!valid} onClick={play}>
         Play
       </Button>
     </main>

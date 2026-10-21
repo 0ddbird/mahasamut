@@ -37,14 +37,8 @@ describe('the choices of the settings page', () => {
     expect(LENGTH_OPTIONS.map((option) => option.label)).toEqual(['Endless', 'Series']);
   });
 
-  it('offers free time or each time per question, in one row', () => {
-    expect(TIME_OPTIONS.map((option) => option.label)).toEqual([
-      'Free',
-      '10 s',
-      '15 s',
-      '20 s',
-      '30 s',
-    ]);
+  it('offers free time or a timed game, its seconds asked apart', () => {
+    expect(TIME_OPTIONS.map((option) => option.label)).toEqual(['Free', 'Timed']);
   });
 
   it('offers the full reasoning or the tone alone', () => {

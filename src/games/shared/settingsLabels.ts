@@ -4,7 +4,7 @@
  * that a translation can replace them later.
  */
 import type { Option } from '../../components/AnswerRow/option';
-import { ANSWER_MODE, SECONDS_PER_QUESTION_OPTIONS } from './settings';
+import { ANSWER_MODE } from './settings';
 import type { AnswerMode, GameSettings } from './settings';
 
 /** The length of a game, as the settings page asks it before the number of questions. */
@@ -15,15 +15,12 @@ export const LENGTH_OPTIONS: readonly Option<LengthChoice>[] = [
   { value: 'series', label: 'Series' },
 ];
 
-/** The time of a game in one row: free, or one of the times per question. */
-export type TimeChoice = 'free' | `${(typeof SECONDS_PER_QUESTION_OPTIONS)[number]}`;
+/** The time of a game, as the settings page asks it before the seconds per question. */
+export type TimeChoice = 'free' | 'timed';
 
 export const TIME_OPTIONS: readonly Option<TimeChoice>[] = [
   { value: 'free', label: 'Free' },
-  ...SECONDS_PER_QUESTION_OPTIONS.map((seconds) => ({
-    value: `${seconds}` as const,
-    label: `${seconds} s`,
-  })),
+  { value: 'timed', label: 'Timed' },
 ];
 
 const ANSWER_MODE_LABELS: Record<AnswerMode, string> = {

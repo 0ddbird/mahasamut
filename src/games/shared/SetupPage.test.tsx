@@ -29,6 +29,8 @@ const choice = (row: string, label: string) => rowOf(row).getByRole('radio', { n
 const isChecked = (row: string, label: string) => (choice(row, label) as HTMLInputElement).checked;
 const countInput = () =>
   screen.queryByRole('spinbutton', { name: 'Number of questions' }) as HTMLInputElement | null;
+const secondsInput = () =>
+  screen.queryByRole('spinbutton', { name: 'Seconds per question' }) as HTMLInputElement | null;
 const playButton = () => screen.getByRole('button', { name: 'Play' }) as HTMLButtonElement;
 
 afterEach(() => {
@@ -43,6 +45,7 @@ describe('SetupPage', () => {
     expect(isChecked('Answer', 'Full reasoning')).toBe(true);
     expect(isChecked('Learning mode', 'Off')).toBe(true);
     expect(countInput()).toBeNull();
+    expect(secondsInput()).toBeNull();
   });
 
   it('starts from the last settings played', () => {
@@ -56,7 +59,8 @@ describe('SetupPage', () => {
 
     expect(isChecked('Length', 'Series')).toBe(true);
     expect(countInput()?.value).toBe('20');
-    expect(isChecked('Time per question', '15 s')).toBe(true);
+    expect(isChecked('Time per question', 'Timed')).toBe(true);
+    expect(secondsInput()?.value).toBe('15');
     expect(isChecked('Answer', 'Tone only')).toBe(true);
     expect(isChecked('Learning mode', 'On')).toBe(true);
   });
@@ -108,6 +112,47 @@ describe('SetupPage', () => {
     expect(document.getElementById(describedBy)?.textContent).toBe('Choose 5 to 30 questions.');
   });
 
+  it('proposes 15 seconds when switching to a timed game', async () => {
+    renderSetup();
+    await userEvent.click(choice('Time per question', 'Timed'));
+    expect(secondsInput()?.value).toBe('15');
+  });
+
+  it('takes any whole number of seconds from 1 to 60', async () => {
+    renderSetup();
+    await userEvent.click(choice('Time per question', 'Timed'));
+    const input = secondsInput();
+    if (input === null) throw new Error('No seconds per question');
+
+    for (const [typed, valid] of [
+      ['0', false],
+      ['61', false],
+      ['1', true],
+      ['60', true],
+    ] as const) {
+      await userEvent.clear(input);
+      await userEvent.type(input, typed);
+      expect(playButton().disabled).toBe(!valid);
+      expect(input.getAttribute('aria-invalid')).toBe(String(!valid));
+    }
+
+    await userEvent.clear(input);
+    await userEvent.type(input, '0');
+    const describedBy = input.getAttribute('aria-describedby') ?? '';
+    expect(document.getElementById(describedBy)?.textContent).toBe('Choose 1 to 60 seconds.');
+  });
+
+  it('plays with any number of seconds', async () => {
+    renderSetup();
+    await userEvent.click(choice('Time per question', 'Timed'));
+    const input = secondsInput();
+    if (input === null) throw new Error('No seconds per question');
+    await userEvent.clear(input);
+    await userEvent.type(input, '7');
+    await userEvent.click(playButton());
+    expect(screen.getByText('At /syllable/play?time=7')).toBeDefined();
+  });
+
   it('plays with the defaults in one click', async () => {
     renderSetup();
     await userEvent.click(playButton());
@@ -117,7 +162,7 @@ describe('SetupPage', () => {
   it('plays with the chosen settings, and remembers them', async () => {
     renderSetup();
     await userEvent.click(choice('Length', 'Series'));
-    await userEvent.click(choice('Time per question', '15 s'));
+    await userEvent.click(choice('Time per question', 'Timed'));
     await userEvent.click(choice('Answer', 'Tone only'));
     await userEvent.click(choice('Learning mode', 'On'));
     await userEvent.click(playButton());

@@ -43,9 +43,19 @@ describe('parseGameSettings', () => {
     for (const questionCount of [31, 10.5, '10']) {
       expect(parseGameSettings({ ...SERIES_OF_10, questionCount }).questionCount).toBeNull();
     }
-    expect(
-      parseGameSettings({ ...SERIES_OF_10, secondsPerQuestion: 12 }).secondsPerQuestion,
-    ).toBeNull();
+    for (const secondsPerQuestion of [0, 61, 1.5, '15']) {
+      expect(
+        parseGameSettings({ ...SERIES_OF_10, secondsPerQuestion }).secondsPerQuestion,
+      ).toBeNull();
+    }
+  });
+
+  it('reads any whole number of seconds from 1 to 60', () => {
+    for (const secondsPerQuestion of [1, 12, 60]) {
+      expect(parseGameSettings({ ...SERIES_OF_10, secondsPerQuestion }).secondsPerQuestion).toBe(
+        secondsPerQuestion,
+      );
+    }
   });
 
   it('reads settings saved before the learning mode existed', () => {

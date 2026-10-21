@@ -25,7 +25,16 @@
     padding: var(--space-xs) var(--space-s);
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
+    color: var(--color-text);
+    background: var(--color-surface);
     font: inherit;
+    // The spin buttons drawn by the browser follow the dark page.
+    color-scheme: dark;
+
+    &:focus-visible {
+      outline: 2px solid var(--color-accent-light);
+      outline-offset: 2px;
+    }
   }
 }
 

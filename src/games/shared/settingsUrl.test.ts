@@ -28,6 +28,7 @@ describe('settingsFromSearch', () => {
       DEFAULT_SETTINGS,
       TIMED_SERIES,
       { ...DEFAULT_SETTINGS, questionCount: 30 },
+      { ...DEFAULT_SETTINGS, secondsPerQuestion: 1 },
       { ...TIMED_SERIES, learningMode: true },
     ];
     for (const settings of combinations) {
@@ -37,7 +38,7 @@ describe('settingsFromSearch', () => {
 
   it('falls back to the defaults on a bad parameter', () => {
     expect(
-      settingsFromSearch(new URLSearchParams('count=abc&time=12&answer=x&learn=maybe')),
+      settingsFromSearch(new URLSearchParams('count=abc&time=0&answer=x&learn=maybe')),
     ).toEqual(DEFAULT_SETTINGS);
   });
 });

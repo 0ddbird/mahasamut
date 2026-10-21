@@ -9,10 +9,8 @@
  * with fewer combinations allowed.
  */
 
-/** The times a question can last, in seconds. */
-export const SECONDS_PER_QUESTION_OPTIONS = [10, 15, 20, 30] as const;
-export type SecondsPerQuestion = (typeof SECONDS_PER_QUESTION_OPTIONS)[number];
-export const DEFAULT_SECONDS_PER_QUESTION: SecondsPerQuestion = 15;
+/** How long a question can last, in whole seconds, and the time first proposed. */
+export const SECONDS_PER_QUESTION = { min: 1, max: 60, default: 15 } as const;
 
 /** How many questions a series can have, and the number first proposed. */
 export const QUESTION_COUNT = { min: 5, max: 30, default: 10 } as const;
@@ -31,8 +29,8 @@ export const ANSWER_MODES: readonly AnswerMode[] = Object.values(ANSWER_MODE);
 export interface GameSettings {
   /** The length of a series; null for an endless game. */
   questionCount: number | null;
-  /** The time given for each question; null for free time. */
-  secondsPerQuestion: SecondsPerQuestion | null;
+  /** The time given for each question, in seconds; null for free time. */
+  secondsPerQuestion: number | null;
   /** Only read by the syllable game. */
   answerMode: AnswerMode;
   /**
@@ -50,6 +48,10 @@ export const DEFAULT_SETTINGS: GameSettings = {
   learningMode: false,
 };
 
+/** Whether `value` is a whole number from `range.min` to `range.max`. */
+export const isWholeIn = (value: unknown, range: { min: number; max: number }) =>
+  Number.isInteger(value) && (value as number) >= range.min && (value as number) <= range.max;
+
 /**
  * Reads settings that may come from anywhere (storage, the URL): each value
  * the game does not accept is replaced by its default, the others are kept.
@@ -61,17 +63,14 @@ export function parseGameSettings(raw: unknown): GameSettings {
     unknown
   >;
 
-  const countInRange =
-    Number.isInteger(questionCount) &&
-    (questionCount as number) >= QUESTION_COUNT.min &&
-    (questionCount as number) <= QUESTION_COUNT.max;
-  const knownTime = SECONDS_PER_QUESTION_OPTIONS.includes(secondsPerQuestion as SecondsPerQuestion);
+  const countInRange = isWholeIn(questionCount, QUESTION_COUNT);
+  const timeInRange = isWholeIn(secondsPerQuestion, SECONDS_PER_QUESTION);
   const knownMode = ANSWER_MODES.includes(answerMode as AnswerMode);
 
   return {
     questionCount: countInRange ? (questionCount as number) : DEFAULT_SETTINGS.questionCount,
-    secondsPerQuestion: knownTime
-      ? (secondsPerQuestion as SecondsPerQuestion)
+    secondsPerQuestion: timeInRange
+      ? (secondsPerQuestion as number)
       : DEFAULT_SETTINGS.secondsPerQuestion,
     answerMode: knownMode ? (answerMode as AnswerMode) : DEFAULT_SETTINGS.answerMode,
     learningMode: typeof learningMode === 'boolean' ? learningMode : DEFAULT_SETTINGS.learningMode,
