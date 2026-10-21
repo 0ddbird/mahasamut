@@ -28,9 +28,10 @@
 }
 
 // The row of tiles may scroll on a phone; the page itself never does sideways.
+// Clipped, not hidden: hidden would also make the page a scroll container.
 html,
 body {
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -169,7 +170,9 @@ $shape: polygon(0 19%, 100% 0, 100% 81%, 0 100%);
 }
 
 // On a phone, the tiles stay in one row that scrolls under the finger, Thai first.
-@media (max-width: 39.99rem) {
+// Up to 44rem: below it, five tiles of at least 7.5rem and their gaps no longer
+// fit beside the page's margins (5 × 7.5 + 4 × 1 + 2 × 1 = 43.5rem).
+@media (max-width: 43.99rem) {
   .tiles {
     justify-content: flex-start;
     overflow-x: auto;

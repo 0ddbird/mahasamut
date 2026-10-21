@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { JSDOM } from 'jsdom';
 import { describe, expect, it } from 'vitest';
 import { contrast, opaqueColors } from '../src/styles/contrast.test-utils';
@@ -42,6 +42,22 @@ describe('the home page', () => {
         name: 'Scriptomancy',
         url: 'https://scriptomancy.com/',
       });
+    });
+
+    // The root domain serves dist/home/ only, and /assets/: a file the page links
+    // to by an absolute path must be in public/home/, or it is a 404 there.
+    it('finds every file it links to on the root domain', () => {
+      const paths = [...page.querySelectorAll('[href], [src]')]
+        .map((element) => element.getAttribute('href') ?? element.getAttribute('src')!)
+        .filter((url) => url.startsWith('/') && !url.startsWith('//'));
+      const missing = paths.filter(
+        (path) => !existsSync(new URL(`../public/home${path}`, import.meta.url)),
+      );
+      expect(missing).toEqual([]);
+    });
+
+    it('shows the same favicon as the Thai site', () => {
+      expect(read('../public/home/favicon.svg')).toBe(read('../public/favicon.svg'));
     });
 
     it('lists the home page and the Thai site for robots', () => {
