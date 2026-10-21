@@ -1,5 +1,22 @@
 // Scriptomancy's home page: no script, so this sheet is all there is.
 @import '@fontsource/fredoka/latin-700.css';
+// Each language's name over its picture, in a book face drawn for its script.
+@import '@fontsource/sarabun/thai-600.css';
+@import '@fontsource/lora/latin-600-italic.css';
+@import '@fontsource/lora/vietnamese-600-italic.css';
+
+// The Chinese, Japanese and Korean faces, cut down to their names' characters
+// by `npm run home:fonts`.
+@each $family,
+  $file in ('Noto Serif SC': chinese, 'Shippori Mincho': japanese, 'Gowun Batang': korean)
+{
+  @font-face {
+    font-display: swap;
+    font-family: $family;
+    font-weight: 700;
+    src: url('./fonts/#{$file}.woff2') format('woff2');
+  }
+}
 
 // A grey page: green belongs to Thai. home.test.ts checks every text colour
 // against the background at WCAG AA: keep the two in step.
@@ -16,6 +33,9 @@
   --lang-japanese: #f7a1c4;
   --lang-korean: #c8a7ff;
   --lang-vietnamese: #7cc4ff;
+
+  // The names over the pictures: dark ink, in a soft white halo.
+  --home-ink: #1c1c1e;
 
   --font-display: 'Fredoka', sans-serif;
   --radius: 0.5rem;
@@ -72,9 +92,9 @@ body {
   text-transform: uppercase;
 }
 
-// From the user's drawing: vertical sides, top and bottom edges rising to the
-// right, the left side starting 19% lower. The picture stays upright, cut.
-$shape: polygon(0 19%, 100% 0, 100% 81%, 0 100%);
+// The watercolour fades into the page, like paint on paper: opaque in the
+// middle, gone in the corners.
+$fade: radial-gradient(ellipse 72% 70% at 50% 50%, #000 58%, transparent 100%);
 
 .tiles {
   display: flex;
@@ -98,20 +118,70 @@ $shape: polygon(0 19%, 100% 0, 100% 81%, 0 100%);
   text-decoration: none;
 }
 
-// The glow sits on this wrapper, outside the cut: a filter on the cut element
-// itself would be cut with it.
-.shape {
+// The picture and its name. The name's size follows the tile's width.
+.art {
+  position: relative;
   display: block;
   width: 100%;
+  container-type: inline-size;
+}
+
+// The glow sits on this wrapper, outside the fade: a filter on the faded
+// element itself would be faded with it.
+.shape {
+  display: block;
   transition: filter 0.2s ease-out;
 
   img {
     display: block;
     width: 100%;
     height: auto;
-    aspect-ratio: 274 / 718;
+    aspect-ratio: 572 / 1024;
     object-fit: cover;
-    clip-path: $shape;
+    mask-image: $fade;
+  }
+}
+
+// Outside .shape, so neither the fade nor Thai's glow touches it.
+.native {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  translate: 0 -50%;
+  color: var(--home-ink);
+  font-size: 17cqi;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-shadow:
+    0 0 0.25em rgb(255 255 255 / 85%),
+    0 0 0.55em rgb(255 255 255 / 60%);
+
+  &[lang='th'] {
+    font-family: 'Sarabun', serif;
+    font-weight: 600;
+  }
+
+  &[lang='zh-Hans'] {
+    font-family: 'Noto Serif SC', serif;
+    font-weight: 700;
+  }
+
+  &[lang='ja'] {
+    font-family: 'Shippori Mincho', serif;
+    font-weight: 700;
+  }
+
+  &[lang='ko'] {
+    font-family: 'Gowun Batang', serif;
+    font-weight: 700;
+  }
+
+  // The longest name: a little smaller, to keep inside the picture.
+  &[lang='vi'] {
+    font-family: 'Lora', serif;
+    font-size: 15cqi;
+    font-style: italic;
+    font-weight: 600;
   }
 }
 
@@ -135,14 +205,15 @@ $shape: polygon(0 19%, 100% 0, 100% 81%, 0 100%);
 }
 
 // Thai, the one open: a faint green glow, brighter when pointed at or focused.
+// Only wide, soft shadows: a thin one would draw the edge the fade hides.
 [data-language='thai'] {
   .shape {
-    filter: drop-shadow(0 0 1px var(--lang-thai)) drop-shadow(0 0 0.75rem rgb(111 214 162 / 35%));
+    filter: drop-shadow(0 0 0.75rem rgb(111 214 162 / 35%));
   }
 
   .card:hover .shape,
   .card:focus-visible .shape {
-    filter: drop-shadow(0 0 2px var(--lang-thai)) drop-shadow(0 0 1.25rem rgb(111 214 162 / 55%));
+    filter: drop-shadow(0 0 1.25rem rgb(111 214 162 / 60%));
   }
 
   .card:focus-visible {
@@ -155,8 +226,8 @@ $shape: polygon(0 19%, 100% 0, 100% 81%, 0 100%);
   }
 }
 
-// The languages to come: faded, greyer, nothing to click.
-.soon .shape {
+// The languages to come: faded, greyer, their names with them, nothing to click.
+.soon .art {
   opacity: 0.35;
   filter: grayscale(0.6);
 }

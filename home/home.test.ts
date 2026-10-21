@@ -87,6 +87,23 @@ describe('the home page', () => {
       );
     });
 
+    // Real text, not painted in the picture: sharp at any size, and read in its
+    // own language by screen readers and search engines.
+    it("writes each language's own name over its picture, in that language", () => {
+      expect(
+        tiles().map((tile) => {
+          const native = tile.querySelector('.art .native');
+          return [native?.getAttribute('lang'), native?.textContent?.trim()];
+        }),
+      ).toEqual([
+        ['th', 'ภาษาไทย'],
+        ['zh-Hans', '中文'],
+        ['ja', '日本語'],
+        ['ko', '한국어'],
+        ['vi', 'Tiếng Việt'],
+      ]);
+    });
+
     it('opens Thai only: one link, to the Thai site', () => {
       const links = [...page.querySelectorAll('a')];
       expect(links.map((a) => a.getAttribute('href'))).toEqual(['https://thai.scriptomancy.com']);
