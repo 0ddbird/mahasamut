@@ -174,16 +174,11 @@ export async function startReviewServer({
   async function saveDecision(request: IncomingMessage) {
     const { text, input } = parseDecisionRequest(await readJsonBody(request));
     return serialized(() => {
+      const current = readReview(reviewFile);
+      const manifest = readManifest(takesDir);
       let review;
       try {
-        review = applyDecision(
-          readReview(reviewFile),
-          level1,
-          readManifest(takesDir),
-          text,
-          input,
-          new Date(),
-        );
+        review = applyDecision(current, level1, manifest, text, input, new Date());
       } catch (error) {
         throw new HttpError(400, (error as Error).message);
       }
