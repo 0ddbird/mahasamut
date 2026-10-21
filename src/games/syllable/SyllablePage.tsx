@@ -8,7 +8,7 @@ import { generateSyllable } from '../../thai/generator';
 import type { Rng } from '../../thai/generator';
 import { TONE_MARK } from '../../thai/types';
 import { GAME, GAME_NAMES } from '../shared/games';
-import { ScoreBar } from '../shared/ScoreBar';
+import { QuestionBar } from '../shared/QuestionBar';
 import { DEFAULT_SETTINGS } from '../shared/settings';
 import type { GameSettings } from '../shared/settings';
 import { Summary } from '../shared/Summary';
@@ -79,11 +79,11 @@ export function SyllablePage({
     <HelpPanels panels={settings.learningMode ? HELP_PANELS : []} resetKey={game.questionNumber}>
       <main className={styles.page}>
         {title}
-        <ScoreBar
+        <QuestionBar
           questionNumber={game.questionNumber}
           questionCount={settings.questionCount}
-          score={game.score}
           remainingMs={game.remainingMs}
+          secondsPerQuestion={settings.secondsPerQuestion}
           onEnd={game.end}
         />
         <ThaiDisplay text={syllable.text} />

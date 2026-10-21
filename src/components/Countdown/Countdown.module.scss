@@ -1,5 +1,56 @@
-// Digits of the same width, so the countdown does not shift as it ticks.
-.countdown {
-  font-variant-numeric: tabular-nums;
+$size: 3.75rem;
+
+// The seconds sit in the middle of the ring.
+.clock {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: $size;
+  height: $size;
+  color: var(--color-accent-light);
+
+  &[data-low] {
+    color: var(--color-wrong);
+  }
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  // The ring starts at the top, and empties clockwise.
+  transform: rotate(-90deg) scaleY(-1);
+}
+
+.track,
+.left {
+  fill: none;
+  stroke-width: 4;
+}
+
+.track {
+  stroke: var(--color-border);
+}
+
+// The time left, in the clock's colour. It moves on with each tick of the
+// timer, smoothly between them.
+.left {
+  stroke: currentColor;
+  stroke-linecap: round;
+  transition:
+    stroke-dashoffset 0.25s linear,
+    stroke 0.3s;
+}
+
+// Digits of the same width, so the seconds do not shift as they tick.
+.seconds {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .left {
+    transition: none;
+  }
 }

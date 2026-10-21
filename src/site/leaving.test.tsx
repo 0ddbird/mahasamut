@@ -52,7 +52,7 @@ describe('leaving a game from the bar', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Keep playing' }));
     expect(dialog()).toBeNull();
-    expect(screen.getByText(/^Score \d \/ 1$/)).toBeDefined();
+    expect(screen.getByRole('group', { name: 'Consonant class' })).toBeDefined();
     expect(document.activeElement).toBe(logo());
   });
 
@@ -99,7 +99,7 @@ describe('leaving a game from the bar', () => {
     vi.useFakeTimers();
     renderAt(`${PLAY}?time=10`);
     act(() => vi.advanceTimersByTime(10_000));
-    expect(screen.getByText('Score 0 / 1')).toBeDefined();
+    expect(screen.getByRole('status').textContent).toBe("Time's up!");
 
     // userEvent hangs on Vitest's fake timers: this click goes through fireEvent.
     fireEvent.click(logo());

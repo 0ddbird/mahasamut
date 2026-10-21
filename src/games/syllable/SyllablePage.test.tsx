@@ -224,13 +224,11 @@ describe('SyllablePage', () => {
       expect(validateButton().disabled).toBe(true);
     });
 
-    it('shows the score as the player goes', async () => {
+    it('keeps the score for the results', async () => {
       render(<SyllablePage rng={seededRng(UNMARKED_SEED)} />);
-      expect(screen.getByText('Score 0 / 0')).toBeDefined();
-
       await answerWith(WRONG);
       await userEvent.click(validateButton());
-      expect(screen.getByText('Score 0 / 1')).toBeDefined();
+      expect(screen.queryByText(/Score/)).toBeNull();
     });
   });
 
@@ -269,7 +267,7 @@ describe('SyllablePage', () => {
           settings={withSettings({ secondsPerQuestion: 10 })}
         />,
       );
-      expect(screen.getByRole('timer').textContent).toBe('10 s');
+      expect(screen.getByRole('timer', { name: '10 seconds' }).textContent).toBe('10');
 
       letTimeRunOut();
       expect(screen.getByRole('status').textContent).toBe("Time's up!");
@@ -280,7 +278,6 @@ describe('SyllablePage', () => {
         }),
       ).toBeDefined();
       expect(nextButton()).toBeDefined();
-      expect(screen.getByText('Score 0 / 1')).toBeDefined();
     });
 
     it('plays a series to its results', () => {
@@ -292,7 +289,7 @@ describe('SyllablePage', () => {
         />,
       );
       for (let question = 1; question < 5; question++) {
-        expect(screen.getByText(`Question ${question} / 5`)).toBeDefined();
+        expect(screen.getByText(`${question} / 5`)).toBeDefined();
         letTimeRunOut();
         fireEvent.click(nextButton());
       }
@@ -323,8 +320,7 @@ describe('SyllablePage', () => {
       await userEvent.click(screen.getByRole('button', { name: 'End' }));
       await userEvent.click(screen.getByRole('button', { name: 'Play again' }));
 
-      expect(screen.getByText('Question 1 / 5')).toBeDefined();
-      expect(screen.getByText('Score 0 / 0')).toBeDefined();
+      expect(screen.getByText('1 / 5')).toBeDefined();
       expect(validateButton().disabled).toBe(true);
     });
   });

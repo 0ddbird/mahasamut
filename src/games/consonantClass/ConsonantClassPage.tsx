@@ -9,7 +9,7 @@ import type { Rng } from '../../thai/generator';
 import type { ConsonantClass } from '../../thai/types';
 import { GAME, GAME_NAMES } from '../shared/games';
 import { CONSONANT_CLASS_OPTIONS } from '../shared/options';
-import { ScoreBar } from '../shared/ScoreBar';
+import { QuestionBar } from '../shared/QuestionBar';
 import { DEFAULT_SETTINGS } from '../shared/settings';
 import type { GameSettings } from '../shared/settings';
 import { Summary } from '../shared/Summary';
@@ -71,11 +71,11 @@ export function ConsonantClassPage({
     <HelpPanels panels={settings.learningMode ? HELP_PANELS : []} resetKey={game.questionNumber}>
       <main className={styles.page}>
         {title}
-        <ScoreBar
+        <QuestionBar
           questionNumber={game.questionNumber}
           questionCount={settings.questionCount}
-          score={game.score}
           remainingMs={game.remainingMs}
+          secondsPerQuestion={settings.secondsPerQuestion}
           onEnd={game.end}
         />
         <ThaiDisplay text={consonant.char} />

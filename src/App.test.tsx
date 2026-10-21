@@ -74,7 +74,7 @@ describe('App', () => {
 
   it('plays a game with the settings in its URL', () => {
     renderAt('/consonant-class/play?count=5');
-    expect(screen.getByText('Question 1 / 5')).toBeDefined();
+    expect(screen.getByText('1 / 5')).toBeDefined();
   });
 
   it('no longer serves the old paths', () => {

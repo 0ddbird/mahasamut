@@ -164,13 +164,11 @@ describe('ConsonantClassPage', () => {
     expect(choices().some(locked)).toBe(false);
   });
 
-  it('shows the score as the player goes', async () => {
+  it('keeps the score for the results', async () => {
     render(<ConsonantClassPage rng={seededRng(SEED)} />);
-    expect(screen.getByText('Score 0 / 0')).toBeDefined();
-
     await choose(WRONG_CLASS);
     await userEvent.click(validateButton());
-    expect(screen.getByText('Score 0 / 1')).toBeDefined();
+    expect(screen.queryByText(/Score/)).toBeNull();
   });
 
   describe('with settings', () => {
@@ -189,7 +187,7 @@ describe('ConsonantClassPage', () => {
           settings={withSettings({ secondsPerQuestion: 10 })}
         />,
       );
-      expect(screen.getByRole('timer').textContent).toBe('10 s');
+      expect(screen.getByRole('timer', { name: '10 seconds' }).textContent).toBe('10');
 
       letTimeRunOut();
       expect(screen.getByRole('status').textContent).toBe("Time's up!");
@@ -200,7 +198,6 @@ describe('ConsonantClassPage', () => {
         }),
       ).toBeDefined();
       expect(nextButton()).toBeDefined();
-      expect(screen.getByText('Score 0 / 1')).toBeDefined();
     });
 
     it('takes a series from the deck, up to its results', () => {
@@ -213,7 +210,7 @@ describe('ConsonantClassPage', () => {
         />,
       );
       series.forEach((consonant, index) => {
-        expect(screen.getByText(`Question ${index + 1} / 5`)).toBeDefined();
+        expect(screen.getByText(`${index + 1} / 5`)).toBeDefined();
         expect(shown(consonant)).toBe(true);
         letTimeRunOut();
         const isLast = index === series.length - 1;
@@ -241,8 +238,7 @@ describe('ConsonantClassPage', () => {
       await userEvent.click(screen.getByRole('button', { name: 'End' }));
       await userEvent.click(screen.getByRole('button', { name: 'Play again' }));
 
-      expect(screen.getByText('Question 1 / 5')).toBeDefined();
-      expect(screen.getByText('Score 0 / 0')).toBeDefined();
+      expect(screen.getByText('1 / 5')).toBeDefined();
       expect(validateButton().disabled).toBe(true);
     });
   });
