@@ -5,10 +5,27 @@
   box-sizing: border-box;
 }
 
+// The dark page, with a green glow at the top that stays put while it scrolls.
 body {
+  min-height: 100vh;
   margin: 0;
   color: var(--color-text);
-  background: var(--color-background);
+  background: var(--color-background)
+    radial-gradient(
+      ellipse at 50% 0%,
+      var(--color-glow),
+      var(--color-background) 55%,
+      var(--color-background-deep)
+    )
+    fixed;
+}
+
+h1 {
+  font-family: var(--font-display);
+}
+
+a {
+  color: var(--color-accent-light);
 }
 
 button {

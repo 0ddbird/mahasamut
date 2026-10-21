@@ -6,8 +6,12 @@
  * - Sarabun has loops, as in textbooks and official documents.
  *
  * Only the Thai and Latin subsets are loaded, in regular (400) and bold (700):
- * the interface is in English. The font families are named in styles/fonts.scss.
+ * the interface is in English. Fredoka, a rounded Latin font with no Thai,
+ * draws the titles and the logo only, in medium (500) and bold (700). The font
+ * families are named in styles/fonts.scss.
  */
+import '@fontsource/fredoka/latin-500.css';
+import '@fontsource/fredoka/latin-700.css';
 import '@fontsource/noto-sans-thai/thai-400.css';
 import '@fontsource/noto-sans-thai/thai-700.css';
 import '@fontsource/noto-sans-thai/latin-400.css';

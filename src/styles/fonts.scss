@@ -1,7 +1,9 @@
-// Font families, loaded in fonts.ts: one Thai style without loops, one with them.
+// Font families, loaded in fonts.ts: one Thai style without loops, one with
+// them, and a rounded one for the Latin text of titles.
 :root {
   --font-loopless: 'Noto Sans Thai', sans-serif;
   --font-looped: 'Sarabun', sans-serif;
+  --font-display: 'Fredoka', sans-serif;
 }
 
 // Sarabun by default: textbooks print Thai with loops, so learners start there.

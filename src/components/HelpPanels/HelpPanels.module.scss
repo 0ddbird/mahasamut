@@ -73,8 +73,8 @@ $side-by-side: 74rem;
   overflow-y: auto;
   padding: var(--space-m);
   border-left: 4px solid var(--help-color);
-  background: var(--color-background);
-  box-shadow: -4px 0 16px rgb(0 0 0 / 12%);
+  background: var(--color-surface-raised);
+  box-shadow: -4px 0 16px rgb(0 0 0 / 50%);
   pointer-events: auto;
   animation: slide-in 0.2s ease-out;
 }
@@ -93,7 +93,7 @@ $side-by-side: 74rem;
     align-self: stretch;
     margin-top: 0;
     padding-top: 6rem;
-    background: var(--color-background);
+    background: var(--color-surface-raised);
   }
 
   .panel {

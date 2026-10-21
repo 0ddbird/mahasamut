@@ -1,16 +1,33 @@
+// A dark theme only. tokens.test.ts checks that every text colour reads on its
+// background at WCAG AA: keep the two in step when a colour changes.
 :root {
-  --color-text: #1f1d24;
-  --color-background: #fdfcf8;
-  --color-border: #d6d3dc;
-  --color-accent: #277552;
-  --color-accent-text: #ffffff;
+  --color-text: #f2f1ee;
+  // Secondary text: notes, what was played.
+  --color-text-muted: #b5bdb8;
 
-  // Feedback once the answers are checked: dark text on a light background,
-  // unlike the solid green of a selected choice.
-  --color-right: #1b6b43;
-  --color-right-background: #e3f4ea;
-  --color-wrong: #b42318;
-  --color-wrong-background: #fde7e5;
+  // The page: near-black, with a green glow at the top (see base.scss).
+  --color-background: #121614;
+  --color-background-deep: #0c0e0d;
+  --color-glow: #1d4a35;
+
+  // See-through surfaces on the page (tiles, the bar), and opaque ones that
+  // cover it (the help panel, the menu, dialogs).
+  --color-surface: rgb(255 255 255 / 6%);
+  --color-surface-raised: #1a201d;
+  --color-border: rgb(255 255 255 / 16%);
+
+  // The site's green: solid behind white text (buttons, selected choices), and
+  // lighter as a text colour on the dark page.
+  --color-accent: #25804f;
+  --color-accent-text: #ffffff;
+  --color-accent-light: #6fd6a2;
+
+  // Feedback once the answers are checked: light text on a dark tint, unlike
+  // the solid green of a selected choice.
+  --color-right: #7ee0ad;
+  --color-right-background: #143826;
+  --color-wrong: #ff8a80;
+  --color-wrong-background: #3d1714;
 
   // Help panels, one colour each so that their handles tell apart at a glance;
   // white text and icons stay readable on all of them.
