@@ -23,6 +23,10 @@
   --color-accent-text: #1a1708;
   --color-accent-light: #f7d36b;
 
+  // The colour of the site's language, after its name in the logo: green for
+  // Thai. Each language of Scriptomancy will have its own.
+  --color-language: #6fd6a2;
+
   // Feedback once the answers are checked. A right answer is yellow like the
   // accent, but outlined on a dark tint, unlike the solid yellow of a selected
   // choice. A wrong one is solid red: a dark red tint melts into the page.

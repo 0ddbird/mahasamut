@@ -33,6 +33,8 @@ const PAIRS: [text: string, background: string][] = [
   ['color-accent-text', 'color-accent'],
   ['color-accent-light', 'color-background'],
   ['color-accent-light', 'color-glow'],
+  ['color-language', 'color-background'],
+  ['color-language', 'color-glow'],
   ['color-right', 'color-right-background'],
   ['color-wrong-text', 'color-wrong-background'],
   ['color-right', 'color-background'],
@@ -59,6 +61,14 @@ describe('colour tokens', () => {
     expect(isYellow(COLORS.get('color-accent')!)).toBe(true);
     expect(isYellow(COLORS.get('color-accent-light')!)).toBe(true);
     expect(luminance(COLORS.get('color-accent-text')!)).toBeLessThan(0.1);
+  });
+
+  // Each language of Scriptomancy has its own colour, after its name in the logo.
+  it('give Thai its green', () => {
+    const [r, g, b] = [1, 3, 5].map((start) =>
+      parseInt(COLORS.get('color-language')!.slice(start, start + 2), 16),
+    );
+    expect(g).toBeGreaterThan(Math.max(r!, b!) + 40);
   });
 
   it('mark a right answer in yellow, like the accent', () => {
