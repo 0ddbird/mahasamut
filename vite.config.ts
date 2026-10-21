@@ -6,6 +6,10 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [react()],
   build: {
+    // The main chunk is just over Vite's default 500 kB since it bundles the
+    // pool of real words for Find the tone (about 55 kB). Splitting the routes
+    // into their own chunks is left for later.
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       // Two pages from one build: the Thai site, and Scriptomancy's home page
       // (dist/home/), which Caddy serves on the root domain.
