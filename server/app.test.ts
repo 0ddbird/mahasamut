@@ -1,4 +1,3 @@
-import http from 'node:http';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createUnifiedServer } from './app';
 
@@ -11,7 +10,8 @@ describe('Unified Server (createUnifiedServer)', () => {
       origin: 'https://mahasamut.app',
       contactTo: 'test@example.com',
       contactTransport: {
-        send: () => Promise.resolve({ ok: true, via: 'primary' }),
+        name: 'console',
+        send: () => Promise.resolve({ ok: true }),
       },
     });
 

@@ -238,7 +238,7 @@ describe('createContactHandler', () => {
       origin: ORIGIN,
       to: OWNER,
       limits: createLimits(() => 0),
-      send: () => Promise.resolve({ ok: true, via: 'primary' }),
+      send: () => Promise.resolve({ ok: true, via: 'console' }),
       log: () => {},
       metrics: {
         recordContactOutcome(outcome) {

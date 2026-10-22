@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { trackEvent } from './analytics';
 import { useLeaveLink } from './leaveGuard';
 import { KOFI_LABEL, KOFI_URL } from './support';
 import styles from './SiteFooter.module.scss';
@@ -25,7 +26,12 @@ export function SiteFooter() {
           </Link>
         </li>
         <li>
-          <a href={KOFI_URL} target="_blank" rel="noopener noreferrer">
+          <a
+            href={KOFI_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => trackEvent({ type: 'support_click' })}
+          >
             {KOFI_LABEL}
           </a>
         </li>

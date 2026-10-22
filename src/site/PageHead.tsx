@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router';
+import { getClientDevice, trackEvent } from './analytics';
+import { normalizeRoute } from './events';
 import { pageMeta } from './pageMeta';
 
 /**
@@ -19,6 +21,12 @@ export function PageHead() {
     setTag('link', 'rel', 'canonical', 'href', canonical);
     setTag('meta', 'property', 'og:url', 'content', canonical);
     setTag('meta', 'name', 'robots', 'content', canonical === null ? 'noindex' : null);
+
+    trackEvent({
+      type: 'page_view',
+      route: normalizeRoute(pathname),
+      device: getClientDevice(),
+    });
   }, [pathname]);
 
   return null;

@@ -56,6 +56,7 @@ export function ResultsScreen({
       {phase.reveal.game !== 'consonantClass' && (
         <ListenButton
           visible={listenUrl !== null}
+          context="multi"
           onClick={() => {
             if (listenUrl !== null) play(listenUrl);
           }}

@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight, Crown, Layers, ListChecks, Timer } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { trackEvent } from '../../site/analytics';
 import { Button } from '../../components/Button/Button';
 import { GAME, GAME_GOALS, GAME_IDS, GAME_NAMES, GAME_SAMPLES } from '../../games/shared/games';
 import { NumberStepper } from '../../games/shared/NumberStepper';
@@ -103,6 +104,7 @@ export function Lobby({ view, onStart, onChangeAvatar, onUpdateSettings }: Lobby
     } catch {
       // Ignore clipboard errors.
     }
+    trackEvent({ type: 'lobby_link_copied' });
     setCopied(true);
     if (copyTimerRef.current !== null) {
       clearTimeout(copyTimerRef.current);
