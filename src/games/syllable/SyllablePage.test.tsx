@@ -96,6 +96,42 @@ afterEach(() => {
 });
 
 describe('SyllablePage', () => {
+  describe('Listen', () => {
+    const soundOf = (text: string) => `/audio/words/${text}.mp3`;
+
+    /** The first syllable's answers, the tone wrong: the page stays on the correction. */
+    const answerWithAWrongTone = async () => {
+      const answers = allAnswersOf(UNMARKED_SEED);
+      await answerWith({ ...answers, tone: answers.tone === 'mid' ? 'low' : 'mid' });
+    };
+
+    it('plays the word once checked, when it has a sound, and only then', async () => {
+      const play = vi.fn();
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} play={play} soundOf={soundOf} />);
+      expect(screen.queryByRole('button', { name: 'Listen' })).toBeNull();
+
+      await answerWithAWrongTone();
+      await userEvent.click(validateButton());
+      await userEvent.click(screen.getByRole('button', { name: 'Listen' }));
+      expect(play).toHaveBeenLastCalledWith(soundOf(firstSyllable(UNMARKED_SEED).text));
+    });
+
+    it('offers no Listen for a word without a sound yet', async () => {
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} play={vi.fn()} soundOf={() => null} />);
+      await answerWithAWrongTone();
+      await userEvent.click(validateButton());
+      expect(screen.queryByRole('button', { name: 'Listen' })).toBeNull();
+    });
+
+    // Listen appearing would push the answers down just as the correction shows.
+    it('keeps the room of Listen before the check, hidden, so the answers do not move', () => {
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} play={vi.fn()} soundOf={soundOf} />);
+      expect(screen.queryByRole('button', { name: 'Listen' })).toBeNull();
+      // A hidden element has no accessible name: found by its text instead.
+      expect(screen.getByText('Listen').closest('button')).not.toBeNull();
+    });
+  });
+
   it('shows a syllable drawn by the generator', () => {
     const [first] = textsDrawn(7, 1);
     render(<SyllablePage rng={seededRng(7)} />);

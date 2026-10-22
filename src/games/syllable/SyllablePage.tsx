@@ -1,6 +1,9 @@
 import { useState } from 'react';
+import { playSound } from '../../audio/playSound';
+import type { PlaySound } from '../../audio/playSound';
 import { Button } from '../../components/Button/Button';
 import { HelpPanels } from '../../components/HelpPanels/HelpPanels';
+import { ListenButton } from '../../components/ListenButton/ListenButton';
 import { ThaiDisplay } from '../../components/ThaiDisplay/ThaiDisplay';
 import { CONSONANTS_PANEL, TONES_PANEL, VOWELS_PANEL } from '../../help/panels';
 import { Verdict } from '../../components/Verdict/Verdict';
@@ -9,6 +12,7 @@ import type { Rng } from '../../thai/generator';
 import type { CategoryGroup } from '../../thai/generator/syllables';
 import { TONE_MARK } from '../../thai/types';
 import { wordGroups } from '../../thai/words';
+import { wordSoundUrl } from '../../thai/words/sounds';
 import { GAME, GAME_NAMES } from '../shared/games';
 import { QuestionBar } from '../shared/QuestionBar';
 import { DEFAULT_SETTINGS } from '../shared/settings';
@@ -30,6 +34,10 @@ interface SyllablePageProps {
    * Passing `categoryGroups()` brings back every valid syllable.
    */
   groups?: readonly CategoryGroup[];
+  /** Plays a recorded sound; tests pass a mock. */
+  play?: PlaySound;
+  /** Where the sound of a word is served, `null` if it has none yet; tests pass their own. */
+  soundOf?: (text: string) => string | null;
 }
 
 /** In learning mode: everything that tells the tone, from the letters to the rules. */
@@ -43,13 +51,16 @@ const NO_ANSWERS: PlayerAnswers = { toneMark: TONE_MARK.None };
  * step, or the tone alone in tone-only mode. Validate checks the answers once
  * every needed step is given, and locks them. Right answers move on to another
  * syllable by themselves; after a wrong one, or once the time is up, Validate
- * becomes Next, so the player reads the correction before moving on. The
+ * becomes Next, so the player reads the correction before moving on. Once
+ * checked, Listen plays the word, for the words that have a recording. The
  * results show at the end of a series, or when the player ends the game.
  */
 export function SyllablePage({
   rng = Math.random,
   settings = DEFAULT_SETTINGS,
   groups = wordGroups(),
+  play = playSound,
+  soundOf = wordSoundUrl,
 }: SyllablePageProps) {
   const [syllable, setSyllable] = useState(() => generateSyllable(rng, groups));
   const [answers, setAnswers] = useState<PlayerAnswers>(NO_ANSWERS);
@@ -65,6 +76,7 @@ export function SyllablePage({
   // Once checked, by Validate or by the end of the time, the rows show what the
   // player had chosen against the right answers.
   const result = checked ? check() : null;
+  const sound = soundOf(syllable.text);
 
   const validate = () => {
     if (!isComplete(answers, mode)) return;
@@ -95,6 +107,12 @@ export function SyllablePage({
           onEnd={game.end}
         />
         <ThaiDisplay text={syllable.text} />
+        <ListenButton
+          visible={checked && sound !== null}
+          onClick={() => {
+            if (sound !== null) play(sound);
+          }}
+        />
         <AnswerSheet
           answers={answers}
           onChange={setAnswers}
