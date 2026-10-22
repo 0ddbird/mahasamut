@@ -1,9 +1,11 @@
 import { Link, useNavigate, useParams } from 'react-router';
 import { useGameEndInBar, useLeaveGuard } from '../../site/leaveGuard';
 import { normalizeRoomId } from '../roomId';
+import { FinalScreen } from './FinalScreen';
 import { JoinForm } from './JoinForm';
 import { Lobby } from './Lobby';
 import { QuestionScreen } from './QuestionScreen';
+import { ResultsScreen } from './ResultsScreen';
 import styles from './RoomPage.module.scss';
 import { getRoomSocket } from './socket';
 import type { RoomSocket } from './socket';
@@ -91,10 +93,9 @@ function ConnectedRoomPage({ roomId, socket }: { roomId: string; socket: RoomSoc
   if (view.phase.kind === 'question') {
     return <QuestionScreen key={view.phase.index} view={view} onAnswer={actions.answer} />;
   }
+  if (view.phase.kind === 'results') {
+    return <ResultsScreen view={view} onNext={actions.next} />;
+  }
 
-  return (
-    <main className={styles.page}>
-      <p>{view.phase.kind}</p>
-    </main>
-  );
+  return <FinalScreen view={view} />;
 }
