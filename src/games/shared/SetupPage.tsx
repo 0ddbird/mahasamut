@@ -1,6 +1,6 @@
-import { useId, useState } from 'react';
+import { GraduationCap, Layers, ListChecks, Timer } from 'lucide-react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { AnswerRow } from '../../components/AnswerRow/AnswerRow';
 import { Button } from '../../components/Button/Button';
 import { GAME, GAME_NAMES, GAME_PATHS } from './games';
 import type { GameId } from './games';
@@ -15,49 +15,18 @@ import {
 import type { LearningChoice, LengthChoice, TimeChoice } from './settingsLabels';
 import { loadSettings, saveSettings } from './settingsStorage';
 import { settingsToSearch } from './settingsUrl';
+import { NumberStepper } from './NumberStepper';
+import { SettingCard } from './SettingCard';
 import styles from './SetupPage.module.scss';
 
-interface WholeNumberFieldProps {
-  label: string;
-  range: { min: number; max: number };
-  /** What the error says the player can choose, after the range: "questions". */
-  unit: string;
-  /** Kept as typed, so the field can be empty or wrong while the player edits it. */
-  text: string;
-  onChange: (text: string) => void;
-}
-
-/** A whole number within `range`, with the error that says why Play is disabled. */
-function WholeNumberField({ label, range, unit, text, onChange }: WholeNumberFieldProps) {
-  const valid = isWholeIn(Number(text), range);
-  const errorId = useId();
-  return (
-    <>
-      <label className={styles.count}>
-        {label}
-        <input
-          type="number"
-          min={range.min}
-          max={range.max}
-          value={text}
-          onChange={(event) => onChange(event.target.value)}
-          // Screen readers say why Play is disabled, from the field itself.
-          aria-invalid={!valid}
-          aria-describedby={valid ? undefined : errorId}
-        />
-      </label>
-      {!valid && (
-        <p className={styles.error} id={errorId}>
-          Choose {range.min} to {range.max} {unit}.
-        </p>
-      )}
-    </>
-  );
-}
+/** The icons of the cards, decorative. */
+const ICON_SIZE = 20;
 
 /**
- * The settings of a game, chosen before it starts: its length, its time and,
- * in the syllable game, the answer asked. The page opens on the settings the
+ * The settings of a game, chosen before it starts, a card each: its length, its
+ * time, in the syllable game the answer asked, and the learning mode. The
+ * number a series or a timed game needs shows under its choice, with − and +.
+ * The page opens on the settings the
  * player last played with, so a regular player only has to click Play; they are
  * remembered again when Play starts the game.
  */
@@ -114,54 +83,65 @@ export function SetupPage({ game }: { game: GameId }) {
     <main className={styles.page}>
       <h1>{GAME_NAMES[game]}</h1>
       <div className={styles.settings}>
-        <AnswerRow
+        <SettingCard
           title="Length"
+          icon={<Layers size={ICON_SIZE} />}
           name="length"
           options={LENGTH_OPTIONS}
           selected={length}
           onSelect={chooseLength}
-        />
-        {series && (
-          <WholeNumberField
-            label="Number of questions"
-            range={QUESTION_COUNT}
-            unit="questions"
-            text={countText}
-            onChange={setCountText}
-          />
-        )}
-        <AnswerRow
-          title="Time per question"
+        >
+          {series && (
+            <NumberStepper
+              label="Number of questions"
+              unit="questions"
+              fewerLabel="Fewer questions"
+              moreLabel="More questions"
+              range={QUESTION_COUNT}
+              text={countText}
+              onChange={setCountText}
+            />
+          )}
+        </SettingCard>
+        <SettingCard
+          title="Time"
+          icon={<Timer size={ICON_SIZE} />}
           name="time"
           options={TIME_OPTIONS}
           selected={time}
           onSelect={chooseTime}
-        />
-        {timed && (
-          <WholeNumberField
-            label="Seconds per question"
-            range={SECONDS_PER_QUESTION}
-            unit="seconds"
-            text={secondsText}
-            onChange={setSecondsText}
-          />
-        )}
+        >
+          {timed && (
+            <NumberStepper
+              label="Seconds per question"
+              unit="seconds"
+              after="seconds per question"
+              fewerLabel="Fewer seconds"
+              moreLabel="More seconds"
+              range={SECONDS_PER_QUESTION}
+              text={secondsText}
+              onChange={setSecondsText}
+            />
+          )}
+        </SettingCard>
         {game === GAME.Syllable && (
-          <AnswerRow
+          <SettingCard
             title="Answer"
+            icon={<ListChecks size={ICON_SIZE} />}
             name="answerMode"
             options={ANSWER_MODE_OPTIONS}
             selected={answerMode}
             onSelect={setAnswerMode}
           />
         )}
-        <AnswerRow
+        <SettingCard
           title="Learning mode"
+          icon={<GraduationCap size={ICON_SIZE} />}
           name="learningMode"
+          hint="Turned on, cheat sheets with the rules can be opened at any time during the game."
           options={LEARNING_MODE_OPTIONS}
           selected={learning}
           onSelect={setLearning}
-          note="Help panels to open during the game"
         />
       </div>
       <Button disabled={!valid} onClick={play}>

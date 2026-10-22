@@ -28,7 +28,7 @@ describe('Summary', () => {
     renderSummary();
     expect(screen.getByText('You got 3 out of 4 right (75%).')).toBeDefined();
     expect(screen.getByText('Best streak: 2 in a row.')).toBeDefined();
-    expect(screen.getByText('Endless · Free time · Full reasoning')).toBeDefined();
+    expect(screen.getByText('Endless · Untimed · Full reasoning')).toBeDefined();
   });
 
   it('says only that there were no answers before any question', () => {

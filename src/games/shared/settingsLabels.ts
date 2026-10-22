@@ -19,7 +19,7 @@ export const LENGTH_OPTIONS: readonly Option<LengthChoice>[] = [
 export type TimeChoice = 'free' | 'timed';
 
 export const TIME_OPTIONS: readonly Option<TimeChoice>[] = [
-  { value: 'free', label: 'Free' },
+  { value: 'free', label: 'Untimed' },
   { value: 'timed', label: 'Timed' },
 ];
 
@@ -51,7 +51,7 @@ export function describeSettings(settings: GameSettings, withAnswerMode: boolean
   const parts = [
     settings.questionCount === null ? 'Endless' : `Series of ${settings.questionCount}`,
     settings.secondsPerQuestion === null
-      ? 'Free time'
+      ? 'Untimed'
       : `${settings.secondsPerQuestion} s per question`,
   ];
   if (withAnswerMode) parts.push(ANSWER_MODE_LABELS[settings.answerMode]);

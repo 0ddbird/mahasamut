@@ -41,7 +41,7 @@ describe('SetupPage', () => {
   it('starts from the defaults the first time', () => {
     renderSetup();
     expect(isChecked('Length', 'Endless')).toBe(true);
-    expect(isChecked('Time per question', 'Free')).toBe(true);
+    expect(isChecked('Time', 'Untimed')).toBe(true);
     expect(isChecked('Answer', 'Full reasoning')).toBe(true);
     expect(isChecked('Learning mode', 'Off')).toBe(true);
     expect(countInput()).toBeNull();
@@ -59,7 +59,7 @@ describe('SetupPage', () => {
 
     expect(isChecked('Length', 'Series')).toBe(true);
     expect(countInput()?.value).toBe('20');
-    expect(isChecked('Time per question', 'Timed')).toBe(true);
+    expect(isChecked('Time', 'Timed')).toBe(true);
     expect(secondsInput()?.value).toBe('15');
     expect(isChecked('Answer', 'Tone only')).toBe(true);
     expect(isChecked('Learning mode', 'On')).toBe(true);
@@ -114,13 +114,13 @@ describe('SetupPage', () => {
 
   it('proposes 15 seconds when switching to a timed game', async () => {
     renderSetup();
-    await userEvent.click(choice('Time per question', 'Timed'));
+    await userEvent.click(choice('Time', 'Timed'));
     expect(secondsInput()?.value).toBe('15');
   });
 
   it('takes any whole number of seconds from 1 to 60', async () => {
     renderSetup();
-    await userEvent.click(choice('Time per question', 'Timed'));
+    await userEvent.click(choice('Time', 'Timed'));
     const input = secondsInput();
     if (input === null) throw new Error('No seconds per question');
 
@@ -144,7 +144,7 @@ describe('SetupPage', () => {
 
   it('plays with any number of seconds', async () => {
     renderSetup();
-    await userEvent.click(choice('Time per question', 'Timed'));
+    await userEvent.click(choice('Time', 'Timed'));
     const input = secondsInput();
     if (input === null) throw new Error('No seconds per question');
     await userEvent.clear(input);
@@ -162,7 +162,7 @@ describe('SetupPage', () => {
   it('plays with the chosen settings, and remembers them', async () => {
     renderSetup();
     await userEvent.click(choice('Length', 'Series'));
-    await userEvent.click(choice('Time per question', 'Timed'));
+    await userEvent.click(choice('Time', 'Timed'));
     await userEvent.click(choice('Answer', 'Tone only'));
     await userEvent.click(choice('Learning mode', 'On'));
     await userEvent.click(playButton());
@@ -176,6 +176,64 @@ describe('SetupPage', () => {
       answerMode: 'toneOnly',
       learningMode: true,
     });
+  });
+
+  it('explains the learning mode before its choice', () => {
+    renderSetup();
+    const learning = screen.getByRole('group', { name: 'Learning mode' });
+    const hint = document.getElementById(learning.getAttribute('aria-describedby') ?? '');
+    expect(hint?.textContent).toMatch(/cheat sheets/);
+  });
+
+  it('steps the number of questions with − and +, within its range', async () => {
+    renderSetup();
+    await userEvent.click(choice('Length', 'Series'));
+    await userEvent.click(screen.getByRole('button', { name: 'More questions' }));
+    expect(countInput()?.value).toBe('11');
+    await userEvent.click(screen.getByRole('button', { name: 'Fewer questions' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Fewer questions' }));
+    expect(countInput()?.value).toBe('9');
+
+    const input = countInput();
+    if (input === null) throw new Error('No number of questions');
+    await userEvent.clear(input);
+    await userEvent.type(input, '30');
+    expect(
+      (screen.getByRole('button', { name: 'More questions' }) as HTMLButtonElement).disabled,
+    ).toBe(true);
+    await userEvent.clear(input);
+    await userEvent.type(input, '5');
+    expect(
+      (screen.getByRole('button', { name: 'Fewer questions' }) as HTMLButtonElement).disabled,
+    ).toBe(true);
+  });
+
+  it('steps the seconds with − and +, within their range', async () => {
+    renderSetup();
+    await userEvent.click(choice('Time', 'Timed'));
+    await userEvent.click(screen.getByRole('button', { name: 'More seconds' }));
+    expect(secondsInput()?.value).toBe('16');
+    await userEvent.click(screen.getByRole('button', { name: 'Fewer seconds' }));
+    expect(secondsInput()?.value).toBe('15');
+  });
+
+  // A number typed out of range comes back within it with one step.
+  it('brings a number out of range back within it', async () => {
+    renderSetup();
+    await userEvent.click(choice('Time', 'Timed'));
+    const input = secondsInput();
+    if (input === null) throw new Error('No seconds per question');
+    await userEvent.clear(input);
+    await userEvent.type(input, '99');
+    await userEvent.click(screen.getByRole('button', { name: 'Fewer seconds' }));
+    expect(input.value).toBe('60');
+  });
+
+  it('shows the numbers only for a series and a timed game', () => {
+    renderSetup();
+    expect(countInput()).toBeNull();
+    expect(secondsInput()).toBeNull();
+    expect(screen.queryByRole('button', { name: 'More questions' })).toBeNull();
   });
 
   it('remembers nothing until Play', async () => {

@@ -10,11 +10,12 @@ import { DEFAULT_SETTINGS } from '../shared/settings';
 import type { GameSettings } from '../shared/settings';
 import { CORRECT_DELAY_MS } from '../shared/useNextWhenCorrect';
 import { ConsonantClassPage } from './ConsonantClassPage';
+import { renderInSite } from '../../site/inSite.test-utils';
 import { CONSONANTS } from '../../thai/consonants';
 import { currentCard, newDeck, nextCard } from '../shared/deck';
 
-/** Renders inside a router: the results link to the settings page and home. */
-const render = (ui: ReactElement) => renderInDom(<MemoryRouter>{ui}</MemoryRouter>);
+/** Renders under the site's bar: End is there, and the results link to the settings page and home. */
+const render = (ui: ReactElement) => renderInSite(ui);
 
 const SEED = 7;
 
@@ -226,7 +227,7 @@ describe('ConsonantClassPage', () => {
       await userEvent.click(screen.getByRole('button', { name: 'End' }));
 
       expect(screen.getByRole('heading', { name: 'No answers this time.' })).toBeDefined();
-      expect(screen.getByText('Endless · Free time')).toBeDefined();
+      expect(screen.getByText('Endless · Untimed')).toBeDefined();
     });
 
     it('plays again with the same settings', async () => {

@@ -11,8 +11,8 @@ import {
 
 describe('describeSettings', () => {
   it('describes the default settings', () => {
-    expect(describeSettings(DEFAULT_SETTINGS, true)).toBe('Endless · Free time · Full reasoning');
-    expect(describeSettings(DEFAULT_SETTINGS, false)).toBe('Endless · Free time');
+    expect(describeSettings(DEFAULT_SETTINGS, true)).toBe('Endless · Untimed · Full reasoning');
+    expect(describeSettings(DEFAULT_SETTINGS, false)).toBe('Endless · Untimed');
   });
 
   it('describes a timed series in tone-only mode', () => {
@@ -27,7 +27,7 @@ describe('describeSettings', () => {
 
   it('says when the game was played in learning mode', () => {
     expect(describeSettings({ ...DEFAULT_SETTINGS, learningMode: true }, false)).toBe(
-      'Endless · Free time · Learning mode',
+      'Endless · Untimed · Learning mode',
     );
   });
 });
@@ -38,7 +38,7 @@ describe('the choices of the settings page', () => {
   });
 
   it('offers free time or a timed game, its seconds asked apart', () => {
-    expect(TIME_OPTIONS.map((option) => option.label)).toEqual(['Free', 'Timed']);
+    expect(TIME_OPTIONS.map((option) => option.label)).toEqual(['Untimed', 'Timed']);
   });
 
   it('offers the full reasoning or the tone alone', () => {
