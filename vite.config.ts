@@ -20,7 +20,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: 'logic',
-          include: ['src/**/*.test.ts', 'tools/**/*.test.ts'],
+          include: ['src/**/*.test.ts', 'tools/**/*.test.ts', 'server/**/*.test.ts'],
           environment: 'node',
         },
       },
