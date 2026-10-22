@@ -1,15 +1,15 @@
 /**
- * The ways to send a Mail: Resend, Brevo, or the console while developing.
+ * The ways to send a Mail: Resend, or the console while developing.
  * A transport never rejects: it answers with a SendResult, and says whether a
  * failure is worth trying again. Each real one takes the `fetch` to use, so
  * tests never reach the network.
  * Node loads this file as it is, by stripping its types: no enums, no
  * namespaces, no parameter properties.
  */
-import { SENDER, type Mail } from './mail.ts';
+import type { Mail } from './mail.ts';
 
 /** Which transport sent, or tried to. */
-export type TransportName = 'resend' | 'brevo' | 'console';
+export type TransportName = 'resend' | 'console';
 
 /**
  * What a send came to. A failure carries a short code (`http-<status>`,
@@ -64,27 +64,6 @@ export function resendTransport(apiKey: string, fetchFn: typeof fetch = fetch): 
           reply_to: mail.replyTo,
           subject: mail.subject,
           text: mail.text,
-        },
-        signal,
-      ),
-  };
-}
-
-/** Sends through Brevo's HTTP API. */
-export function brevoTransport(apiKey: string, fetchFn: typeof fetch = fetch): Transport {
-  return {
-    name: 'brevo',
-    send: (mail, signal) =>
-      postJson(
-        fetchFn,
-        'https://api.brevo.com/v3/smtp/email',
-        { 'api-key': apiKey },
-        {
-          sender: SENDER,
-          to: [{ email: mail.to }],
-          replyTo: { email: mail.replyTo },
-          subject: mail.subject,
-          textContent: mail.text,
         },
         signal,
       ),

@@ -4,7 +4,6 @@
  * reverse proxy. Run by Node as it is (`npm run dev:server`) or bundled by
  * `npm run build:server`.
  */
-import { createAlerter } from './alert.ts';
 import { readConfig } from './config.ts';
 import { deliver } from './deliver.ts';
 import { createContactHandler } from './handler.ts';
@@ -24,19 +23,16 @@ try {
   process.exit(1);
 }
 
-const { primary, fallback } = config.transports;
 const handle = createContactHandler({
   origin: config.origin,
   to: config.to,
   limits: createLimits(Date.now),
   send: (mail) =>
     deliver(mail, {
-      primary,
-      fallback,
+      transport: config.transport,
       wait: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
       attemptMs: ATTEMPT_MS,
     }),
-  alerter: createAlerter({ transport: fallback, to: config.to, now: Date.now }),
   log,
 });
 

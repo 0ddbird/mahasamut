@@ -39,7 +39,6 @@ export interface ContactHandlerDeps {
   to: string;
   limits: ReturnType<typeof createLimits>;
   send: (mail: Mail) => Promise<DeliverResult>;
-  alerter: { notify(code: string): Promise<void> };
   /** Receives one line per decision, never the content, the addresses or the IP. */
   log: (line: string) => void;
 }
@@ -81,7 +80,7 @@ function refused(status: number): ContactResponse {
 export function createContactHandler(
   deps: ContactHandlerDeps,
 ): (request: ContactRequest) => Promise<ContactResponse> {
-  const { origin, to, limits, send, alerter, log } = deps;
+  const { origin, to, limits, send, log } = deps;
 
   return async (request) => {
     if (request.method !== 'POST') return refused(405);
@@ -120,12 +119,7 @@ export function createContactHandler(
       return { status: 502, reply: { result: 'failed' } };
     }
 
-    log(
-      result.primaryCode === undefined
-        ? `contact: sent via ${result.via}`
-        : `contact: sent via ${result.via} (resend: ${result.primaryCode})`,
-    );
-    if (result.primaryCode !== undefined) void alerter.notify(result.primaryCode);
+    log(`contact: sent via ${result.via}`);
     return { status: 200, reply: { result: 'sent' } };
   };
 }

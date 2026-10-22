@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { deliver } from './deliver.ts';
 import type { Mail } from './mail.ts';
-import type { SendResult, Transport, TransportName } from './transports.ts';
+import type { SendResult, Transport } from './transports.ts';
 
 const MAIL: Mail = {
   from: 'Mahasamut <hello@mahasamut.app>',
@@ -16,24 +16,23 @@ const transient = (code: string): SendResult => ({ ok: false, transient: true, c
 const permanent = (code: string): SendResult => ({ ok: false, transient: false, code });
 
 /** A transport that answers with the scripted results, one per call. */
-function scripted(name: TransportName, results: SendResult[]): Transport & { calls: number } {
+function scripted(results: SendResult[]): Transport & { calls: number } {
   const transport = {
-    name,
+    name: 'resend' as const,
     calls: 0,
     async send() {
       const result = results[transport.calls++];
-      if (!result) throw new Error(`unexpected call ${transport.calls} to ${name}`);
+      if (!result) throw new Error(`unexpected call ${transport.calls}`);
       return result;
     },
   };
   return transport;
 }
 
-function setup(primary: Transport, fallback: Transport) {
+function setup(transport: Transport) {
   const waits: number[] = [];
   const deps = {
-    primary,
-    fallback,
+    transport,
     wait: async (ms: number) => {
       waits.push(ms);
     },
@@ -43,60 +42,54 @@ function setup(primary: Transport, fallback: Transport) {
 }
 
 describe('deliver', () => {
-  it('sends by Resend when it works', async () => {
-    const primary = scripted('resend', [OK]);
-    const fallback = scripted('brevo', []);
-    const { deps, waits } = setup(primary, fallback);
+  it('sends by the transport when it works', async () => {
+    const transport = scripted([OK]);
+    const { deps, waits } = setup(transport);
     expect(await deliver(MAIL, deps)).toEqual({ ok: true, via: 'resend' });
-    expect(fallback.calls).toBe(0);
+    expect(transport.calls).toBe(1);
     expect(waits).toEqual([]);
   });
 
-  it('retries Resend once after a second on a transient failure', async () => {
-    const primary = scripted('resend', [transient('http-503'), OK]);
-    const fallback = scripted('brevo', []);
-    const { deps, waits } = setup(primary, fallback);
+  it('retries once after a second on a transient failure', async () => {
+    const transport = scripted([transient('http-503'), OK]);
+    const { deps, waits } = setup(transport);
     expect(await deliver(MAIL, deps)).toEqual({ ok: true, via: 'resend' });
-    expect(primary.calls).toBe(2);
+    expect(transport.calls).toBe(2);
     expect(waits).toEqual([1000]);
-    expect(fallback.calls).toBe(0);
   });
 
-  it('goes straight to Brevo on a permanent Resend failure', async () => {
-    const primary = scripted('resend', [permanent('http-401')]);
-    const fallback = scripted('brevo', [OK]);
-    const { deps, waits } = setup(primary, fallback);
-    expect(await deliver(MAIL, deps)).toEqual({ ok: true, via: 'brevo', primaryCode: 'http-401' });
-    expect(primary.calls).toBe(1);
+  it('fails at once on a permanent failure, without a retry', async () => {
+    const transport = scripted([permanent('http-401')]);
+    const { deps, waits } = setup(transport);
+    expect(await deliver(MAIL, deps)).toEqual({ ok: false, codes: ['http-401'] });
+    expect(transport.calls).toBe(1);
     expect(waits).toEqual([]);
   });
 
-  it("falls back to Brevo after two transient failures, with Resend's code", async () => {
-    const primary = scripted('resend', [transient('timeout'), transient('http-503')]);
-    const fallback = scripted('brevo', [OK]);
-    const { deps, waits } = setup(primary, fallback);
-    expect(await deliver(MAIL, deps)).toEqual({ ok: true, via: 'brevo', primaryCode: 'http-503' });
-    expect(primary.calls).toBe(2);
+  it('fails with both codes after two transient failures', async () => {
+    const transport = scripted([transient('timeout'), transient('http-503')]);
+    const { deps, waits } = setup(transport);
+    expect(await deliver(MAIL, deps)).toEqual({ ok: false, codes: ['timeout', 'http-503'] });
+    expect(transport.calls).toBe(2);
     expect(waits).toEqual([1000]);
   });
 
-  it('fails with both codes when Brevo fails too', async () => {
-    const primary = scripted('resend', [permanent('http-401')]);
-    const fallback = scripted('brevo', [transient('network')]);
-    const { deps } = setup(primary, fallback);
-    expect(await deliver(MAIL, deps)).toEqual({ ok: false, codes: ['http-401', 'network'] });
+  it('fails with both codes when the retry fails permanently', async () => {
+    const transport = scripted([transient('network'), permanent('http-422')]);
+    const { deps } = setup(transport);
+    expect(await deliver(MAIL, deps)).toEqual({ ok: false, codes: ['network', 'http-422'] });
   });
 
   it('gives each attempt its own timeout', async () => {
     /** Never answers until its own signal aborts. */
-    const hanging = (name: TransportName): Transport => ({
-      name,
+    const hanging: Transport = {
+      name: 'resend',
       send: (_mail, signal) =>
         new Promise((resolve) => {
           signal.addEventListener('abort', () => resolve(transient('timeout')));
         }),
-    });
-    const { deps } = setup(hanging('resend'), hanging('brevo'));
+    };
+    const { deps } = setup(hanging);
     const result = await deliver(MAIL, { ...deps, attemptMs: 20 });
     expect(result).toEqual({ ok: false, codes: ['timeout', 'timeout'] });
   });

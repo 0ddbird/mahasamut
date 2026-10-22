@@ -14,11 +14,8 @@ export interface Mail {
   text: string;
 }
 
-/** Who the emails come from; the domain is verified with both providers. */
-export const SENDER = { name: 'Mahasamut', email: 'hello@mahasamut.app' };
-
-/** The sender as a From header: `Mahasamut <hello@mahasamut.app>`. */
-export const SENDER_ADDRESS = `${SENDER.name} <${SENDER.email}>`;
+/** Who the emails come from, as a From header; the domain is verified with Resend. */
+export const SENDER_ADDRESS = 'Mahasamut <hello@mahasamut.app>';
 
 /**
  * The email for a normalized draft, sent to `to` with the visitor as reply-to.

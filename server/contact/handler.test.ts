@@ -35,14 +35,12 @@ describe('createContactHandler', () => {
   let now = 0;
   let sent: Mail[] = [];
   let send = vi.fn<(mail: Mail) => Promise<DeliverResult>>();
-  let notify = vi.fn<(code: string) => Promise<void>>();
   let log: string[] = [];
   let handle = createContactHandler({
     origin: ORIGIN,
     to: OWNER,
     limits: createLimits(() => now),
     send,
-    alerter: { notify },
     log: (line) => log.push(line),
   });
 
@@ -54,13 +52,11 @@ describe('createContactHandler', () => {
       sent.push(mail);
       return { ok: true, via: 'resend' };
     });
-    notify = vi.fn(async () => {});
     handle = createContactHandler({
       origin: ORIGIN,
       to: OWNER,
       limits: createLimits(() => now),
       send,
-      alerter: { notify },
       log: (line) => log.push(line),
     });
   });
@@ -146,7 +142,12 @@ describe('createContactHandler', () => {
     expect(sent[0]).toMatchObject({ to: OWNER, replyTo: EMAIL, subject: `[Mahasamut] ${SUBJECT}` });
     expect(sent[0].text).toContain(MESSAGE);
     expect(log).toEqual(['contact: sent via resend']);
-    expect(notify).not.toHaveBeenCalled();
+  });
+
+  it('logs the transport that sent, nothing more', async () => {
+    send.mockResolvedValueOnce({ ok: true, via: 'console' });
+    await handle(request());
+    expect(log).toEqual(['contact: sent via console']);
   });
 
   it('answers limited for the third message of the hour', async () => {
@@ -215,17 +216,7 @@ describe('createContactHandler', () => {
     expect(log).toEqual(['contact: invalid (email,message)']);
   });
 
-  it('alerts when Brevo took over, without delaying the answer', async () => {
-    send.mockResolvedValue({ ok: true, via: 'brevo', primaryCode: 'http_500' });
-    notify.mockReturnValue(new Promise<void>(() => {}));
-    const response = await handle(request());
-    expect(response).toEqual({ status: 200, reply: { result: 'sent' } });
-    expect(notify).toHaveBeenCalledWith('http_500');
-    expect(log).toEqual(['contact: sent via brevo (resend: http_500)']);
-  });
-
   it('never logs the content, the addresses or the IP', async () => {
-    send.mockResolvedValueOnce({ ok: true, via: 'brevo', primaryCode: 'http_500' });
     await handle(request());
     await handle(request({}, { ...valid, website: 'x' }));
     await handle(request({}, { ...valid, elapsedMs: 1 }));

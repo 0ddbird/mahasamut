@@ -12,7 +12,13 @@ const MAIL: Mail = {
 
 describe('readConfig', () => {
   it('refuses to start in production without its secrets, naming them only', () => {
-    const env = { NODE_ENV: 'production', BREVO_API_KEY: 'brevo-secret-value' };
+    expect(() => readConfig({ NODE_ENV: 'production' }, () => {})).toThrow(
+      'Missing CONTACT_TO, RESEND_API_KEY',
+    );
+  });
+
+  it('names only the missing variable, never a value', () => {
+    const env = { NODE_ENV: 'production', CONTACT_TO: 'owner-secret@example.com' };
 
     let message = '';
     try {
@@ -21,8 +27,8 @@ describe('readConfig', () => {
       message = (error as Error).message;
     }
 
-    expect(message).toBe('Missing CONTACT_TO, RESEND_API_KEY');
-    expect(message).not.toContain('brevo-secret-value');
+    expect(message).toBe('Missing RESEND_API_KEY');
+    expect(message).not.toContain('owner-secret@example.com');
   });
 
   it('counts an empty variable as missing in production', () => {
@@ -30,7 +36,6 @@ describe('readConfig', () => {
       NODE_ENV: 'production',
       CONTACT_TO: 'owner@example.com',
       RESEND_API_KEY: '',
-      BREVO_API_KEY: 'brevo-secret-value',
     };
 
     expect(() => readConfig(env, () => {})).toThrow('Missing RESEND_API_KEY');
@@ -42,7 +47,6 @@ describe('readConfig', () => {
         NODE_ENV: 'production',
         CONTACT_TO: 'owner@example.com',
         RESEND_API_KEY: 'resend-key',
-        BREVO_API_KEY: 'brevo-key',
       },
       () => {},
     );
@@ -50,8 +54,7 @@ describe('readConfig', () => {
     expect(config.port).toBe(3002);
     expect(config.origin).toBe('https://mahasamut.app');
     expect(config.to).toBe('owner@example.com');
-    expect(config.transports.primary.name).toBe('resend');
-    expect(config.transports.fallback.name).toBe('brevo');
+    expect(config.transport.name).toBe('resend');
   });
 
   it('prints mails instead of sending them in development', async () => {
@@ -60,12 +63,17 @@ describe('readConfig', () => {
     const config = readConfig({}, (line) => lines.push(line));
 
     expect(config.to).toBe('owner@example.com');
-    expect(config.transports.primary.name).toBe('console');
-    expect(config.transports.fallback.name).toBe('console');
-    await config.transports.primary.send(MAIL, AbortSignal.timeout(1000));
+    expect(config.transport.name).toBe('console');
+    await config.transport.send(MAIL, AbortSignal.timeout(1000));
     expect(lines).toHaveLength(1);
     expect(lines[0]).toContain(MAIL.subject);
     expect(lines[0]).toContain(MAIL.text);
+  });
+
+  it('sends through Resend in development when its key is set', () => {
+    const config = readConfig({ RESEND_API_KEY: 'resend-key' }, () => {});
+
+    expect(config.transport.name).toBe('resend');
   });
 
   it('reads the port and origin', () => {

@@ -5,7 +5,7 @@
  * Node loads this file as it is, by stripping its types: no enums, no
  * namespaces, no parameter properties.
  */
-import { brevoTransport, consoleTransport, resendTransport } from './transports.ts';
+import { consoleTransport, resendTransport } from './transports.ts';
 import type { Transport } from './transports.ts';
 
 const DEFAULT_PORT = 3002;
@@ -20,27 +20,23 @@ export interface Config {
   origin: string;
   /** Where the messages go. */
   to: string;
-  /** Resend first, Brevo when Resend fails (both print mails in development). */
-  transports: { primary: Transport; fallback: Transport };
+  /** Resend, or the console while developing without its key. */
+  transport: Transport;
 }
 
 /**
  * Reads the configuration from `env`. With `NODE_ENV=production` a missing
- * `CONTACT_TO`, `RESEND_API_KEY` or `BREVO_API_KEY` throws an error that names
- * the missing variables and never a value. Elsewhere, when a key is missing,
- * both transports print the mail they are given to `log`, so that real keys
- * are never needed, and the console transport never runs in production.
+ * `CONTACT_TO` or `RESEND_API_KEY` throws an error that names the missing
+ * variables and never a value. Elsewhere, when the key is missing, the
+ * transport prints the mail it is given to `log`, so that a real key is never
+ * needed, and the console transport never runs in production.
  */
 export function readConfig(env: NodeJS.ProcessEnv, log: (line: string) => void): Config {
   const production = env.NODE_ENV === 'production';
-  const { CONTACT_TO: to, RESEND_API_KEY: resendKey, BREVO_API_KEY: brevoKey } = env;
+  const { CONTACT_TO: to, RESEND_API_KEY: resendKey } = env;
 
   if (production) {
-    const missing = Object.entries({
-      CONTACT_TO: to,
-      RESEND_API_KEY: resendKey,
-      BREVO_API_KEY: brevoKey,
-    })
+    const missing = Object.entries({ CONTACT_TO: to, RESEND_API_KEY: resendKey })
       .filter(([, value]) => !value)
       .map(([name]) => name);
     if (missing.length > 0) throw new Error(`Missing ${missing.join(', ')}`);
@@ -53,9 +49,6 @@ export function readConfig(env: NodeJS.ProcessEnv, log: (line: string) => void):
     port,
     origin: env.CONTACT_ORIGIN || (production ? PRODUCTION_ORIGIN : DEVELOPMENT_ORIGIN),
     to: to || DEVELOPMENT_OWNER,
-    transports:
-      resendKey && brevoKey
-        ? { primary: resendTransport(resendKey), fallback: brevoTransport(brevoKey) }
-        : { primary: consoleTransport(log), fallback: consoleTransport(log) },
+    transport: resendKey ? resendTransport(resendKey) : consoleTransport(log),
   };
 }

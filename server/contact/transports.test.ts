@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Mail } from './mail.ts';
-import { brevoTransport, consoleTransport, resendTransport } from './transports.ts';
+import { consoleTransport, resendTransport } from './transports.ts';
 
 const MAIL: Mail = {
   from: 'Mahasamut <hello@mahasamut.app>',
@@ -54,26 +54,6 @@ describe('resendTransport', () => {
   });
 });
 
-describe('brevoTransport', () => {
-  it('sends to Brevo as documented', async () => {
-    const { fetchFn, calls } = recordingFetch(201);
-    const result = await brevoTransport('xkeysib', fetchFn).send(MAIL, signal());
-    expect(result).toEqual({ ok: true });
-    expect(calls).toHaveLength(1);
-    expect(calls[0].url).toBe('https://api.brevo.com/v3/smtp/email');
-    expect(calls[0].method).toBe('POST');
-    expect(calls[0].headers['api-key']).toBe('xkeysib');
-    expect(calls[0].headers['Content-Type']).toBe('application/json');
-    expect(calls[0].body).toEqual({
-      sender: { name: 'Mahasamut', email: 'hello@mahasamut.app' },
-      to: [{ email: 'owner@example.com' }],
-      replyTo: { email: 'a@b.co' },
-      subject: '[Mahasamut] Hello',
-      textContent: MAIL.text,
-    });
-  });
-});
-
 describe('failures', () => {
   it('calls a 429 or a 503 transient and a 401 not', async () => {
     const results = [];
@@ -91,7 +71,7 @@ describe('failures', () => {
     const fetchFn = (async () => {
       throw new TypeError('fetch failed');
     }) as typeof fetch;
-    const result = await brevoTransport('k', fetchFn).send(MAIL, signal());
+    const result = await resendTransport('k', fetchFn).send(MAIL, signal());
     expect(result).toEqual({ ok: false, transient: true, code: 'network' });
   });
 
