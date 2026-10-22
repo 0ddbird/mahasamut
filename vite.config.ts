@@ -5,6 +5,14 @@ import { defineConfig } from 'vite';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    proxy: {
+      '/socket.io': {
+        target: 'http://localhost:3001',
+        ws: true,
+      },
+    },
+  },
   build: {
     // The main chunk is just over Vite's default 500 kB since it bundles the
     // pool of real words for Find the tone (about 55 kB). Splitting the routes
