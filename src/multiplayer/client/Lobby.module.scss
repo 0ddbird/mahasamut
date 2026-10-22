@@ -109,7 +109,7 @@ $tiles-row: 36rem;
     cursor: default;
   }
 
-  &:hover {
+  fieldset:not(:disabled) &:hover {
     border-color: var(--color-accent-light);
   }
 
