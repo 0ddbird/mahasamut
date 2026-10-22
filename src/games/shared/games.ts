@@ -25,6 +25,13 @@ export const GAME_NAMES: Record<GameId, string> = {
   [GAME.Vowel]: 'Vowel sounds',
 };
 
+/** What each game asks, under its name on the home page and the about page. */
+export const GAME_GOALS: Record<GameId, string> = {
+  [GAME.Syllable]: 'Find the tone of a syllable.',
+  [GAME.ConsonantClass]: 'Find the class of a consonant.',
+  [GAME.Vowel]: 'Find how a vowel sounds.',
+};
+
 /** A sample of the Thai text each game shows, for its tile on the home page. */
 export const GAME_SAMPLES: Record<GameId, string> = {
   [GAME.Syllable]: 'ก่า',

@@ -23,6 +23,13 @@ const HOME: PageMeta = {
   canonical: `${SITE_URL}/`,
 };
 
+const ABOUT: PageMeta = {
+  title: 'About — Mahasamut',
+  description:
+    'Where the name Mahasamut comes from, who makes these games to read Thai script, and the open sources they are built on.',
+  canonical: `${SITE_URL}/about`,
+};
+
 /** What each game is about, in a sentence or two. */
 const GAME_DESCRIPTIONS: Record<GameId, string> = {
   [GAME.ConsonantClass]:
@@ -47,6 +54,7 @@ const gameMeta = (game: GameId): PageMeta => ({
 export function pageMeta(pathname: string): PageMeta {
   const path = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
   if (path === '/') return HOME;
+  if (path === '/about') return ABOUT;
   const game = GAME_IDS.find((id) => path === GAME_PATHS[id] || path === `${GAME_PATHS[id]}/play`);
   if (game !== undefined) return gameMeta(game);
   return { title: 'Page not found — Mahasamut', description: HOME.description, canonical: null };

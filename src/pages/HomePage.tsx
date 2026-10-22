@@ -1,15 +1,7 @@
 import { Link } from 'react-router';
 import { Logo } from '../components/Logo/Logo';
-import { GAME_IDS, GAME_NAMES, GAME_PATHS, GAME_SAMPLES } from '../games/shared/games';
-import type { GameId } from '../games/shared/games';
+import { GAME_GOALS, GAME_IDS, GAME_NAMES, GAME_PATHS, GAME_SAMPLES } from '../games/shared/games';
 import styles from './HomePage.module.scss';
-
-/** What each game asks, under its name on its tile. */
-const GAME_GOALS: Record<GameId, string> = {
-  syllable: 'Find the tone of a syllable.',
-  consonantClass: 'Find the class of a consonant.',
-  vowel: 'Find how a vowel sounds.',
-};
 
 /**
  * The site home page: the logo, then one tile per game. A whole tile is the
