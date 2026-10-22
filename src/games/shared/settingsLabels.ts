@@ -4,8 +4,13 @@
  * that a translation can replace them later.
  */
 import type { Option } from '../../components/AnswerRow/option';
-import { ANSWER_MODE } from './settings';
-import type { AnswerMode, GameSettings } from './settings';
+import { ANSWER_MODE, PLAY_MODE } from './settings';
+import type { AnswerMode, GameSettings, PlayMode } from './settings';
+
+export const PLAY_MODE_OPTIONS: readonly Option<PlayMode>[] = [
+  { value: PLAY_MODE.Solo, label: 'Alone' },
+  { value: PLAY_MODE.Multi, label: 'In a room' },
+];
 
 /** The length of a game, as the settings page asks it before the number of questions. */
 export type LengthChoice = 'endless' | 'series';

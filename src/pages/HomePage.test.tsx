@@ -1,13 +1,22 @@
 import { render, screen, within } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import { GAME, GAME_IDS, GAME_NAMES, GAME_PATHS, GAME_SAMPLES } from '../games/shared/games';
 import { HomePage } from './HomePage';
 
+function RoomLocation() {
+  const { pathname } = useLocation();
+  return <p>{`Room at ${pathname}`}</p>;
+}
+
 const renderHome = () =>
   render(
-    <MemoryRouter>
-      <HomePage />
+    <MemoryRouter initialEntries={['/']}>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/room/:roomId" element={<RoomLocation />} />
+      </Routes>
     </MemoryRouter>,
   );
 
@@ -38,5 +47,19 @@ describe('HomePage', () => {
   it('has no navigation bar: the logo is the way home', () => {
     renderHome();
     expect(screen.queryByRole('navigation')).toBeNull();
+  });
+
+  it('joins a room by its ID', async () => {
+    renderHome();
+    await userEvent.type(screen.getByLabelText('Room ID'), ' k7p 2qx ');
+    await userEvent.click(screen.getByRole('button', { name: 'Join' }));
+    expect(screen.getByText('Room at /room/K7P2QX')).toBeDefined();
+  });
+
+  it('refuses an ID that cannot be one', async () => {
+    renderHome();
+    await userEvent.type(screen.getByLabelText('Room ID'), 'bad');
+    await userEvent.click(screen.getByRole('button', { name: 'Join' }));
+    expect(screen.getByRole('alert').textContent).toBe('This is not a room ID.');
   });
 });
