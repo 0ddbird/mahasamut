@@ -1,4 +1,4 @@
-import { GAME, GAME_IDS } from '../games/shared/games';
+import { GAME } from '../games/shared/games';
 import type { GameId } from '../games/shared/games';
 
 export const TRACKED_ROUTES = [
