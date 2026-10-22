@@ -24,7 +24,7 @@ npm run dev            # start the Vite dev server
 npm run dev:server     # start the contact service (for the /contact form), in a second terminal
 ```
 
-The contact service listens on `127.0.0.1:3001`, and the Vite dev server proxies `/api` to it. Without `RESEND_API_KEY` and `BREVO_API_KEY` set, it prints each message in its terminal instead of sending it, so the form can be tried without an account. Set `CONTACT_PORT` or `CONTACT_ORIGIN` to change the port or the allowed origin (`http://localhost:5173` outside production).
+The contact service listens on `127.0.0.1:3002`, and the Vite dev server proxies `/api` to it. Without `RESEND_API_KEY` and `BREVO_API_KEY` set, it prints each message in its terminal instead of sending it, so the form can be tried without an account. Set `CONTACT_PORT` or `CONTACT_ORIGIN` to change the port or the allowed origin (`http://localhost:5173` outside production).
 
 ### Checks and build
 

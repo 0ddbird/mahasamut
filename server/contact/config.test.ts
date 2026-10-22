@@ -36,7 +36,7 @@ describe('readConfig', () => {
     expect(() => readConfig(env, () => {})).toThrow('Missing RESEND_API_KEY');
   });
 
-  it('reads the variables in production, with the public origin and the port 3001', () => {
+  it('reads the variables in production, with the public origin and the port 3002', () => {
     const config = readConfig(
       {
         NODE_ENV: 'production',
@@ -47,7 +47,7 @@ describe('readConfig', () => {
       () => {},
     );
 
-    expect(config.port).toBe(3001);
+    expect(config.port).toBe(3002);
     expect(config.origin).toBe('https://mahasamut.app');
     expect(config.to).toBe('owner@example.com');
     expect(config.transports.primary.name).toBe('resend');

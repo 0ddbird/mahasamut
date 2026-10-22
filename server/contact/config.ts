@@ -8,7 +8,7 @@
 import { brevoTransport, consoleTransport, resendTransport } from './transports.ts';
 import type { Transport } from './transports.ts';
 
-const DEFAULT_PORT = 3001;
+const DEFAULT_PORT = 3002;
 const PRODUCTION_ORIGIN = 'https://mahasamut.app';
 const DEVELOPMENT_ORIGIN = 'http://localhost:5173';
 const DEVELOPMENT_OWNER = 'owner@example.com';

@@ -7,7 +7,7 @@ export default defineConfig(({ isSsrBuild }) => ({
   plugins: [react()],
   server: {
     // The contact service (npm run dev:server) answers /api/contact in development.
-    proxy: { '/api': 'http://127.0.0.1:3001' },
+    proxy: { '/api': 'http://127.0.0.1:3002' },
   },
   build: {
     // The SSR build bundles the contact service: it has no use for the public folder.
