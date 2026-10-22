@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { Logo } from './Logo';
 
 describe('Logo', () => {
-  it('reads as the site name, Scriptomancy Thai', () => {
+  it('reads as the site name, Mahasamut', () => {
     const { container } = render(<Logo size="large" />);
-    expect(container.textContent).toBe('Scriptomancy Thai');
+    expect(container.textContent).toBe('Mahasamut');
   });
 });

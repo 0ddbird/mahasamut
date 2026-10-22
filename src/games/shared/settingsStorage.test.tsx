@@ -29,10 +29,10 @@ describe('loadSettings', () => {
   });
 
   it('ignores what it cannot read, setting by setting', () => {
-    localStorage.setItem('scriptomancy.settings.syllable', '{oops');
+    localStorage.setItem('mahasamut.settings.syllable', '{oops');
     expect(loadSettings(GAME.Syllable)).toEqual(DEFAULT_SETTINGS);
 
-    localStorage.setItem('scriptomancy.settings.syllable', '{"questionCount":10,"answerMode":"x"}');
+    localStorage.setItem('mahasamut.settings.syllable', '{"questionCount":10,"answerMode":"x"}');
     expect(loadSettings(GAME.Syllable)).toEqual({
       questionCount: 10,
       secondsPerQuestion: null,

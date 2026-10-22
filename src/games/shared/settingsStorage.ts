@@ -11,7 +11,7 @@ import type { GameId } from './games';
 import { DEFAULT_SETTINGS, parseGameSettings } from './settings';
 import type { GameSettings } from './settings';
 
-const storageKey = (game: GameId) => `scriptomancy.settings.${game}`;
+const storageKey = (game: GameId) => `mahasamut.settings.${game}`;
 
 /** The settings last saved for `game`; each one unreadable is replaced by its default. */
 export function loadSettings(game: GameId): GameSettings {

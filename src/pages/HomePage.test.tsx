@@ -14,7 +14,7 @@ const renderHome = () =>
 describe('HomePage', () => {
   it('shows the logo as the page title, then the tagline', () => {
     renderHome();
-    expect(screen.getByRole('heading', { level: 1, name: 'Scriptomancy Thai' })).toBeDefined();
+    expect(screen.getByRole('heading', { level: 1, name: 'Mahasamut' })).toBeDefined();
     expect(screen.getByText('Games to read Thai script')).toBeDefined();
   });
 

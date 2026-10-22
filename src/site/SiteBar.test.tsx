@@ -35,7 +35,7 @@ const gameLink = (game: (typeof GAME_IDS)[number]) =>
 describe('SiteBar', () => {
   it('links the logo to the home page', () => {
     renderAt(GAME_PATHS[GAME.Syllable]);
-    expect(screen.getByRole('link', { name: 'Scriptomancy Thai' }).getAttribute('href')).toBe('/');
+    expect(screen.getByRole('link', { name: 'Mahasamut' }).getAttribute('href')).toBe('/');
   });
 
   it('lists every game, the current one marked as the current page', () => {

@@ -23,6 +23,6 @@ describe('SiteFooter', () => {
     ['the not found page', '/nowhere'],
   ])('shows the copyright on %s', (_, path) => {
     renderAt(path);
-    expect(screen.getByRole('contentinfo').textContent).toBe('© 2026 Scriptomancy');
+    expect(screen.getByRole('contentinfo').textContent).toBe('© 2026 Mahasamut');
   });
 });
