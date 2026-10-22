@@ -3,6 +3,7 @@ import { GAME_IDS, GAME_PATHS } from './games/shared/games';
 import { PlayRoute } from './games/shared/PlayRoute';
 import { SetupPage } from './games/shared/SetupPage';
 import { AboutPage } from './pages/AboutPage';
+import { ContactPage } from './pages/ContactPage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { LeaveGuardProvider } from './site/LeaveGuardProvider';
@@ -13,7 +14,7 @@ import { SiteLayout } from './site/SiteLayout';
 /**
  * The routes of the site: the home page, then, under the navigation bar, two
  * routes per game, its settings page and the game itself (`/syllable`,
- * `/syllable/play`), the about page and the not found page; the footer under
+ * `/syllable/play`), the about page, the contact page and the not found page; the footer under
  * all of them, and the head's title and tags following the page (PageHead).
  * LeaveGuardProvider wraps them all: the bar and the footer ask before a link
  * leaves a game in progress. The router itself is set in main.tsx, so that
@@ -35,6 +36,7 @@ function App() {
             />,
           ])}
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

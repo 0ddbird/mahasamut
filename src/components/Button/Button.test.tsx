@@ -30,4 +30,21 @@ describe('Button', () => {
     render(<Button onClick={() => {}}>Next</Button>);
     expect(screen.getByRole('button').getAttribute('type')).toBe('button');
   });
+
+  it('submits the form it is in when asked to', async () => {
+    let submits = 0;
+    render(
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          submits++;
+        }}
+      >
+        <Button type="submit">Send</Button>
+      </form>,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Send' }));
+    expect(submits).toBe(1);
+  });
 });
