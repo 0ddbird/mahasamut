@@ -48,6 +48,15 @@ export interface RoundResultView {
   points: number;
 }
 
+/** One question of a finished game, with the answer of the player who sees it. */
+export interface RecapRoundView {
+  question: QuestionView;
+  reveal: Reveal;
+  /** null when the player gave no answer in time. */
+  answer: GameAnswer | null;
+  correct: boolean;
+}
+
 export type PhaseView =
   | { kind: 'lobby' }
   | {
@@ -68,7 +77,7 @@ export type PhaseView =
       ranking: RankingEntry[];
       isLast: boolean;
     }
-  | { kind: 'finished'; ranking: RankingEntry[] };
+  | { kind: 'finished'; ranking: RankingEntry[]; recap: RecapRoundView[] };
 
 export interface RoomView {
   roomId: string;

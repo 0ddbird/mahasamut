@@ -32,6 +32,7 @@ const FINISHED_VIEW: RoomView = {
       { rank: 3, pseudo: 'Cara', avatar: 'lotus', score: 120, isYou: false },
       { rank: 5, pseudo: 'Dan', avatar: 'coconut', score: 50, isYou: false },
     ],
+    recap: [],
   },
 };
 
@@ -78,6 +79,7 @@ describe('FinalScreen', () => {
                 { rank: 1, pseudo: 'Anna', avatar: 'tiger', score: 200, isYou: false },
                 { rank: 2, pseudo: 'Host', avatar: 'elephant', score: 150, isYou: true },
               ],
+              recap: [],
             },
           }}
         />
