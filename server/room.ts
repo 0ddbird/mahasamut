@@ -1,0 +1,263 @@
+/**
+ * A multiplayer room, from its creation in the lobby to the final podium.
+ *
+ * Pure state machine with no timers and no network: the caller passes the
+ * current timestamp (`now`) to every method.
+ */
+import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
+import type {
+  ActionError,
+  GameAnswer,
+  PhaseView,
+  RankingEntry,
+  RoomView,
+  RoundResultView,
+} from '../src/multiplayer/protocol';
+import { pseudoKey } from '../src/multiplayer/pseudo';
+import type { RoomSettings } from '../src/multiplayer/settings';
+import type { Rng } from '../src/thai/generator';
+import { SERVER_GAMES } from './games';
+import type { ServerQuestion } from './games/types';
+import { MAX_PLAYERS_PER_ROOM } from './limits';
+import { rankPlayers } from './scoring';
+
+export type JoinError = 'started' | 'room-full' | 'wrong-password' | 'pseudo-taken';
+export type Outcome<E> = { ok: true } | { ok: false; error: E };
+
+interface Player {
+  token: string;
+  pseudo: string;
+  key: string;
+  isHost: boolean;
+  connections: number;
+  score: number;
+}
+
+interface SubmittedAnswer {
+  answer: GameAnswer;
+  receivedAt: number;
+}
+
+type InternalPhase =
+  | { kind: 'lobby' }
+  | {
+      kind: 'question';
+      index: number;
+      openedAt: number;
+      deadline: number;
+      submissions: Map<string, SubmittedAnswer>;
+    }
+  | {
+      kind: 'results';
+      index: number;
+      results: Map<string, RoundResultView>;
+    }
+  | { kind: 'finished' };
+
+function samePassword(expected: string, given: string | null): boolean {
+  if (given === null) return false;
+  const a = createHash('sha256').update(expected).digest();
+  const b = createHash('sha256').update(given).digest();
+  return timingSafeEqual(a, b);
+}
+
+export class Room {
+  readonly id: string;
+  readonly settings: RoomSettings;
+  private readonly rng: Rng;
+  private readonly players: Player[] = [];
+  private readonly byToken = new Map<string, Player>();
+  private questions: ServerQuestion[] = [];
+  private phase: InternalPhase = { kind: 'lobby' };
+  private activityAt: number;
+
+  private constructor(id: string, settings: RoomSettings, now: number, rng: Rng) {
+    this.id = id;
+    this.settings = settings;
+    this.activityAt = now;
+    this.rng = rng;
+  }
+
+  static create(
+    id: string,
+    settings: RoomSettings,
+    hostPseudo: string,
+    now: number,
+    rng: Rng = Math.random,
+  ): { room: Room; token: string } {
+    const room = new Room(id, settings, now, rng);
+    const token = randomUUID();
+    const host: Player = {
+      token,
+      pseudo: hostPseudo,
+      key: pseudoKey(hostPseudo),
+      isHost: true,
+      connections: 0,
+      score: 0,
+    };
+    room.players.push(host);
+    room.byToken.set(token, host);
+    return { room, token };
+  }
+
+  get lastActivity(): number {
+    return this.activityAt;
+  }
+
+  get deadline(): number | null {
+    return this.phase.kind === 'question' ? this.phase.deadline : null;
+  }
+
+  get status(): 'open' | 'started' | 'full' {
+    if (this.phase.kind !== 'lobby') return 'started';
+    if (this.players.length >= MAX_PLAYERS_PER_ROOM) return 'full';
+    return 'open';
+  }
+
+  hasPlayer(token: string): boolean {
+    return this.byToken.has(token);
+  }
+
+  join(
+    pseudo: string,
+    password: string | null,
+    now: number,
+  ): { ok: true; token: string } | { ok: false; error: JoinError } {
+    if (this.phase.kind !== 'lobby') return { ok: false, error: 'started' };
+    if (this.players.length >= MAX_PLAYERS_PER_ROOM) return { ok: false, error: 'room-full' };
+    if (this.settings.password !== null && !samePassword(this.settings.password, password)) {
+      return { ok: false, error: 'wrong-password' };
+    }
+    const key = pseudoKey(pseudo);
+    if (this.players.some((p) => p.key === key)) {
+      return { ok: false, error: 'pseudo-taken' };
+    }
+
+    const token = randomUUID();
+    const player: Player = {
+      token,
+      pseudo,
+      key,
+      isHost: false,
+      connections: 0,
+      score: 0,
+    };
+    this.players.push(player);
+    this.byToken.set(token, player);
+    this.activityAt = now;
+    return { ok: true, token };
+  }
+
+  connect(token: string, now: number): boolean {
+    const player = this.byToken.get(token);
+    if (!player) return false;
+    player.connections += 1;
+    this.activityAt = now;
+    return true;
+  }
+
+  disconnect(token: string, now: number): void {
+    const player = this.byToken.get(token);
+    if (!player) return;
+    player.connections = Math.max(0, player.connections - 1);
+    this.activityAt = now;
+  }
+
+  start(token: string, now: number): Outcome<ActionError> {
+    const player = this.byToken.get(token);
+    if (!player) return { ok: false, error: 'not-in-room' };
+    if (!player.isHost) return { ok: false, error: 'not-host' };
+    if (this.phase.kind !== 'lobby') return { ok: false, error: 'wrong-phase' };
+
+    this.questions = SERVER_GAMES[this.settings.game].drawQuestions(this.settings, this.rng);
+    this.openQuestion(0, now);
+    this.activityAt = now;
+    return { ok: true };
+  }
+
+  answer(_token: string, _raw: unknown, _now: number): Outcome<ActionError> {
+    return { ok: false, error: 'wrong-phase' };
+  }
+
+  expire(_now: number): boolean {
+    return false;
+  }
+
+  next(_token: string, _now: number): Outcome<ActionError> {
+    return { ok: false, error: 'wrong-phase' };
+  }
+
+  viewFor(token: string, now: number): RoomView {
+    const you = this.byToken.get(token) ?? this.players[0];
+    const host = this.players[0];
+    return {
+      roomId: this.id,
+      game: this.settings.game,
+      settings: {
+        secondsPerQuestion: this.settings.secondsPerQuestion,
+        questionCount: this.settings.questionCount,
+        answerMode: this.settings.answerMode,
+        hasPassword: this.settings.password !== null,
+      },
+      you: { pseudo: you.pseudo, isHost: you.isHost },
+      host: { pseudo: host.pseudo, connected: host.connections > 0 },
+      players: this.players.map((p) => ({
+        pseudo: p.pseudo,
+        isHost: p.isHost,
+        connected: p.connections > 0,
+      })),
+      phase: this.phaseViewFor(you.token, now),
+    };
+  }
+
+  private openQuestion(index: number, now: number): void {
+    this.phase = {
+      kind: 'question',
+      index,
+      openedAt: now,
+      deadline: now + this.settings.secondsPerQuestion * 1000,
+      submissions: new Map(),
+    };
+  }
+
+  private rankingFor(youToken: string): RankingEntry[] {
+    const you = this.byToken.get(youToken);
+    return rankPlayers(this.players).map((entry) => ({
+      ...entry,
+      isYou: entry.pseudo === you?.pseudo,
+    }));
+  }
+
+  private phaseViewFor(token: string, now: number): PhaseView {
+    if (this.phase.kind === 'lobby') return { kind: 'lobby' };
+    if (this.phase.kind === 'question') {
+      const q = this.questions[this.phase.index];
+      const submission = this.phase.submissions.get(token);
+      return {
+        kind: 'question',
+        index: this.phase.index,
+        question: q.view,
+        remainingMs: Math.max(0, this.phase.deadline - now),
+        yourAnswer: submission ? submission.answer : null,
+        answeredCount: this.phase.submissions.size,
+        connectedCount: this.players.filter((p) => p.connections > 0).length,
+      };
+    }
+    if (this.phase.kind === 'results') {
+      const q = this.questions[this.phase.index];
+      return {
+        kind: 'results',
+        index: this.phase.index,
+        question: q.view,
+        reveal: q.reveal,
+        you: this.phase.results.get(token) ?? { answer: null, correct: false, points: 0 },
+        ranking: this.rankingFor(token),
+        isLast: this.phase.index === this.questions.length - 1,
+      };
+    }
+    return {
+      kind: 'finished',
+      ranking: this.rankingFor(token),
+    };
+  }
+}
