@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -10,10 +10,11 @@ import {
   orphans,
   readReview,
   status,
+  takeMatches,
   uniqueTakes,
   writeReview,
 } from './review-state';
-import type { Decision, Review, ReviewEntry } from './review-state';
+import type { Review, ReviewEntry, StoredDecision } from './review-state';
 import type { Manifest, Take } from './takes';
 
 const candidate = (text: string, id: string, level: 1 | 2 = 1) =>
@@ -28,7 +29,7 @@ const take = (n: number, md5 = `md5-${n}`): Take => ({
   recordedAt: '',
 });
 
-const entry = (decision: Decision = { decision: 'none' }, note = ''): ReviewEntry => ({
+const entry = (decision: StoredDecision = { decision: 'none' }, note = ''): ReviewEntry => ({
   ...decision,
   note,
   decidedAt: '2026-10-21T10:00:00.000Z',
@@ -48,6 +49,32 @@ describe('uniqueTakes', () => {
 
   it('answers an empty list for no takes', () => {
     expect(uniqueTakes([])).toEqual([]);
+  });
+});
+
+describe('takeMatches', () => {
+  const heard = entry({ decision: 'take', take: 2, md5: 'md5-2' });
+
+  it('is true while the take has the recording that was heard', () => {
+    expect(takeMatches(heard, [take(1), take(2)])).toBe(true);
+  });
+
+  it('is false when the take was recorded again', () => {
+    expect(takeMatches(heard, [take(1), take(2, 'another')])).toBe(false);
+  });
+
+  it('is false when the take is gone', () => {
+    expect(takeMatches(heard, [take(1)])).toBe(false);
+    expect(takeMatches(heard, [])).toBe(false);
+  });
+
+  it('is false for a take decision without an md5, which cannot be confirmed', () => {
+    expect(takeMatches(entry({ decision: 'take', take: 2 }), [take(2)])).toBe(false);
+  });
+
+  it('is true for none and remove, which depend on no recording', () => {
+    expect(takeMatches(entry({ decision: 'none' }), [])).toBe(true);
+    expect(takeMatches(entry({ decision: 'remove' }), [])).toBe(true);
   });
 });
 
@@ -118,8 +145,59 @@ describe('applyDecision', () => {
       now,
     );
     expect(review).toEqual({
-      กา: { decision: 'take', take: 2, note: '', decidedAt: '2026-10-22T08:30:00.000Z' },
+      กา: {
+        decision: 'take',
+        take: 2,
+        md5: 'md5-2',
+        note: '',
+        decidedAt: '2026-10-22T08:30:00.000Z',
+      },
     });
+  });
+
+  it('stores the md5 of the take heard, whatever the other takes are', () => {
+    const changed: Manifest = { a: [take(1, 'first'), take(2, 'second')] };
+    const review = applyDecision({}, candidates, changed, 'กา', { decision: 'take', take: 1 }, now);
+    expect(review.กา).toMatchObject({ take: 1, md5: 'first' });
+  });
+
+  it('keeps the md5 heard when a note is saved on the same take, even if the audio changed since', () => {
+    const heard = applyDecision({}, candidates, manifest, 'กา', { decision: 'take', take: 2 }, now);
+    const rerecorded: Manifest = { a: [take(1), take(2, 'new audio')] };
+
+    const sameTake = applyDecision(
+      heard,
+      candidates,
+      rerecorded,
+      'กา',
+      { decision: 'take', take: 2, note: 'ok' },
+      now,
+    );
+    expect(sameTake.กา).toMatchObject({ take: 2, md5: 'md5-2', note: 'ok' });
+
+    // Choosing the take again after the re-recording is a new listening.
+    const otherTake = applyDecision(
+      heard,
+      candidates,
+      rerecorded,
+      'กา',
+      { decision: 'take', take: 1 },
+      now,
+    );
+    expect(otherTake.กา).toMatchObject({ take: 1, md5: 'md5-1' });
+  });
+
+  it('fills the md5 of an entry that has none when it is decided again', () => {
+    const old = { กา: { decision: 'take', take: 2, note: '', decidedAt: '' } } as Review;
+    const review = applyDecision(
+      old,
+      candidates,
+      manifest,
+      'กา',
+      { decision: 'take', take: 2 },
+      now,
+    );
+    expect(review.กา).toMatchObject({ take: 2, md5: 'md5-2' });
   });
 
   it('records none and remove without a take number', () => {
@@ -141,6 +219,7 @@ describe('applyDecision', () => {
     const before: Review = { กา: entry({ decision: 'take', take: 1 }) };
     const after = applyDecision(before, candidates, manifest, 'กา', { decision: 'none' }, now);
     expect(after.กา).not.toHaveProperty('take');
+    expect(after.กา).not.toHaveProperty('md5');
   });
 
   it('replaces the old decision and keeps its note when no new note is given', () => {
@@ -156,6 +235,7 @@ describe('applyDecision', () => {
     expect(after.กา).toEqual({
       decision: 'take',
       take: 1,
+      md5: 'md5-1',
       note: 'voice says kaa',
       decidedAt: '2026-10-22T08:30:00.000Z',
     });
@@ -236,6 +316,16 @@ describe('readReview and writeReview', () => {
     };
     writeReview(file, review);
     expect(readReview(file)).toEqual(review);
+  });
+
+  it('reads an entry written without an md5 and does not crash on it', () => {
+    writeFileSync(
+      file,
+      '{\n  "กา": {"decision":"take","take":2,"note":"","decidedAt":"2026-10-21T10:00:00.000Z"}\n}\n',
+    );
+    const review = readReview(file);
+    expect(status(review.กา)).toBe('validated');
+    expect(takeMatches(review.กา!, [take(2)])).toBe(false);
   });
 
   it('keeps an orphan entry through a write', () => {

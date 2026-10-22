@@ -19,8 +19,17 @@ export type Decision =
   /** The word is not wanted in the game. */
   | { decision: 'remove' };
 
+/**
+ * A decision as stored. A take decision also keeps the `md5` of the recording
+ * that was heard: the takes are git-ignored and live on one machine, so a take
+ * number alone would point at other audio once the word is recorded again.
+ * Absent from an entry that predates it.
+ */
+export type StoredDecision =
+  { decision: 'take'; take: number; md5?: string } | { decision: 'none' } | { decision: 'remove' };
+
 /** A decision with the reviewer's remark and the moment it was made. */
-export type ReviewEntry = Decision & {
+export type ReviewEntry = StoredDecision & {
   note: string;
   /** An ISO date and time. */
   decidedAt: string;
@@ -66,11 +75,16 @@ export function applyDecision(
   const candidate = candidates.find((c) => c.text === text && c.level === 1);
   if (!candidate) throw new Error(`"${text}" is not a level 1 word.`);
 
-  let decision: Decision;
+  let decision: StoredDecision;
   if (input.decision === 'take') {
-    const known = (manifest[candidate.id] ?? []).some(({ n }) => n === input.take);
-    if (!known) throw new Error(`"${text}" has no take ${input.take}.`);
-    decision = { decision: 'take', take: input.take };
+    const recorded = (manifest[candidate.id] ?? []).find(({ n }) => n === input.take);
+    if (!recorded) throw new Error(`"${text}" has no take ${input.take}.`);
+    // Saving a note on the take already chosen is no new listening: the md5
+    // heard stays, even if the take has been recorded again since.
+    const before = review[text];
+    const heard =
+      before?.decision === 'take' && before.take === input.take ? before.md5 : undefined;
+    decision = { decision: 'take', take: input.take, md5: heard ?? recorded.md5 };
   } else {
     decision = { decision: input.decision };
   }
@@ -83,6 +97,19 @@ export function applyDecision(
       decidedAt: now.toISOString(),
     },
   };
+}
+
+/**
+ * Whether the recording behind a take decision is still the one that was
+ * heard: the manifest has that take number with the same md5. False for a take
+ * decision whose recording changed or is gone, or that has no md5 to compare;
+ * true for none and remove, which rest on no recording.
+ */
+export function takeMatches(entry: ReviewEntry, takes: readonly Take[]): boolean {
+  if (entry.decision !== 'take') return true;
+  return (
+    entry.md5 !== undefined && takes.some(({ n, md5 }) => n === entry.take && md5 === entry.md5)
+  );
 }
 
 /** The takes that sound different: one per MP3 content, the lowest number kept. */

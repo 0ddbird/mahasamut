@@ -186,7 +186,7 @@ describe('the review server', () => {
       const response = await post(first, { text: 'กา', decision: 'take', take: 3, note: 'clear' });
       expect(response.status).toBe(200);
       const entry = (await response.json()) as ReviewEntry;
-      expect(entry).toMatchObject({ decision: 'take', take: 3, note: 'clear' });
+      expect(entry).toMatchObject({ decision: 'take', take: 3, md5: 'other', note: 'clear' });
       expect(typeof entry.decidedAt).toBe('string');
       expect(savedReview().กา).toEqual(entry);
 
