@@ -19,7 +19,7 @@ import type { Rng } from '../src/thai/generator';
 import { SERVER_GAMES } from './games';
 import type { ServerQuestion } from './games/types';
 import { MAX_PLAYERS_PER_ROOM } from './limits';
-import { rankPlayers } from './scoring';
+import { questionPoints, rankPlayers } from './scoring';
 
 export type JoinError = 'started' | 'room-full' | 'wrong-password' | 'pseudo-taken';
 export type Outcome<E> = { ok: true } | { ok: false; error: E };
@@ -161,6 +161,7 @@ export class Room {
     if (!player) return;
     player.connections = Math.max(0, player.connections - 1);
     this.activityAt = now;
+    this.closeIfEveryoneAnswered();
   }
 
   start(token: string, now: number): Outcome<ActionError> {
@@ -175,16 +176,47 @@ export class Room {
     return { ok: true };
   }
 
-  answer(_token: string, _raw: unknown, _now: number): Outcome<ActionError> {
-    return { ok: false, error: 'wrong-phase' };
+  answer(token: string, raw: unknown, now: number): Outcome<ActionError> {
+    const player = this.byToken.get(token);
+    if (!player) return { ok: false, error: 'not-in-room' };
+    if (this.phase.kind !== 'question') return { ok: false, error: 'wrong-phase' };
+    if (now >= this.phase.deadline) {
+      this.closeQuestion();
+      return { ok: false, error: 'too-late' };
+    }
+    if (this.phase.submissions.has(token)) {
+      return { ok: false, error: 'already-answered' };
+    }
+    const parsed = SERVER_GAMES[this.settings.game].parseAnswer(raw, this.settings);
+    if (!parsed) return { ok: false, error: 'invalid-answer' };
+
+    this.phase.submissions.set(token, { answer: parsed, receivedAt: now });
+    this.activityAt = now;
+    this.closeIfEveryoneAnswered();
+    return { ok: true };
   }
 
-  expire(_now: number): boolean {
-    return false;
+  expire(now: number): boolean {
+    if (this.phase.kind !== 'question') return false;
+    if (now < this.phase.deadline) return false;
+    this.closeQuestion();
+    return true;
   }
 
-  next(_token: string, _now: number): Outcome<ActionError> {
-    return { ok: false, error: 'wrong-phase' };
+  next(token: string, now: number): Outcome<ActionError> {
+    const player = this.byToken.get(token);
+    if (!player) return { ok: false, error: 'not-in-room' };
+    if (!player.isHost) return { ok: false, error: 'not-host' };
+    if (this.phase.kind !== 'results') return { ok: false, error: 'wrong-phase' };
+
+    this.activityAt = now;
+    const nextIndex = this.phase.index + 1;
+    if (nextIndex >= this.questions.length) {
+      this.phase = { kind: 'finished' };
+    } else {
+      this.openQuestion(nextIndex, now);
+    }
+    return { ok: true };
   }
 
   viewFor(token: string, now: number): RoomView {
@@ -218,6 +250,38 @@ export class Room {
       deadline: now + this.settings.secondsPerQuestion * 1000,
       submissions: new Map(),
     };
+  }
+
+  private closeIfEveryoneAnswered(): void {
+    if (this.phase.kind !== 'question') return;
+    const connected = this.players.filter((p) => p.connections > 0);
+    if (connected.length === 0) return;
+    const submissions = this.phase.submissions;
+    if (connected.every((p) => submissions.has(p.token))) {
+      this.closeQuestion();
+    }
+  }
+
+  private closeQuestion(): void {
+    if (this.phase.kind !== 'question') return;
+    const { index, openedAt, submissions } = this.phase;
+    const question = this.questions[index];
+    const totalMs = this.settings.secondsPerQuestion * 1000;
+    const results = new Map<string, RoundResultView>();
+
+    for (const player of this.players) {
+      const sub = submissions.get(player.token);
+      if (!sub) {
+        results.set(player.token, { answer: null, correct: false, points: 0 });
+        continue;
+      }
+      const correct = question.isCorrect(sub.answer);
+      const points = questionPoints(correct, sub.receivedAt - openedAt, totalMs);
+      player.score += points;
+      results.set(player.token, { answer: sub.answer, correct, points });
+    }
+
+    this.phase = { kind: 'results', index, results };
   }
 
   private rankingFor(youToken: string): RankingEntry[] {
