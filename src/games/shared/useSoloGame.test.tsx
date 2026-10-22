@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { consonantClassEntry } from './recap';
-import type { RecapResult } from './recap';
+import type { RecapEntry, RecapResult } from './recap';
 import { EMPTY_SCORE } from './score';
 import { DEFAULT_SETTINGS } from './settings';
 import type { GameSettings } from './settings';
@@ -187,13 +187,14 @@ describe('useSoloGame', () => {
       game().recap.map((entry) => entry.result);
 
     it('adds a line for each question counted, in order', () => {
-      const { game } = renderGame();
+      const { game, entryOf } = renderGame();
       act(() => game().check(true));
       wait(CORRECT_DELAY_MS);
       act(() => game().check(false));
 
       expect(results(game)).toEqual(['right', 'wrong']);
       expect(game().recap.length).toBe(game().score.played);
+      expect(entryOf).toHaveBeenCalledTimes(game().score.played);
     });
 
     it('adds a time-up line when the time runs out', () => {
@@ -204,7 +205,7 @@ describe('useSoloGame', () => {
     });
 
     it('adds one line when Validate and the end of the time come together', () => {
-      const { game } = renderGame(TIMED);
+      const { game, entryOf } = renderGame(TIMED);
       wait(14_999);
       act(() => {
         game().check(true);
@@ -212,6 +213,37 @@ describe('useSoloGame', () => {
       });
 
       expect(results(game)).toEqual(['right']);
+      expect(entryOf).toHaveBeenCalledTimes(1);
+    });
+
+    /** Renders the hook so that `entryOf` can change between renders, as the answers of a page do. */
+    const renderWithEntries = (
+      settings: GameSettings,
+      first: (result: RecapResult) => RecapEntry,
+    ) =>
+      renderHook(({ entryOf }) => useSoloGame(settings, vi.fn(), entryOf), {
+        initialProps: { entryOf: first },
+      });
+    const entryFor = (consonant: string) => (result: RecapResult) =>
+      consonantClassEntry(consonant, 'mid', null, result);
+
+    it('builds the line with the entryOf of the latest render', () => {
+      const { result, rerender } = renderWithEntries(DEFAULT_SETTINGS, entryFor('ก'));
+      rerender({ entryOf: entryFor('ข') });
+      act(() => result.current.check(false));
+
+      expect(result.current.recap.map((entry) => entry.text)).toEqual(['ข']);
+    });
+
+    it('builds a time-up line with the entryOf of the latest render, not the one the timer started with', () => {
+      const { result, rerender } = renderWithEntries(TIMED, entryFor('ก'));
+      wait(5000);
+      rerender({ entryOf: entryFor('ข') });
+      wait(10_000);
+
+      expect(result.current.recap.map((entry) => [entry.text, entry.result])).toEqual([
+        ['ข', 'timeUp'],
+      ]);
     });
 
     it('adds no line for a question shown but not answered', () => {
