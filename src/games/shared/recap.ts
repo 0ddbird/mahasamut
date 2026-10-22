@@ -6,7 +6,7 @@
  */
 import type { Option } from '../../components/AnswerRow/option';
 import type { ConsonantClass, Tone, VowelId } from '../../thai/types';
-import { VOWEL_IPA } from '../../thai/vowels/ipa';
+import { spokenIpa, VOWEL_IPA } from '../../thai/vowels/ipa';
 import { vowelSoundUrl } from '../vowel/sounds';
 import { GAME } from './games';
 import type { GameId } from './games';
@@ -26,6 +26,13 @@ export interface RecapEntry {
   given: string | null;
   /** The label of the right answer. */
   expected: string;
+  /**
+   * What screen readers say instead of `given`, for a label they would read
+   * badly (IPA); absent when the label reads well as it is.
+   */
+  spokenGiven?: string;
+  /** What screen readers say instead of `expected`; see `spokenGiven`. */
+  spokenExpected?: string;
   /** The sound of the question, or null. */
   sound: string | null;
 }
@@ -43,7 +50,9 @@ const labelOf = <T extends string>(options: readonly Option<T>[], value: T): str
 /**
  * The line of a vowel question. `given` is the sound chosen, as the game gets
  * it from its answer row (IPA without slashes). Nothing was chosen when the
- * time ran out, whatever the player had picked before.
+ * time ran out, whatever the player had picked before. Screen readers get the
+ * spoken form of the sounds, as in the answer row: they often say nothing for
+ * the length mark, which would make /a/ and /aː/ sound alike.
  */
 export function vowelEntry(
   vowelId: VowelId,
@@ -51,13 +60,17 @@ export function vowelEntry(
   given: string | null,
   result: RecapResult,
 ): RecapEntry {
+  const expected = VOWEL_IPA[vowelId];
+  const answered = result !== 'timeUp' && given !== null;
   return {
     game: GAME.Vowel,
     questionId: vowelId,
     text,
     result,
-    given: result === 'timeUp' || given === null ? null : vowelSoundLabel(given),
-    expected: vowelSoundLabel(VOWEL_IPA[vowelId]),
+    given: answered ? vowelSoundLabel(given) : null,
+    expected: vowelSoundLabel(expected),
+    ...(answered && { spokenGiven: spokenIpa(given) }),
+    spokenExpected: spokenIpa(expected),
     sound: vowelSoundUrl(vowelId),
   };
 }

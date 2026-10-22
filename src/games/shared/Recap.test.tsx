@@ -1,8 +1,10 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { VOWEL } from '../../thai/types';
+import { spokenIpa } from '../../thai/vowels/ipa';
 import { Recap } from './Recap';
-import { consonantClassEntry, syllableEntry } from './recap';
+import { consonantClassEntry, syllableEntry, vowelEntry } from './recap';
 
 const SOUND = '/sounds/syllables/nam.mp3';
 
@@ -59,6 +61,22 @@ describe('Recap', () => {
     render(<Recap entries={[TIME_UP]} />);
     expect(rowText(0)).toContain("Time's up");
     expect(rowText(0)).toContain('Right answer: Mid');
+  });
+
+  it('reads a vowel answer by its spoken form, not by its IPA', () => {
+    render(<Recap entries={[vowelEntry(VOWEL.A, 'อะ', 'aː', 'wrong')]} />);
+    expect(rowText(0)).toContain(`Your answer: ${spokenIpa('aː')}`);
+    expect(rowText(0)).toContain(`Right answer: ${spokenIpa('a')}`);
+
+    const [row] = screen.getAllByRole('listitem');
+    const raw = [...row.querySelectorAll('[aria-hidden="true"]')].map((node) => node.textContent);
+    expect(raw).toContain('/aː/');
+    expect(raw).toContain('/a/');
+  });
+
+  it('reads a right vowel answer by its spoken form', () => {
+    render(<Recap entries={[vowelEntry(VOWEL.A, 'อะ', 'a', 'right')]} />);
+    expect(rowText(0)).toContain(`Right. ${spokenIpa('a')}`);
   });
 
   it('plays the sound of a question that has one', async () => {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { VOWEL } from '../../thai/types';
+import { spokenIpa } from '../../thai/vowels/ipa';
 import { vowelSoundUrl } from '../vowel/sounds';
 import { consonantClassEntry, syllableEntry, vowelEntry } from './recap';
 
@@ -12,12 +13,22 @@ describe('vowelEntry', () => {
       result: 'wrong',
       given: '/aː/',
       expected: '/a/',
+      spokenGiven: spokenIpa('aː'),
+      spokenExpected: spokenIpa('a'),
       sound: vowelSoundUrl(VOWEL.A),
     });
   });
 
+  it('gives the spoken form of the sounds, so that /a/ and /aː/ can be told apart', () => {
+    const entry = vowelEntry(VOWEL.A, 'อะ', 'aː', 'wrong');
+    expect(entry.spokenGiven).toBe('a, long');
+    expect(entry.spokenExpected).toBe('a, short');
+  });
+
   it('drops the answer chosen when the time ran out', () => {
-    expect(vowelEntry(VOWEL.A, 'อะ', 'aː', 'timeUp').given).toBeNull();
+    const entry = vowelEntry(VOWEL.A, 'อะ', 'aː', 'timeUp');
+    expect(entry.given).toBeNull();
+    expect(entry.spokenGiven).toBeUndefined();
   });
 });
 

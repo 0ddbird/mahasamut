@@ -64,6 +64,11 @@
   font-weight: 700;
 }
 
+// The vowel labels are IPA, which the body font lacks.
+.ipa {
+  font-family: var(--font-ipa);
+}
+
 // Pushes the Listen button to the end of the line.
 .listen {
   display: inline-flex;
@@ -75,8 +80,9 @@
   background: none;
   cursor: pointer;
 
+  // Not the row's own background: it would not show.
   &:hover {
-    background: var(--color-surface);
+    border-color: var(--color-accent-light);
   }
 
   &:focus-visible {

@@ -152,7 +152,7 @@ describe('VowelPage', () => {
 
     const line = within(screen.getByRole('region', { name: 'Your answers' })).getByRole('listitem');
     expect(line.textContent).toContain(vowelOnCarrier(FIRST.vowel));
-    expect(line.textContent).toContain(`Right answer: /${RIGHT}/`);
+    expect(line.textContent).toContain(`Right answer: ${spokenIpa(RIGHT)}`);
   });
 
   it('offers the vowels panel in learning mode only', () => {

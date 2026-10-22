@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { vowelSoundUrl } from '../games/vowel/sounds';
 import { VOWEL } from '../thai/types';
+import { spokenIpa } from '../thai/vowels/ipa';
 import type { RecapRoundView } from './protocol';
 import { roundEntry } from './recap';
 
@@ -22,6 +23,8 @@ describe('roundEntry', () => {
       result: 'wrong',
       given: '/aː/',
       expected: '/a/',
+      spokenGiven: spokenIpa('aː'),
+      spokenExpected: spokenIpa('a'),
       sound: vowelSoundUrl(VOWEL.A),
     });
   });

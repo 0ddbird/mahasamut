@@ -2,6 +2,7 @@ import { Volume2 } from 'lucide-react';
 import { useId } from 'react';
 import { playSound } from '../../audio/playSound';
 import type { PlaySound } from '../../audio/playSound';
+import { GAME } from './games';
 import styles from './Recap.module.scss';
 import type { RecapEntry } from './recap';
 
@@ -12,13 +13,33 @@ interface RecapProps {
 }
 
 /**
+ * A label, read aloud by its spoken form when it has one: the label stays on
+ * screen only, as screen readers would read it badly (IPA).
+ */
+function Label({ label, spoken }: { label: string; spoken?: string }) {
+  if (spoken === undefined) return label;
+  return (
+    <>
+      <span className={styles.visuallyHidden}>{spoken}</span>
+      <span aria-hidden="true">{label}</span>
+    </>
+  );
+}
+
+/**
  * What the player answered and what was right, for one question. The marks
  * and the arrow are for the eye; the words that say the same to screen
  * readers are in the DOM but hidden on screen.
  */
 function Answer({ entry }: { entry: RecapEntry }) {
   const { result, given, expected } = entry;
-  const right = <span className={styles.expected}>{expected}</span>;
+  // The IPA letters are missing from the body font.
+  const ipa = entry.game === GAME.Vowel ? styles.ipa : '';
+  const right = (
+    <span className={`${styles.expected} ${ipa}`}>
+      <Label label={expected} spoken={entry.spokenExpected} />
+    </span>
+  );
 
   if (result === 'right') {
     return (
@@ -66,7 +87,9 @@ function Answer({ entry }: { entry: RecapEntry }) {
     <p className={styles.verdict}>
       {mark}
       <span className={styles.visuallyHidden}>Wrong. Your answer: </span>
-      <s className={styles.given}>{given}</s>
+      <s className={`${styles.given} ${ipa}`}>
+        <Label label={given} spoken={entry.spokenGiven} />
+      </s>
       <span aria-hidden="true">→</span>
       <span className={styles.visuallyHidden}>. Right answer: </span>
       {right}
