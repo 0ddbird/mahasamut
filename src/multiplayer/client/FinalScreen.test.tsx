@@ -92,6 +92,55 @@ describe('FinalScreen', () => {
     expect(within(podium).getByLabelText('Rank 3')).toBeDefined();
   });
 
+  it('lists the answers under the full ranking and above the lobby button', () => {
+    render(
+      <MemoryRouter>
+        <FinalScreen
+          view={{
+            ...FINISHED_VIEW,
+            game: 'consonantClass',
+            phase: {
+              kind: 'finished',
+              ranking: [{ rank: 1, pseudo: 'Host', avatar: 'elephant', score: 100, isYou: true }],
+              recap: [
+                {
+                  question: { game: 'consonantClass', text: 'ก' },
+                  reveal: { game: 'consonantClass', consonantClass: 'mid' },
+                  answer: { game: 'consonantClass', consonantClass: 'mid' },
+                  correct: true,
+                },
+                {
+                  question: { game: 'consonantClass', text: 'ฎ' },
+                  reveal: { game: 'consonantClass', consonantClass: 'mid' },
+                  answer: null,
+                  correct: false,
+                },
+              ],
+            },
+          }}
+        />
+      </MemoryRouter>,
+    );
+
+    const recap = screen.getByRole('region', { name: 'Your answers' });
+    expect(within(recap).getAllByRole('listitem')).toHaveLength(2);
+
+    const full = screen.getByRole('region', { name: 'Full ranking' });
+    const button = screen.getByRole('button', { name: 'Back to lobby' });
+    expect(full.compareDocumentPosition(recap) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(recap.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('shows no answers when no question was played', () => {
+    render(
+      <MemoryRouter>
+        <FinalScreen view={FINISHED_VIEW} />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByRole('region', { name: 'Your answers' })).toBeNull();
+  });
+
   it('lets the host bring everyone back to the lobby', async () => {
     const onReturnToLobby = vi.fn();
     render(
