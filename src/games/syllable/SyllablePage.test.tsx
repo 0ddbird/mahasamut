@@ -490,13 +490,10 @@ describe('SyllablePage', () => {
       render(<SyllablePage rng={seededRng(UNMARKED_SEED)} settings={LEARNING} />);
       await userEvent.click(screen.getByRole('button', { name: 'Consonants' }));
 
+      // The help's renderer loads when a panel first opens.
       const panel = within(screen.getByRole('complementary', { name: 'Consonants' }));
-      expect(panel.getAllByRole('columnheader').map((cell) => cell.textContent)).toEqual([
-        'Mid',
-        'High',
-        'Low 1',
-        'Low 2',
-      ]);
+      const headers = await panel.findAllByRole('columnheader');
+      expect(headers.map((cell) => cell.textContent)).toEqual(['Mid', 'High', 'Low 1', 'Low 2']);
     });
 
     it('closes the help panel at the next question', async () => {
