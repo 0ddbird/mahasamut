@@ -4,19 +4,22 @@ import { PlayRoute } from './games/shared/PlayRoute';
 import { SetupPage } from './games/shared/SetupPage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { PageHead } from './site/PageHead';
 import { SiteFooter } from './site/SiteFooter';
 import { SiteLayout } from './site/SiteLayout';
 
 /**
  * The routes of the site: the home page, then, under the navigation bar, two
  * routes per game, its settings page and the game itself (`/syllable`,
- * `/syllable/play`), and the not found page; the footer under all of them. The
+ * `/syllable/play`), and the not found page; the footer under all of them, and
+ * the head's title and tags following the page (PageHead). The
  * router itself is set in main.tsx, so that tests can render the app inside a
  * MemoryRouter at any path.
  */
 function App() {
   return (
     <>
+      <PageHead />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route element={<SiteLayout />}>

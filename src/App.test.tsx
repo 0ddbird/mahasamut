@@ -27,6 +27,13 @@ describe('App', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Mahasamut' })).toBeDefined();
   });
 
+  it("titles each page in the browser tab, the game's name first", async () => {
+    renderAt('/');
+    expect(document.title).toBe('Mahasamut — Games to read Thai script');
+    await userEvent.click(linkTo(GAME.Vowel));
+    expect(document.title).toBe('Vowel sounds — Mahasamut');
+  });
+
   it('names the games in English only', () => {
     expect(GAME_NAMES).toEqual({
       [GAME.Syllable]: 'Find the tone',
