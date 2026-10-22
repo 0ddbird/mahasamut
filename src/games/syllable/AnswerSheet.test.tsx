@@ -136,4 +136,14 @@ describe('AnswerSheet', () => {
       expect(tone.getByRole('radio', { name: 'Falling (the right answer)' })).toBeDefined();
     });
   });
+
+  it('locks every row when locked, with no feedback', () => {
+    render(<AnswerSheet answers={{ toneMark: 'none' }} onChange={() => {}} locked />);
+
+    const radios = screen.getAllByRole('radio');
+    expect(radios.every((radio) => radio.matches(':disabled'))).toBe(true);
+    for (const radio of radios) {
+      expect(radio.getAttribute('aria-label') ?? '').not.toMatch(/\(right\)|\(wrong\)/);
+    }
+  });
 });

@@ -28,6 +28,8 @@ interface AnswerSheetProps {
   correction?: Correction;
   /** The full reasoning (six rows), or the tone alone (one row). */
   answerMode?: AnswerMode;
+  /** Locks every row while waiting for the other players in a room, without showing feedback. */
+  locked?: boolean;
 }
 
 const NOT_NEEDED_WITH_A_MARK = 'Not needed with a tone mark';
@@ -44,6 +46,7 @@ export function AnswerSheet({
   onChange,
   correction,
   answerMode = ANSWER_MODE.Detailed,
+  locked = false,
 }: AnswerSheetProps) {
   // Keeps the type of each answer tied to its step.
   const choose = <K extends Step>(step: K, value: GameAnswers[K]) =>
@@ -52,7 +55,7 @@ export function AnswerSheet({
   const feedbackOf = <K extends Step>(step: K) =>
     correction && rowFeedback(step, correction.result, correction.analyses);
 
-  const checked = correction !== undefined;
+  const checked = correction !== undefined || locked;
   const markChosen = answers.toneMark !== undefined && answers.toneMark !== TONE_MARK.None;
   const middleStep = {
     disabled: checked || markChosen,
