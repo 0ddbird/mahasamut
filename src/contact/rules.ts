@@ -47,7 +47,12 @@ export const CONTACT_LIMITS = {
   links: 3,
 };
 
-const EMAIL = /^[^\s@<>()]+@[^\s@<>()]+\.[^\s@<>()]{2,}$/;
+/**
+ * What the mail providers accept as a reply-to: a local part free of spaces and
+ * of @ < > ( ) , ; : " [ ] \, then dot-separated domain labels of letters,
+ * digits and inner hyphens, the last one at least two letters long.
+ */
+const EMAIL = /^[^\s@<>(),;:"[\]\\]+@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/i;
 const LINK = /https?:\/\/|www\./gi;
 const HTML_TAG = /<[a-z!/]/i;
 

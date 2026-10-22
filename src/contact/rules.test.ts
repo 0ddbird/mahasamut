@@ -25,8 +25,21 @@ describe('checkContact', () => {
   });
 
   it('rejects an implausible email', () => {
-    for (const email of ['a@b', 'a b@c.de', '<a@b.co>']) {
+    const refused = [
+      'a@b',
+      'a b@c.de',
+      '<a@b.co>',
+      'a@gmail.com.',
+      'a@gmail.com,',
+      'a,b@c.com',
+      'a@b..com',
+      'a@b.c;d',
+    ];
+    for (const email of refused) {
       expect(checkContact(draft({ email }))).toEqual({ email: 'invalid' });
+    }
+    for (const email of ['first.last+tag@sub.example.co.uk', "o'brien@example.com", 'a@b.co']) {
+      expect(checkContact(draft({ email }))).toEqual({});
     }
     expect(checkContact(draft({ email: `${'a'.repeat(250)}@b.co` }))).toEqual({
       email: 'invalid',
