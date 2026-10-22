@@ -91,11 +91,11 @@ describe('Room (lobby and start)', () => {
 
   it('refuses a player once full', () => {
     const { room } = newRoom();
-    for (let i = 1; i <= 99; i++) {
+    for (let i = 1; i <= 29; i++) {
       expect(room.join(`P${i}`, null, i).ok).toBe(true);
     }
     expect(room.status).toBe('full');
-    expect(room.join('P100', null, 100)).toEqual({ ok: false, error: 'room-full' });
+    expect(room.join('P30', null, 30)).toEqual({ ok: false, error: 'room-full' });
   });
 
   it('refuses newcomers once started', () => {
