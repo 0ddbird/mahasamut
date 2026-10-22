@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GAME } from '../games/shared/games';
-import {
-  gameMetricLabel,
-  normalizeRoute,
-  parseClientEvent,
-  TRACKED_ROUTES,
-} from './events';
+import { gameMetricLabel, normalizeRoute, parseClientEvent, TRACKED_ROUTES } from './events';
 
 describe('normalizeRoute', () => {
   it('maps known routes to themselves', () => {

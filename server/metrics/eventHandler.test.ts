@@ -4,8 +4,7 @@ import { MetricsStore } from './store';
 
 describe('createEventHandler', () => {
   const origin = 'https://mahasamut.app';
-  const defaultUserAgent =
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36';
+  const defaultUserAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36';
 
   function setup(currentTime = 1_000_000) {
     let now = currentTime;
@@ -181,7 +180,9 @@ describe('createEventHandler', () => {
       expect(res.status).toBe(204);
     }
 
-    expect(store.getCounters().find((c) => c.name === 'mahasamut_support_clicks_total')?.value).toBe(60);
+    expect(
+      store.getCounters().find((c) => c.name === 'mahasamut_support_clicks_total')?.value,
+    ).toBe(60);
 
     // 61st request in same minute is ignored with 204
     const res61 = handler({
@@ -193,7 +194,9 @@ describe('createEventHandler', () => {
       body: validPayload,
     });
     expect(res61.status).toBe(204);
-    expect(store.getCounters().find((c) => c.name === 'mahasamut_support_clicks_total')?.value).toBe(60);
+    expect(
+      store.getCounters().find((c) => c.name === 'mahasamut_support_clicks_total')?.value,
+    ).toBe(60);
 
     // Another IP is not blocked
     const otherIpRes = handler({
@@ -205,7 +208,9 @@ describe('createEventHandler', () => {
       body: validPayload,
     });
     expect(otherIpRes.status).toBe(204);
-    expect(store.getCounters().find((c) => c.name === 'mahasamut_support_clicks_total')?.value).toBe(61);
+    expect(
+      store.getCounters().find((c) => c.name === 'mahasamut_support_clicks_total')?.value,
+    ).toBe(61);
 
     // Advance time by 61 seconds: first IP is allowed again
     setNow(1_000_000 + 61_000);
@@ -218,7 +223,9 @@ describe('createEventHandler', () => {
       body: validPayload,
     });
     expect(afterTimeRes.status).toBe(204);
-    expect(store.getCounters().find((c) => c.name === 'mahasamut_support_clicks_total')?.value).toBe(62);
+    expect(
+      store.getCounters().find((c) => c.name === 'mahasamut_support_clicks_total')?.value,
+    ).toBe(62);
   });
 
   it('rejects invalid JSON or invalid event schema with 400', () => {

@@ -6,7 +6,10 @@ declare module 'node:sqlite' {
   }
 
   export class DatabaseSync {
-    constructor(location?: string, options?: { open?: boolean; readOnly?: boolean; enableForeignKeyConstraints?: boolean });
+    constructor(
+      location?: string,
+      options?: { open?: boolean; readOnly?: boolean; enableForeignKeyConstraints?: boolean },
+    );
     close(): void;
     exec(sql: string): void;
     prepare(sql: string): StatementSync;
