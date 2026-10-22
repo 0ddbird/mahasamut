@@ -122,17 +122,13 @@ describe('MetricsStore', () => {
 
     const counters = store.getCounters();
 
-    expect(
-      counters.find((c) => c.name === 'mahasamut_multi_games_started_total'),
-    ).toEqual({
+    expect(counters.find((c) => c.name === 'mahasamut_multi_games_started_total')).toEqual({
       name: 'mahasamut_multi_games_started_total',
       labels: 'game="syllable"',
       value: 2,
     });
 
-    expect(
-      counters.find((c) => c.name === 'mahasamut_multi_players_started_total'),
-    ).toEqual({
+    expect(counters.find((c) => c.name === 'mahasamut_multi_players_started_total')).toEqual({
       name: 'mahasamut_multi_players_started_total',
       labels: 'game="syllable"',
       value: 6,

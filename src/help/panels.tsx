@@ -4,7 +4,7 @@
  */
 import { AudioLines, Brackets, Type } from 'lucide-react';
 import type { HelpPanel } from '../components/HelpPanels/HelpPanels';
-import { Markdown } from '../components/Markdown/Markdown';
+import { LazyMarkdown as Markdown } from '../components/Markdown/LazyMarkdown';
 import { CONSONANTS_HELP, TONES_HELP, VOWELS_HELP } from './index';
 
 /** The consonants by class: a letter for an icon. */

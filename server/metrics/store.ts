@@ -153,12 +153,7 @@ export class MetricsStore {
         );
         break;
       case 'audio_listen':
-        this.increment(
-          'mahasamut_audio_listen_total',
-          `context="${event.context}"`,
-          1,
-          now,
-        );
+        this.increment('mahasamut_audio_listen_total', `context="${event.context}"`, 1, now);
         break;
       case 'lobby_link_copied':
         this.increment('mahasamut_lobby_link_copied_total', '', 1, now);
@@ -178,7 +173,12 @@ export class MetricsStore {
   }
 
   recordMultiGameStarted(game: GameId, playerCount: number, now: number = Date.now()): void {
-    this.increment('mahasamut_multi_games_started_total', `game="${gameMetricLabel(game)}"`, 1, now);
+    this.increment(
+      'mahasamut_multi_games_started_total',
+      `game="${gameMetricLabel(game)}"`,
+      1,
+      now,
+    );
     this.increment(
       'mahasamut_multi_players_started_total',
       `game="${gameMetricLabel(game)}"`,
@@ -197,7 +197,12 @@ export class MetricsStore {
   }
 
   recordMultiGameFinished(game: GameId, now: number = Date.now()): void {
-    this.increment('mahasamut_multi_games_finished_total', `game="${gameMetricLabel(game)}"`, 1, now);
+    this.increment(
+      'mahasamut_multi_games_finished_total',
+      `game="${gameMetricLabel(game)}"`,
+      1,
+      now,
+    );
   }
 
   recordMultiBackToLobby(now: number = Date.now()): void {
