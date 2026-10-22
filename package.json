@@ -6,9 +6,10 @@
   "scripts": {
     "dev": "vite",
     "dev:server": "tsx watch server/main.ts",
+    "dev:contact": "node --watch server/contact/main.ts",
     "build": "tsc -b && vite build",
     "build:server": "vite build --ssr server/contact/main.ts --outDir dist-server --emptyOutDir",
-    "dev:server": "node --watch server/contact/main.ts",
+    "build:rooms": "vite build --ssr server/main.ts --outDir dist-rooms --emptyOutDir",
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run",

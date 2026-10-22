@@ -11,10 +11,15 @@ export default defineConfig(({ isSsrBuild }) => ({
     proxy: {
       '/api': 'http://127.0.0.1:3002',
       '/socket.io': {
-        target: 'http://localhost:3001',
+        target: 'http://127.0.0.1:3001',
         ws: true,
       },
     },
+  },
+  ssr: {
+    // Bundle npm dependencies (such as socket.io) into the built server so a
+    // release on the VPS runs with `/usr/bin/node` without node_modules.
+    noExternal: true,
   },
   build: {
     // The SSR build bundles the contact service: it has no use for the public folder.
