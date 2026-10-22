@@ -49,7 +49,7 @@ export const CONTACT_LIMITS = {
 
 const EMAIL = /^[^\s@<>()]+@[^\s@<>()]+\.[^\s@<>()]{2,}$/;
 const LINK = /https?:\/\/|www\./gi;
-const HTML_TAG = /<[a-z!/?][^>]*>/i;
+const HTML_TAG = /<[a-z!/]/i;
 
 /** The draft with each field trimmed. */
 export function normalizeDraft(draft: ContactDraft): ContactDraft {

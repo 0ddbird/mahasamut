@@ -66,6 +66,10 @@ describe('checkContact', () => {
       message: 'html',
     });
     expect(checkContact(draft({ subject: '<!-- x -->' }))).toEqual({ subject: 'html' });
+    expect(checkContact(draft({ message: 'Hi <script src=x and more' }))).toEqual({
+      message: 'html',
+    });
+    expect(checkContact(draft({ message: 'Hi there </b> and more' }))).toEqual({ message: 'html' });
     expect(checkContact(draft({ message: '2 < 3 and a<-b' }))).toEqual({});
   });
 
