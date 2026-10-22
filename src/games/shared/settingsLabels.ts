@@ -9,7 +9,7 @@ import type { AnswerMode, GameSettings, PlayMode } from './settings';
 
 export const PLAY_MODE_OPTIONS: readonly Option<PlayMode>[] = [
   { value: PLAY_MODE.Solo, label: 'Alone' },
-  { value: PLAY_MODE.Multi, label: 'In a room' },
+  { value: PLAY_MODE.Multi, label: 'In a lobby' },
 ];
 
 /** The length of a game, as the settings page asks it before the number of questions. */

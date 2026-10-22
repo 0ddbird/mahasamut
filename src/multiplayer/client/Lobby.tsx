@@ -1,29 +1,29 @@
+import { ChevronLeft, ChevronRight, Crown, Layers, ListChecks, Timer } from 'lucide-react';
 import { Button } from '../../components/Button/Button';
 import { GAME, GAME_NAMES } from '../../games/shared/games';
-import { describeSettings } from '../../games/shared/settingsLabels';
+import { ANSWER_MODE } from '../../games/shared/settings';
+import { AVATAR_LABELS, cycleAvatar } from '../avatars';
+import type { AvatarId } from '../avatars';
 import type { RoomView } from '../protocol';
+import { Avatar } from './Avatar';
 import styles from './Lobby.module.scss';
 
 interface LobbyProps {
   view: RoomView;
   onStart: () => void;
+  onChangeAvatar?: (avatar: AvatarId) => void;
 }
 
 /**
- * The waiting room before the game starts: shows the room ID and link to share,
- * the game's settings, the players present, and lets the host start.
+ * The waiting room before the game starts: shows the lobby ID and link to
+ * share, a compact card of the game's settings, a Gartic-Phone-style Thai
+ * avatar picker, the list of players with a crown for the host, and lets the
+ * host start.
  */
-export function Lobby({ view, onStart }: LobbyProps) {
+export function Lobby({ view, onStart, onChangeAvatar }: LobbyProps) {
   const roomUrl = `${window.location.origin}/room/${view.roomId}`;
-  const settingsLine = describeSettings(
-    {
-      questionCount: view.settings.questionCount,
-      secondsPerQuestion: view.settings.secondsPerQuestion,
-      answerMode: view.settings.answerMode,
-      learningMode: false,
-    },
-    view.game === GAME.Syllable,
-  );
+  const answerLabel =
+    view.settings.answerMode === ANSWER_MODE.ToneOnly ? 'Tone only' : 'Full reasoning';
 
   const copyLink = () => {
     try {
@@ -36,25 +36,65 @@ export function Lobby({ view, onStart }: LobbyProps) {
   return (
     <main className={styles.page}>
       <h1>{GAME_NAMES[view.game]}</h1>
-      <p className={styles.settings}>{settingsLine}</p>
-      <section className={styles.share} aria-label="Room link">
-        <p className={styles.roomId}>{`Room ${view.roomId}`}</p>
+      <section className={styles.settingsCard} aria-label="Settings">
+        <span className={styles.settingItem}>
+          <Layers size={16} className={styles.settingIcon} aria-hidden="true" />
+          {`${view.settings.questionCount} questions`}
+        </span>
+        <span className={styles.settingItem}>
+          <Timer size={16} className={styles.settingIcon} aria-hidden="true" />
+          {`${view.settings.secondsPerQuestion} s per question`}
+        </span>
+        {view.game === GAME.Syllable && (
+          <span className={styles.settingItem}>
+            <ListChecks size={16} className={styles.settingIcon} aria-hidden="true" />
+            {answerLabel}
+          </span>
+        )}
+      </section>
+      <section className={styles.share} aria-label="Lobby link">
+        <p className={styles.roomId}>{`Lobby ${view.roomId}`}</p>
         <p className={styles.url}>{roomUrl}</p>
         <Button onClick={copyLink}>Copy the link</Button>
+      </section>
+      <section className={styles.avatarCard} aria-label="Your avatar">
+        <h2 className={styles.heading}>Your avatar</h2>
+        <div className={styles.avatarPicker}>
+          <button
+            type="button"
+            className={styles.cycleButton}
+            aria-label="Previous avatar"
+            onClick={() => onChangeAvatar?.(cycleAvatar(view.you.avatar, -1))}
+          >
+            <ChevronLeft size={20} aria-hidden="true" />
+          </button>
+          <div className={styles.avatarPreview}>
+            <Avatar avatar={view.you.avatar} size="large" />
+            <span className={styles.avatarName}>{AVATAR_LABELS[view.you.avatar]}</span>
+          </div>
+          <button
+            type="button"
+            className={styles.cycleButton}
+            aria-label="Next avatar"
+            onClick={() => onChangeAvatar?.(cycleAvatar(view.you.avatar, 1))}
+          >
+            <ChevronRight size={20} aria-hidden="true" />
+          </button>
+        </div>
       </section>
       <section className={styles.playersSection} aria-label="Players">
         <h2 className={styles.heading}>{`Players (${view.players.length})`}</h2>
         <ul className={styles.players}>
-          {view.players.map((player) => {
-            const tags: string[] = [];
-            if (player.isHost) tags.push('(host)');
-            if (!player.connected) tags.push('(away)');
-            return (
-              <li key={player.pseudo} className={styles.player}>
-                {tags.length > 0 ? `${player.pseudo} ${tags.join(' ')}` : player.pseudo}
-              </li>
-            );
-          })}
+          {view.players.map((player) => (
+            <li key={player.pseudo} className={styles.player}>
+              <Avatar avatar={player.avatar} size="small" />
+              <span className={styles.playerName}>{player.pseudo}</span>
+              {player.isHost && (
+                <Crown size={16} className={styles.hostIcon} role="img" aria-label="Host" />
+              )}
+              {!player.connected && <span className={styles.away}>(away)</span>}
+            </li>
+          ))}
         </ul>
       </section>
       {view.you.isHost ? (

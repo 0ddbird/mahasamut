@@ -68,7 +68,7 @@ describe('Socket.IO room server', () => {
     expect(res.ok).toBe(true);
     const view = await statePromise;
     expect(view.phase).toEqual({ kind: 'lobby' });
-    expect(view.you).toEqual({ pseudo: 'Host', isHost: true });
+    expect(view.you).toEqual(expect.objectContaining({ pseudo: 'Host', isHost: true }));
     expect(view.host).toEqual({ pseudo: 'Host', connected: true });
   });
 
@@ -109,7 +109,7 @@ describe('Socket.IO room server', () => {
 
     const [hostView, guestView] = await Promise.all([hostNextState, guestState]);
     expect(hostView.players.map((p) => p.pseudo)).toEqual(['Host', 'Anna']);
-    expect(guestView.you).toEqual({ pseudo: 'Anna', isHost: false });
+    expect(guestView.you).toEqual(expect.objectContaining({ pseudo: 'Anna', isHost: false }));
   });
 
   it('plays a question to the results', async () => {

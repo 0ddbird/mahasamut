@@ -14,11 +14,11 @@ const SAMPLE_VIEW: RoomView = {
     answerMode: 'detailed',
     hasPassword: false,
   },
-  you: { pseudo: 'Anna', isHost: false },
+  you: { pseudo: 'Anna', avatar: 'tiger', isHost: false },
   host: { pseudo: 'Host', connected: true },
   players: [
-    { pseudo: 'Host', isHost: true, connected: true },
-    { pseudo: 'Anna', isHost: false, connected: true },
+    { pseudo: 'Host', avatar: 'elephant', isHost: true, connected: true },
+    { pseudo: 'Anna', avatar: 'tiger', isHost: false, connected: true },
   ],
   phase: { kind: 'lobby' },
 };

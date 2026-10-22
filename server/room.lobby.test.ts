@@ -19,12 +19,20 @@ describe('Room (lobby and start)', () => {
   it('makes its creator the host, in the lobby', () => {
     const { room, token } = newRoom();
     const initial = room.viewFor(token, 0);
-    expect(initial.you).toEqual({ pseudo: 'Host', isHost: true });
+    expect(initial.you.pseudo).toBe('Host');
+    expect(initial.you.isHost).toBe(true);
     expect(initial.phase).toEqual({ kind: 'lobby' });
     expect(initial.host).toEqual({ pseudo: 'Host', connected: false });
 
     expect(room.connect(token, 10)).toBe(true);
     expect(room.viewFor(token, 10).host.connected).toBe(true);
+  });
+
+  it('lets a player change their avatar in the lobby', () => {
+    const { room, token } = newRoom();
+    expect(room.setAvatar(token, 'lantern', 5)).toEqual({ ok: true });
+    expect(room.viewFor(token, 5).you.avatar).toBe('lantern');
+    expect(room.setAvatar(token, 'dragon', 6)).toEqual({ ok: false, error: 'invalid-avatar' });
   });
 
   it('lets players join with a pseudo, in arrival order', () => {

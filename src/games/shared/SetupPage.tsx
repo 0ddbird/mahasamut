@@ -246,7 +246,7 @@ export function SetupPage({
               <span className={styles.icon} aria-hidden="true">
                 <KeyRound size={ICON_SIZE} />
               </span>
-              Room
+              Lobby
             </legend>
             <div className={styles.field}>
               <label htmlFor={nicknameId} className={styles.fieldLabel}>
@@ -283,7 +283,7 @@ export function SetupPage({
         </p>
       )}
       <Button disabled={!valid} onClick={play}>
-        {inRoom ? 'Create room' : 'Play'}
+        {inRoom ? 'Create lobby' : 'Play'}
       </Button>
     </main>
   );

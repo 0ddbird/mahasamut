@@ -213,6 +213,25 @@ export function attachRooms(
       }
     });
 
+    socket.on('room:avatar', (avatar, ack) => {
+      if (typeof ack !== 'function') return;
+      try {
+        const { roomId, token } = socket.data;
+        const room = roomId ? registry.get(roomId) : undefined;
+        if (!room || !token) {
+          ack({ ok: false, error: 'not-in-room' });
+          return;
+        }
+        const outcome = room.setAvatar(token, avatar, now());
+        if (outcome.ok) {
+          broadcastRoom(room);
+        }
+        ack(outcome);
+      } catch {
+        ack({ ok: false, error: 'not-in-room' });
+      }
+    });
+
     socket.on('game:start', (ack) => {
       if (typeof ack !== 'function') return;
       try {

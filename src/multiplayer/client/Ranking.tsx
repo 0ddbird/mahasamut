@@ -1,4 +1,5 @@
 import type { RankingEntry } from '../protocol';
+import { Avatar } from './Avatar';
 import styles from './Ranking.module.scss';
 
 interface RankingProps {
@@ -6,14 +7,16 @@ interface RankingProps {
 }
 
 /**
- * The ordered list of players in a room, with their rank and total score.
+ * The ordered list of players in a room, with a small Thai avatar miniature,
+ * their rank, their nickname, and their total score.
  */
 export function Ranking({ entries }: RankingProps) {
   return (
     <ol className={styles.list}>
       {entries.map((entry) => (
         <li key={entry.pseudo} className={styles.item} data-you={entry.isYou || undefined}>
-          {`${entry.rank}. ${entry.pseudo}${entry.isYou ? ' (you)' : ''} — ${entry.score}`}
+          <Avatar avatar={entry.avatar} size="small" />
+          <span>{`${entry.rank}. ${entry.pseudo}${entry.isYou ? ' (you)' : ''} — ${entry.score}`}</span>
         </li>
       ))}
     </ol>

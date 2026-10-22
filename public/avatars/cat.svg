@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Siamese cat">
+  <circle cx="32" cy="32" r="30" fill="#1d374a" />
+  <polygon points="18,28 20,14 29,22" fill="#4a3728" />
+  <polygon points="46,28 44,14 35,22" fill="#4a3728" />
+  <circle cx="32" cy="34" r="14" fill="#eadbc8" />
+  <ellipse cx="32" cy="36" rx="8" ry="6" fill="#4a3728" />
+  <circle cx="27" cy="31" r="2.2" fill="#4fc3f7" />
+  <circle cx="37" cy="31" r="2.2" fill="#4fc3f7" />
+</svg>

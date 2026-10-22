@@ -26,9 +26,9 @@ const LOBBY_VIEW: RoomView = {
     answerMode: 'detailed',
     hasPassword: false,
   },
-  you: { pseudo: 'Host', isHost: true },
+  you: { pseudo: 'Host', avatar: 'elephant', isHost: true },
   host: { pseudo: 'Host', connected: true },
-  players: [{ pseudo: 'Host', isHost: true, connected: true }],
+  players: [{ pseudo: 'Host', avatar: 'elephant', isHost: true, connected: true }],
   phase: { kind: 'lobby' },
 };
 
@@ -56,7 +56,7 @@ describe('RoomPage', () => {
   it('shows why the room cannot be joined', () => {
     for (const [status, message] of [
       ['started', 'This game has already started.'],
-      ['full', 'This room is full.'],
+      ['full', 'This lobby is full.'],
     ] as const) {
       const fake = createFakeSocket();
       fake.replyTo('room:info', () => ({
@@ -80,13 +80,13 @@ describe('RoomPage', () => {
       fake.push('room:state', LOBBY_VIEW);
     });
 
-    expect(screen.getByText('Room K7P2QX')).toBeDefined();
+    expect(screen.getByText('Lobby K7P2QX')).toBeDefined();
     expect(screen.getByRole('button', { name: 'Start' })).toBeDefined();
   });
 
   it('treats a malformed ID as a missing room', () => {
     const fake = createFakeSocket();
     renderRoomAt('/room/xx', fake.socket);
-    expect(screen.getByText('This room does not exist.')).toBeDefined();
+    expect(screen.getByText('This lobby does not exist.')).toBeDefined();
   });
 });

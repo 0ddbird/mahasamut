@@ -14,11 +14,11 @@ function makeQuestionView(overrides: Partial<RoomView> = {}): RoomView {
       answerMode: 'toneOnly',
       hasPassword: false,
     },
-    you: { pseudo: 'Host', isHost: true },
+    you: { pseudo: 'Host', avatar: 'elephant', isHost: true },
     host: { pseudo: 'Host', connected: true },
     players: [
-      { pseudo: 'Host', isHost: true, connected: true },
-      { pseudo: 'Anna', isHost: false, connected: true },
+      { pseudo: 'Host', avatar: 'elephant', isHost: true, connected: true },
+      { pseudo: 'Anna', avatar: 'tiger', isHost: false, connected: true },
     ],
     phase: {
       kind: 'question',

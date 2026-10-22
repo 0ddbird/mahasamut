@@ -13,11 +13,11 @@ const BASE_RESULTS_VIEW: RoomView = {
     answerMode: 'toneOnly',
     hasPassword: false,
   },
-  you: { pseudo: 'Host', isHost: true },
+  you: { pseudo: 'Host', avatar: 'elephant', isHost: true },
   host: { pseudo: 'Host', connected: true },
   players: [
-    { pseudo: 'Host', isHost: true, connected: true },
-    { pseudo: 'Anna', isHost: false, connected: true },
+    { pseudo: 'Host', avatar: 'elephant', isHost: true, connected: true },
+    { pseudo: 'Anna', avatar: 'tiger', isHost: false, connected: true },
   ],
   phase: {
     kind: 'results',
@@ -42,8 +42,8 @@ const BASE_RESULTS_VIEW: RoomView = {
       points: 92,
     },
     ranking: [
-      { rank: 1, pseudo: 'Host', score: 92, isYou: true },
-      { rank: 2, pseudo: 'Anna', score: 0, isYou: false },
+      { rank: 1, pseudo: 'Host', avatar: 'elephant', score: 92, isYou: true },
+      { rank: 2, pseudo: 'Anna', avatar: 'tiger', score: 0, isYou: false },
     ],
     isLast: false,
   },
@@ -127,7 +127,7 @@ describe('ResultsScreen', () => {
       <ResultsScreen
         view={{
           ...BASE_RESULTS_VIEW,
-          you: { pseudo: 'Anna', isHost: false },
+          you: { pseudo: 'Anna', avatar: 'tiger', isHost: false },
         }}
         onNext={onNext}
       />,
@@ -141,7 +141,7 @@ describe('ResultsScreen', () => {
       <ResultsScreen
         view={{
           ...BASE_RESULTS_VIEW,
-          you: { pseudo: 'Anna', isHost: false },
+          you: { pseudo: 'Anna', avatar: 'tiger', isHost: false },
           host: { pseudo: 'Host', connected: false },
         }}
         onNext={() => {}}

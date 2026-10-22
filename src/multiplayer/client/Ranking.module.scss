@@ -1,7 +1,7 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2xs);
+  gap: var(--space-xs);
   width: 100%;
   margin: 0;
   padding: 0;
@@ -9,9 +9,12 @@
 }
 
 .item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
   padding: var(--space-xs) var(--space-s);
   border-radius: var(--radius);
-  background: var(--color-bg);
+  background: var(--color-background);
 
   &[data-you] {
     border: 1px solid var(--color-accent-light);

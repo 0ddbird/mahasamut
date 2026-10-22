@@ -5,6 +5,8 @@
  * current timestamp (`now`) to every method.
  */
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
+import { isAvatarId, pickRandomAvatar } from '../src/multiplayer/avatars';
+import type { AvatarId } from '../src/multiplayer/avatars';
 import type {
   ActionError,
   GameAnswer,
@@ -28,6 +30,7 @@ interface Player {
   token: string;
   pseudo: string;
   key: string;
+  avatar: AvatarId;
   isHost: boolean;
   connections: number;
   score: number;
@@ -91,6 +94,7 @@ export class Room {
       token,
       pseudo: hostPseudo,
       key: pseudoKey(hostPseudo),
+      avatar: pickRandomAvatar(Math.random),
       isHost: true,
       connections: 0,
       score: 0,
@@ -138,6 +142,10 @@ export class Room {
       token,
       pseudo,
       key,
+      avatar: pickRandomAvatar(
+        Math.random,
+        this.players.map((p) => p.avatar),
+      ),
       isHost: false,
       connections: 0,
       score: 0,
@@ -162,6 +170,16 @@ export class Room {
     player.connections = Math.max(0, player.connections - 1);
     this.activityAt = now;
     this.closeIfEveryoneAnswered();
+  }
+
+  setAvatar(token: string, raw: unknown, now: number): Outcome<ActionError> {
+    const player = this.byToken.get(token);
+    if (!player) return { ok: false, error: 'not-in-room' };
+    if (this.phase.kind !== 'lobby') return { ok: false, error: 'wrong-phase' };
+    if (!isAvatarId(raw)) return { ok: false, error: 'invalid-avatar' };
+    player.avatar = raw;
+    this.activityAt = now;
+    return { ok: true };
   }
 
   start(token: string, now: number): Outcome<ActionError> {
@@ -231,10 +249,11 @@ export class Room {
         answerMode: this.settings.answerMode,
         hasPassword: this.settings.password !== null,
       },
-      you: { pseudo: you.pseudo, isHost: you.isHost },
+      you: { pseudo: you.pseudo, avatar: you.avatar, isHost: you.isHost },
       host: { pseudo: host.pseudo, connected: host.connections > 0 },
       players: this.players.map((p) => ({
         pseudo: p.pseudo,
+        avatar: p.avatar,
         isHost: p.isHost,
         connected: p.connections > 0,
       })),
@@ -286,8 +305,10 @@ export class Room {
 
   private rankingFor(youToken: string): RankingEntry[] {
     const you = this.byToken.get(youToken);
+    const byPseudo = new Map(this.players.map((p) => [p.pseudo, p]));
     return rankPlayers(this.players).map((entry) => ({
       ...entry,
+      avatar: byPseudo.get(entry.pseudo)!.avatar,
       isYou: entry.pseudo === you?.pseudo,
     }));
   }

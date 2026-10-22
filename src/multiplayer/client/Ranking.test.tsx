@@ -1,20 +1,22 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { Ranking } from './Ranking';
 
 describe('Ranking', () => {
-  it('lists the players with their rank and score, sharing a rank on a tie and marking the player', () => {
+  it('lists each player with their avatar miniature, rank, score, and (you) marker', () => {
     render(
       <Ranking
         entries={[
-          { rank: 1, pseudo: 'Anna', score: 180, isYou: false },
-          { rank: 2, pseudo: 'Bob', score: 90, isYou: true },
-          { rank: 2, pseudo: 'Cara', score: 90, isYou: false },
+          { rank: 1, pseudo: 'Anna', avatar: 'elephant', score: 190, isYou: false },
+          { rank: 2, pseudo: 'Bob', avatar: 'tiger', score: 140, isYou: true },
         ]}
       />,
     );
 
-    const items = screen.getAllByRole('listitem').map((li) => li.textContent);
-    expect(items).toEqual(['1. Anna — 180', '2. Bob (you) — 90', '2. Cara — 90']);
+    const items = screen.getAllByRole('listitem');
+    expect(items.map((li) => li.textContent)).toEqual(['1. Anna — 190', '2. Bob (you) — 140']);
+    expect(within(items[0]).getByRole('img', { name: 'Elephant' })).toBeDefined();
+    expect(within(items[1]).getByRole('img', { name: 'Tiger' })).toBeDefined();
+    expect(items[1].getAttribute('data-you')).toBe('true');
   });
 });

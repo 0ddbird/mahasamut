@@ -10,6 +10,7 @@ import type { AnswerMode } from '../games/shared/settings';
 import type { PlayerAnswers } from '../games/syllable/check';
 import type { SyllableAnswers } from '../thai/answers';
 import type { ConsonantClass, ToneMark, VowelId } from '../thai/types';
+import type { AvatarId } from './avatars';
 
 export type QuestionView =
   | { game: 'syllable'; text: string }
@@ -29,12 +30,14 @@ export type Reveal =
 export interface RankingEntry {
   rank: number;
   pseudo: string;
+  avatar: AvatarId;
   score: number;
   isYou: boolean;
 }
 
 export interface PlayerView {
   pseudo: string;
+  avatar: AvatarId;
   isHost: boolean;
   connected: boolean;
 }
@@ -76,7 +79,7 @@ export interface RoomView {
     answerMode: AnswerMode;
     hasPassword: boolean;
   };
-  you: { pseudo: string; isHost: boolean };
+  you: { pseudo: string; avatar: AvatarId; isHost: boolean };
   host: { pseudo: string; connected: boolean };
   players: PlayerView[];
   phase: PhaseView;
@@ -93,7 +96,13 @@ export type JoinRoomError =
   | 'pseudo-taken';
 export type ResumeError = 'not-found' | 'unknown-token';
 export type ActionError =
-  'not-in-room' | 'not-host' | 'wrong-phase' | 'invalid-answer' | 'already-answered' | 'too-late';
+  | 'not-in-room'
+  | 'not-host'
+  | 'wrong-phase'
+  | 'invalid-avatar'
+  | 'invalid-answer'
+  | 'already-answered'
+  | 'too-late';
 
 export type Ack<E, T = object> = ({ ok: true } & T) | { ok: false; error: E };
 
@@ -119,6 +128,7 @@ export interface ClientToServerEvents {
     req: { roomId: unknown; token: unknown },
     ack: (res: Ack<ResumeError>) => void,
   ) => void;
+  'room:avatar': (avatar: unknown, ack: (res: Ack<ActionError>) => void) => void;
   'game:start': (ack: (res: Ack<ActionError>) => void) => void;
   'game:answer': (answer: unknown, ack: (res: Ack<ActionError>) => void) => void;
   'game:next': (ack: (res: Ack<ActionError>) => void) => void;

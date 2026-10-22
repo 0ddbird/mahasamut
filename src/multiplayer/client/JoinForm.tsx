@@ -9,9 +9,9 @@ import { PASSWORD_MAX_LENGTH } from '../settings';
 import styles from './JoinForm.module.scss';
 
 const JOIN_ERROR_MESSAGES: Record<JoinRoomError, string> = {
-  'not-found': 'This room does not exist.',
+  'not-found': 'This lobby does not exist.',
   started: 'This game has already started.',
-  'room-full': 'This room is full.',
+  'room-full': 'This lobby is full.',
   'wrong-password': 'Wrong password.',
   'too-many-attempts': 'Too many wrong passwords.',
   'invalid-pseudo': 'Choose a nickname of 1 to 20 characters.',
@@ -48,7 +48,7 @@ export function JoinForm({ game, hasPassword, onJoin }: JoinFormProps) {
 
   return (
     <main className={styles.page}>
-      <h1>{`Join the room · ${GAME_NAMES[game]}`}</h1>
+      <h1>{`Join the lobby · ${GAME_NAMES[game]}`}</h1>
       <form className={styles.card} onSubmit={onFormSubmit}>
         <div className={styles.field}>
           <label htmlFor={nicknameId} className={styles.label}>

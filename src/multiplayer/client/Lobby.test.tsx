@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type { RoomView } from '../protocol';
@@ -13,16 +13,24 @@ const BASE_VIEW: RoomView = {
     answerMode: 'toneOnly',
     hasPassword: false,
   },
-  you: { pseudo: 'Host', isHost: true },
+  you: { pseudo: 'Host', avatar: 'elephant', isHost: true },
   host: { pseudo: 'Host', connected: true },
   players: [
-    { pseudo: 'Host', isHost: true, connected: true },
-    { pseudo: 'Anna', isHost: false, connected: false },
+    { pseudo: 'Host', avatar: 'elephant', isHost: true, connected: true },
+    { pseudo: 'Anna', avatar: 'tiger', isHost: false, connected: false },
   ],
   phase: { kind: 'lobby' },
 };
 
 describe('Lobby', () => {
+  it('shows the room settings to all players', () => {
+    render(<Lobby view={BASE_VIEW} onStart={() => {}} />);
+    const settings = screen.getByRole('region', { name: 'Settings' });
+    expect(within(settings).getByText('10 questions')).toBeDefined();
+    expect(within(settings).getByText('15 s per question')).toBeDefined();
+    expect(within(settings).getByText('Tone only')).toBeDefined();
+  });
+
   it('lets only the host start', async () => {
     const onStart = vi.fn();
     const { rerender } = render(<Lobby view={BASE_VIEW} onStart={onStart} />);
@@ -34,7 +42,7 @@ describe('Lobby', () => {
       <Lobby
         view={{
           ...BASE_VIEW,
-          you: { pseudo: 'Anna', isHost: false },
+          you: { pseudo: 'Anna', avatar: 'tiger', isHost: false },
         }}
         onStart={onStart}
       />,
@@ -43,10 +51,22 @@ describe('Lobby', () => {
     expect(screen.getByText('Waiting for the host to start…')).toBeDefined();
   });
 
-  it('marks the host and the absent players', () => {
+  it('lets a player cycle through Thai avatars', async () => {
+    const onChangeAvatar = vi.fn();
+    render(<Lobby view={BASE_VIEW} onStart={() => {}} onChangeAvatar={onChangeAvatar} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Next avatar' }));
+    expect(onChangeAvatar).toHaveBeenCalledWith('tiger');
+  });
+
+  it('marks the host with a crown icon and shows absent players', () => {
     render(<Lobby view={BASE_VIEW} onStart={() => {}} />);
-    expect(screen.getByText(/Host.*\(host\)/)).toBeDefined();
-    expect(screen.getByText(/Anna.*\(away\)/)).toBeDefined();
+    const playersSection = screen.getByRole('region', { name: 'Players' });
+    const items = within(playersSection).getAllByRole('listitem');
+    expect(within(items[0]).getByText('Host')).toBeDefined();
+    expect(within(items[0]).getByRole('img', { name: 'Host' })).toBeDefined();
+    expect(within(items[1]).getByText('Anna')).toBeDefined();
+    expect(within(items[1]).getByText('(away)')).toBeDefined();
   });
 
   it('tells the players when the host is away', () => {
@@ -54,7 +74,7 @@ describe('Lobby', () => {
       <Lobby
         view={{
           ...BASE_VIEW,
-          you: { pseudo: 'Anna', isHost: false },
+          you: { pseudo: 'Anna', avatar: 'tiger', isHost: false },
           host: { pseudo: 'Host', connected: false },
         }}
         onStart={() => {}}

@@ -64,8 +64,8 @@ describe('Room (during a game)', () => {
     const hostView = room.viewFor(host, 4_000);
     if (hostView.phase.kind === 'results') {
       expect(hostView.phase.ranking).toEqual([
-        { rank: 1, pseudo: 'Host', score: 92, isYou: true },
-        { rank: 2, pseudo: 'Anna', score: 0, isYou: false },
+        expect.objectContaining({ rank: 1, pseudo: 'Host', score: 92, isYou: true }),
+        expect.objectContaining({ rank: 2, pseudo: 'Anna', score: 0, isYou: false }),
       ]);
     }
   });
@@ -177,8 +177,8 @@ describe('Room (during a game)', () => {
     const view = room.viewFor(host, 5_000);
     if (view.phase.kind === 'results') {
       expect(view.phase.ranking).toEqual([
-        { rank: 1, pseudo: 'Host', score: 192, isYou: true },
-        { rank: 2, pseudo: 'Anna', score: 100, isYou: false },
+        expect.objectContaining({ rank: 1, pseudo: 'Host', score: 192, isYou: true }),
+        expect.objectContaining({ rank: 2, pseudo: 'Anna', score: 100, isYou: false }),
       ]);
     }
   });

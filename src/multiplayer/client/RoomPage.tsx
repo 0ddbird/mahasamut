@@ -12,10 +12,10 @@ import type { RoomSocket } from './socket';
 import { useRoomSession } from './useRoomSession';
 
 const UNAVAILABLE_MESSAGES: Record<'not-found' | 'started' | 'full' | 'closed', string> = {
-  'not-found': 'This room does not exist.',
+  'not-found': 'This lobby does not exist.',
   started: 'This game has already started.',
-  full: 'This room is full.',
-  closed: 'This room was closed after 30 minutes without activity.',
+  full: 'This lobby is full.',
+  closed: 'This lobby was closed after 30 minutes without activity.',
 };
 
 interface RoomPageProps {
@@ -88,7 +88,7 @@ function ConnectedRoomPage({ roomId, socket }: { roomId: string; socket: RoomSoc
 
   const { view } = session;
   if (view.phase.kind === 'lobby') {
-    return <Lobby view={view} onStart={actions.start} />;
+    return <Lobby view={view} onStart={actions.start} onChangeAvatar={actions.setAvatar} />;
   }
   if (view.phase.kind === 'question') {
     return <QuestionScreen key={view.phase.index} view={view} onAnswer={actions.answer} />;

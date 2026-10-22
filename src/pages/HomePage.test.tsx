@@ -49,17 +49,18 @@ describe('HomePage', () => {
     expect(screen.queryByRole('navigation')).toBeNull();
   });
 
-  it('joins a room by its ID', async () => {
+  it('joins a lobby by its ID', async () => {
     renderHome();
-    await userEvent.type(screen.getByLabelText('Room ID'), ' k7p 2qx ');
+    expect(screen.getByRole('heading', { level: 2, name: 'Join a lobby' })).toBeDefined();
+    await userEvent.type(screen.getByLabelText('Lobby ID'), ' k7p 2qx ');
     await userEvent.click(screen.getByRole('button', { name: 'Join' }));
     expect(screen.getByText('Room at /room/K7P2QX')).toBeDefined();
   });
 
   it('refuses an ID that cannot be one', async () => {
     renderHome();
-    await userEvent.type(screen.getByLabelText('Room ID'), 'bad');
+    await userEvent.type(screen.getByLabelText('Lobby ID'), 'bad');
     await userEvent.click(screen.getByRole('button', { name: 'Join' }));
-    expect(screen.getByRole('alert').textContent).toBe('This is not a room ID.');
+    expect(screen.getByRole('alert').textContent).toBe('This is not a lobby ID.');
   });
 });

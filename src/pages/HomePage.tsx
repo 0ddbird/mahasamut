@@ -55,8 +55,9 @@ export function HomePage() {
         ))}
       </ul>
       <form className={styles.joinRoom} onSubmit={onJoinSubmit}>
+        <h2 className={styles.joinTitle}>Join a lobby</h2>
         <label htmlFor={roomIdInputId} className={styles.joinLabel}>
-          Room ID
+          Lobby ID
         </label>
         <div className={styles.joinControls}>
           <input
@@ -74,7 +75,7 @@ export function HomePage() {
         </div>
         {joinError && (
           <p role="alert" className={styles.joinError}>
-            This is not a room ID.
+            This is not a lobby ID.
           </p>
         )}
       </form>

@@ -7,7 +7,7 @@ describe('JoinForm', () => {
   it('hides the password field when not needed', () => {
     render(<JoinForm game="syllable" hasPassword={false} onJoin={async () => null} />);
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Join the room · Find the tone' }),
+      screen.getByRole('heading', { level: 1, name: 'Join the lobby · Find the tone' }),
     ).toBeDefined();
     expect(screen.getByLabelText('Your nickname')).toBeDefined();
     expect(screen.queryByLabelText('Password')).toBeNull();

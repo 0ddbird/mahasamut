@@ -250,7 +250,7 @@ describe('SetupPage', () => {
   describe('when creating a multiplayer room', () => {
     it('shows the series and timer steppers, hides learning mode, and asks for a nickname', async () => {
       renderSetup();
-      await userEvent.click(choice('Players', 'In a room'));
+      await userEvent.click(choice('Players', 'In a lobby'));
 
       expect(countInput()?.value).toBe('10');
       expect(secondsInput()?.value).toBe('15');
@@ -265,10 +265,10 @@ describe('SetupPage', () => {
       fake.replyTo('room:create', () => ({ ok: true, roomId: 'K7P2QX', token: 'tok-host' }));
       renderSetup(GAME.Syllable, fake.socket);
 
-      await userEvent.click(choice('Players', 'In a room'));
+      await userEvent.click(choice('Players', 'In a lobby'));
       await userEvent.click(choice('Answer', 'Tone only'));
       await userEvent.type(screen.getByLabelText('Your nickname'), 'Anna');
-      await userEvent.click(screen.getByRole('button', { name: 'Create room' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Create lobby' }));
 
       expect(fake.emitted).toContainEqual({
         event: 'room:create',
@@ -294,9 +294,9 @@ describe('SetupPage', () => {
       fake.replyTo('room:create', () => ({ ok: false, error: 'server-full' }));
       renderSetup(GAME.Vowel, fake.socket);
 
-      await userEvent.click(choice('Players', 'In a room'));
+      await userEvent.click(choice('Players', 'In a lobby'));
       await userEvent.type(screen.getByLabelText('Your nickname'), 'Anna');
-      await userEvent.click(screen.getByRole('button', { name: 'Create room' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Create lobby' }));
 
       expect(screen.getByRole('alert').textContent).toBe(
         'The server is full, try again in a few minutes.',
