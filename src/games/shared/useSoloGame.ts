@@ -8,7 +8,7 @@
  * asks the game for a new question (`onNewQuestion`) when one starts.
  */
 import { useEffect, useRef, useState } from 'react';
-import { useLeaveGuard } from '../../site/leaveGuard';
+import { useGameEndInBar, useLeaveGuard } from '../../site/leaveGuard';
 import { addResult, EMPTY_SCORE } from './score';
 import type { Score } from './score';
 import type { GameSettings } from './settings';
@@ -128,6 +128,9 @@ export function useSoloGame(settings: GameSettings, onNewQuestion: () => void): 
     setRemainingMs(null);
     setPhase('finished');
   };
+
+  // End sits in the site's bar, in place of the games, until the results show.
+  useGameEndInBar(phase !== 'finished', end);
 
   const restart = () => {
     setScore(EMPTY_SCORE);

@@ -79,7 +79,6 @@ export function ConsonantClassPage({
           questionCount={settings.questionCount}
           remainingMs={game.remainingMs}
           secondsPerQuestion={settings.secondsPerQuestion}
-          onEnd={game.end}
         />
         <ThaiDisplay text={consonant.char} />
         <div className={styles.answer}>

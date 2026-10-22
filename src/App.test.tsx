@@ -114,15 +114,16 @@ describe('App', () => {
   });
 
   it('shows the bar on game pages and the not found page, not on the home page', () => {
-    for (const path of [
-      GAME_PATHS[GAME.Syllable],
-      `${GAME_PATHS[GAME.ConsonantClass]}/play`,
-      '/nowhere',
-    ]) {
+    for (const path of [GAME_PATHS[GAME.Syllable], '/nowhere']) {
       const { unmount } = renderAt(path);
       expect(screen.getByRole('navigation', { name: 'Games' })).toBeDefined();
       unmount();
     }
+    // During a game, End takes the place of the games.
+    const { unmount } = renderAt(`${GAME_PATHS[GAME.ConsonantClass]}/play`);
+    expect(screen.getByRole('banner')).toBeDefined();
+    expect(screen.getByRole('button', { name: 'End' })).toBeDefined();
+    unmount();
     renderAt('/');
     expect(screen.queryByRole('navigation')).toBeNull();
   });

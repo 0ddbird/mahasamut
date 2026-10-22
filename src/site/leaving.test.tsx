@@ -65,14 +65,11 @@ describe('leaving a game from the bar', () => {
     expect(onHomePage()).toBe(true);
   });
 
-  it('asks too for the link of the game being played', async () => {
+  // The player is in the game, not choosing one: the logo is the only way out.
+  it('offers End in place of the game links during a game', () => {
     renderAt(PLAY);
-    await answerOne();
-    await userEvent.click(barLink(GAME_NAMES[GAME.ConsonantClass]));
-    expect(dialog()).not.toBeNull();
-
-    await userEvent.click(screen.getByRole('button', { name: 'Leave' }));
-    expect(screen.getByRole('group', { name: 'Length' })).toBeDefined();
+    expect(screen.queryByRole('navigation', { name: 'Games' })).toBeNull();
+    expect(within(screen.getByRole('banner')).getByRole('button', { name: 'End' })).toBeDefined();
   });
 
   it('leaves without asking from the results', async () => {
@@ -105,59 +102,23 @@ describe('leaving a game from the bar', () => {
     expect(dialog()).not.toBeNull();
   });
 
-  it('asks from the menu on a phone too, and closes the menu', async () => {
-    renderAt(PLAY);
-    await answerOne();
-    const menuButton = screen.getByRole('button', { name: 'Games menu' });
-    await userEvent.click(menuButton);
-    await userEvent.click(barLink(GAME_NAMES[GAME.Syllable]));
-
-    expect(dialog()).not.toBeNull();
-    expect(menuButton.getAttribute('aria-expanded')).toBe('false');
-  });
-
-  it('gives the focus back to the menu button on a phone, the link being folded away', async () => {
-    renderAt(PLAY);
-    await answerOne();
-    const menuButton = screen.getByRole('button', { name: 'Games menu' });
-    await userEvent.click(menuButton);
-    await userEvent.click(barLink(GAME_NAMES[GAME.Syllable]));
-    await userEvent.click(screen.getByRole('button', { name: 'Keep playing' }));
-
-    expect(document.activeElement).toBe(menuButton);
-  });
-
-  it('gives the focus back to a game link clicked with the menu closed', async () => {
-    renderAt(PLAY);
-    await answerOne();
-    await userEvent.click(barLink(GAME_NAMES[GAME.Syllable]));
-    await userEvent.click(screen.getByRole('button', { name: 'Keep playing' }));
-
-    expect(document.activeElement).toBe(barLink(GAME_NAMES[GAME.Syllable]));
-  });
-
   it.each([
     ['Ctrl', { ctrlKey: true }],
     ['Cmd', { metaKey: true }],
     ['Shift', { shiftKey: true }],
     ['middle', { button: 1 }],
-  ])('lets a %s click open the link elsewhere, without asking', async (_, modifiers) => {
+  ])('lets a %s click open the logo elsewhere, without asking', async (_, modifiers) => {
     renderAt(PLAY);
     await answerOne();
-    fireEvent.click(barLink(GAME_NAMES[GAME.Syllable]), modifiers);
+    fireEvent.click(logo(), modifiers);
     expect(dialog()).toBeNull();
   });
 
-  // The help panels hang from the top of the window, over the bar: the bar
-  // only comes forward while its menu is open, so the dialog lives outside it.
-  it('shows the dialog outside the bar, which comes forward only with its menu open', async () => {
+  // The help panels hang from the top of the window, over the bar: the dialog
+  // lives outside the bar, so that it covers both.
+  it('shows the dialog outside the bar', async () => {
     renderAt(PLAY);
     const bar = screen.getByRole('banner');
-    expect(bar.hasAttribute('data-menu-open')).toBe(false);
-    await userEvent.click(screen.getByRole('button', { name: 'Games menu' }));
-    expect(bar.hasAttribute('data-menu-open')).toBe(true);
-    await userEvent.click(screen.getByTestId('menu-shade'));
-
     await answerOne();
     await userEvent.click(logo());
     expect(bar.contains(dialog())).toBe(false);

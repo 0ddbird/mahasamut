@@ -112,7 +112,6 @@ export function VowelPage({
           questionCount={settings.questionCount}
           remainingMs={game.remainingMs}
           secondsPerQuestion={settings.secondsPerQuestion}
-          onEnd={game.end}
         />
         <ThaiDisplay text={vowelOnCarrier(vowel)} />
         <ListenButton visible={checked} onClick={() => play(vowelSoundUrl(vowel.id))} />

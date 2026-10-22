@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import type { ComponentProps } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { QuestionBar } from './QuestionBar';
 
 const renderBar = (props: Partial<ComponentProps<typeof QuestionBar>> = {}) =>
@@ -11,7 +10,6 @@ const renderBar = (props: Partial<ComponentProps<typeof QuestionBar>> = {}) =>
       questionCount={10}
       remainingMs={null}
       secondsPerQuestion={null}
-      onEnd={() => {}}
       {...props}
     />,
   );
@@ -44,16 +42,14 @@ describe('QuestionBar', () => {
         questionCount={10}
         remainingMs={null}
         secondsPerQuestion={null}
-        onEnd={() => {}}
       />,
     );
     expect(screen.queryByRole('timer')).toBeNull();
   });
 
-  it('ends the game', async () => {
-    const onEnd = vi.fn();
-    renderBar({ onEnd });
-    await userEvent.click(screen.getByRole('button', { name: 'End' }));
-    expect(onEnd).toHaveBeenCalledOnce();
+  // The site's bar offers End during a game, in place of the games.
+  it('leaves End to the bar at the top of the page', () => {
+    renderBar();
+    expect(screen.queryByRole('button', { name: 'End' })).toBeNull();
   });
 });

@@ -1,7 +1,6 @@
-import { act, fireEvent, render as renderInDom, screen, within } from '@testing-library/react';
+import { act, fireEvent, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactElement } from 'react';
-import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { generateSyllable } from '../../thai/generator';
 import type { Syllable } from '../../thai/generator';
@@ -13,9 +12,10 @@ import type { GameSettings } from '../shared/settings';
 import { CORRECT_DELAY_MS } from '../shared/useNextWhenCorrect';
 import type { GameAnswers, Step } from './check';
 import { SyllablePage } from './SyllablePage';
+import { renderInSite } from '../../site/inSite.test-utils';
 
-/** Renders inside a router: the results link to the settings page and home. */
-const render = (ui: ReactElement) => renderInDom(<MemoryRouter>{ui}</MemoryRouter>);
+/** Renders under the site's bar: End is there, and the results link to the settings page and home. */
+const render = (ui: ReactElement) => renderInSite(ui);
 
 /** The texts of the first `count` syllables the page draws with `seed`: it draws from the pool. */
 const textsDrawn = (seed: number, count: number) => {

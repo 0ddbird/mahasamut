@@ -1,7 +1,6 @@
-import { act, fireEvent, render as renderInDom, screen, within } from '@testing-library/react';
+import { act, fireEvent, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactElement } from 'react';
-import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Consonant } from '../../thai/consonants';
 import { seededRng } from '../../thai/generator/seeded-rng.test-utils';

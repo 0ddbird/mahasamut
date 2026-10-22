@@ -104,7 +104,6 @@ export function SyllablePage({
           questionCount={settings.questionCount}
           remainingMs={game.remainingMs}
           secondsPerQuestion={settings.secondsPerQuestion}
-          onEnd={game.end}
         />
         <ThaiDisplay text={syllable.text} />
         <ListenButton

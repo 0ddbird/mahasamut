@@ -115,3 +115,23 @@ $wide: 40rem;
     background: rgb(0 0 0 / 50%);
   }
 }
+
+// During a game, in place of the games: quieter than Validate, so that a
+// series is not ended by mistake.
+.end {
+  padding: var(--space-xs) var(--space-m);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  background: none;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-surface);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent-light);
+    outline-offset: 2px;
+  }
+}

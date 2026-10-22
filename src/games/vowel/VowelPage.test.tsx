@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { seededRng } from '../../thai/generator/seeded-rng.test-utils';
@@ -13,6 +13,7 @@ import { CORRECT_DELAY_MS } from '../shared/useNextWhenCorrect';
 import { vowelChoices } from './choices';
 import { SOUND_VOWEL, vowelSoundUrl } from './sounds';
 import { VowelPage } from './VowelPage';
+import { renderInSite } from '../../site/inSite.test-utils';
 
 const SEED = 7;
 
@@ -40,7 +41,7 @@ const urlOf = (sound: string) => vowelSoundUrl(SOUND_VOWEL.get(sound)!);
 
 const renderPage = (settings: GameSettings = DEFAULT_SETTINGS) => {
   const play = vi.fn();
-  render(<VowelPage rng={seededRng(SEED)} settings={settings} play={play} />);
+  renderInSite(<VowelPage rng={seededRng(SEED)} settings={settings} play={play} />);
   return play;
 };
 

@@ -1,8 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { GAME, GAME_IDS, GAME_NAMES, GAME_PATHS } from '../games/shared/games';
+import { useGameEndInBar } from './leaveGuard';
+import { LeaveGuardProvider } from './LeaveGuardProvider';
 import { SiteBar } from './SiteBar';
 
 /** The bar above stand-in pages, each a title and a button, opened at `path`. */
@@ -90,5 +92,43 @@ describe('SiteBar', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: GAME.ConsonantClass })).toBeDefined();
     expect(menuButton().getAttribute('aria-expanded')).toBe('false');
+  });
+
+  describe('during a game', () => {
+    /** A stand-in game page: in progress while `playing`, ended by `onEnd`. */
+    function GamePage({ playing, onEnd }: { playing: boolean; onEnd: () => void }) {
+      useGameEndInBar(playing, onEnd);
+      return <h1>Game</h1>;
+    }
+
+    const renderGame = (playing: boolean, onEnd: () => void = () => {}) =>
+      render(
+        <MemoryRouter initialEntries={[`${GAME_PATHS[GAME.Vowel]}/play`]}>
+          <LeaveGuardProvider>
+            <SiteBar />
+            <GamePage playing={playing} onEnd={onEnd} />
+          </LeaveGuardProvider>
+        </MemoryRouter>,
+      );
+
+    it('offers End in place of the games, and End ends the game', async () => {
+      const onEnd = vi.fn();
+      renderGame(true, onEnd);
+      expect(screen.queryByRole('navigation', { name: 'Games' })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Games menu' })).toBeNull();
+      await userEvent.click(screen.getByRole('button', { name: 'End' }));
+      expect(onEnd).toHaveBeenCalledOnce();
+    });
+
+    it('keeps the logo, the way home', () => {
+      renderGame(true);
+      expect(screen.getByRole('link', { name: 'Mahasamut' }).getAttribute('href')).toBe('/');
+    });
+
+    it('brings the games back once the game is over', () => {
+      renderGame(false);
+      expect(screen.queryByRole('button', { name: 'End' })).toBeNull();
+      expect(screen.getByRole('navigation', { name: 'Games' })).toBeDefined();
+    });
   });
 });

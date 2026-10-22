@@ -1,8 +1,7 @@
-// Three columns as wide as the page: the question on the left, End in the
-// middle, the clock on the right (its room kept in free time, so End stays put).
+// As wide as the page: the question on the left, the clock on the right.
 .bar {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr 1fr;
   align-items: center;
   width: 100%;
   max-width: 28rem;
@@ -32,23 +31,4 @@
 .time {
   display: flex;
   justify-content: flex-end;
-}
-
-// Quieter than Validate, so that a series is not ended by mistake.
-.end {
-  padding: var(--space-xs) var(--space-m);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  color: var(--color-text);
-  background: none;
-  cursor: pointer;
-
-  &:hover {
-    background: var(--color-surface);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-accent-light);
-    outline-offset: 2px;
-  }
 }
