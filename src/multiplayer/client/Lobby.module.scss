@@ -9,6 +9,41 @@
   text-align: center;
 }
 
+.hostSettings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+  width: 100%;
+  max-width: 26rem;
+  text-align: left;
+}
+
+.settingCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  margin: 0;
+  padding: var(--space-m);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) * 1.5);
+  background: var(--color-surface);
+}
+
+.cardTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 0;
+  float: left;
+  width: 100%;
+  color: var(--color-accent-light);
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .settingsCard {
   display: flex;
   flex-wrap: wrap;
@@ -31,6 +66,7 @@
 }
 
 .settingIcon {
+  display: inline-flex;
   color: var(--color-accent-light);
 }
 

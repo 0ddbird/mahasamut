@@ -232,6 +232,25 @@ export function attachRooms(
       }
     });
 
+    socket.on('room:settings', (settings, ack) => {
+      if (typeof ack !== 'function') return;
+      try {
+        const { roomId, token } = socket.data;
+        const room = roomId ? registry.get(roomId) : undefined;
+        if (!room || !token) {
+          ack({ ok: false, error: 'not-in-room' });
+          return;
+        }
+        const outcome = room.updateSettings(token, settings, now());
+        if (outcome.ok) {
+          broadcastRoom(room);
+        }
+        ack(outcome);
+      } catch {
+        ack({ ok: false, error: 'not-in-room' });
+      }
+    });
+
     socket.on('game:start', (ack) => {
       if (typeof ack !== 'function') return;
       try {
@@ -282,6 +301,26 @@ export function attachRooms(
           return;
         }
         const outcome = room.next(token, now());
+        if (outcome.ok) {
+          syncRoomTimer(room);
+          broadcastRoom(room);
+        }
+        ack(outcome);
+      } catch {
+        ack({ ok: false, error: 'not-in-room' });
+      }
+    });
+
+    socket.on('game:lobby', (ack) => {
+      if (typeof ack !== 'function') return;
+      try {
+        const { roomId, token } = socket.data;
+        const room = roomId ? registry.get(roomId) : undefined;
+        if (!room || !token) {
+          ack({ ok: false, error: 'not-in-room' });
+          return;
+        }
+        const outcome = room.returnToLobby(token, now());
         if (outcome.ok) {
           syncRoomTimer(room);
           broadcastRoom(room);

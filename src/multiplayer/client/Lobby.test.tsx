@@ -23,8 +23,38 @@ const BASE_VIEW: RoomView = {
 };
 
 describe('Lobby', () => {
-  it('shows the room settings to all players', () => {
-    render(<Lobby view={BASE_VIEW} onStart={() => {}} />);
+  it('lets the host edit the game and settings live, while guests see the compact summary', async () => {
+    const onUpdateSettings = vi.fn();
+    const { rerender } = render(
+      <Lobby view={BASE_VIEW} onStart={() => {}} onUpdateSettings={onUpdateSettings} />,
+    );
+
+    const gameGroup = screen.getByRole('group', { name: 'Game' });
+    await userEvent.click(within(gameGroup).getByRole('radio', { name: 'Vowel sounds' }));
+    expect(onUpdateSettings).toHaveBeenCalledWith({
+      game: 'vowel',
+      questionCount: 10,
+      secondsPerQuestion: 15,
+      answerMode: 'toneOnly',
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'More questions' }));
+    expect(onUpdateSettings).toHaveBeenCalledWith({
+      game: 'syllable',
+      questionCount: 11,
+      secondsPerQuestion: 15,
+      answerMode: 'toneOnly',
+    });
+
+    rerender(
+      <Lobby
+        view={{
+          ...BASE_VIEW,
+          you: { pseudo: 'Anna', avatar: 'tiger', isHost: false },
+        }}
+        onStart={() => {}}
+      />,
+    );
     const settings = screen.getByRole('region', { name: 'Settings' });
     expect(within(settings).getByText('10 questions')).toBeDefined();
     expect(within(settings).getByText('15 s per question')).toBeDefined();

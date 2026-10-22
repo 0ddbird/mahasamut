@@ -15,6 +15,7 @@ const renderHome = () =>
     <MemoryRouter initialEntries={['/']}>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/lobby" element={<RoomLocation />} />
         <Route path="/room/:roomId" element={<RoomLocation />} />
       </Routes>
     </MemoryRouter>,
@@ -47,6 +48,12 @@ describe('HomePage', () => {
   it('has no navigation bar: the logo is the way home', () => {
     renderHome();
     expect(screen.queryByRole('navigation')).toBeNull();
+  });
+
+  it('opens the lobby creation page when Create a lobby is clicked', async () => {
+    renderHome();
+    await userEvent.click(screen.getByRole('button', { name: 'Create a lobby' }));
+    expect(screen.getByText('Room at /lobby')).toBeDefined();
   });
 
   it('joins a lobby by its ID', async () => {

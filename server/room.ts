@@ -16,6 +16,7 @@ import type {
   RoundResultView,
 } from '../src/multiplayer/protocol';
 import { pseudoKey } from '../src/multiplayer/pseudo';
+import { parseLobbySettings } from '../src/multiplayer/settings';
 import type { RoomSettings } from '../src/multiplayer/settings';
 import type { Rng } from '../src/thai/generator';
 import { SERVER_GAMES } from './games';
@@ -66,7 +67,7 @@ function samePassword(expected: string, given: string | null): boolean {
 
 export class Room {
   readonly id: string;
-  readonly settings: RoomSettings;
+  private currentSettings: RoomSettings;
   private readonly rng: Rng;
   private readonly players: Player[] = [];
   private readonly byToken = new Map<string, Player>();
@@ -76,9 +77,13 @@ export class Room {
 
   private constructor(id: string, settings: RoomSettings, now: number, rng: Rng) {
     this.id = id;
-    this.settings = settings;
+    this.currentSettings = settings;
     this.activityAt = now;
     this.rng = rng;
+  }
+
+  get settings(): RoomSettings {
+    return this.currentSettings;
   }
 
   static create(
@@ -178,6 +183,35 @@ export class Room {
     if (this.phase.kind !== 'lobby') return { ok: false, error: 'wrong-phase' };
     if (!isAvatarId(raw)) return { ok: false, error: 'invalid-avatar' };
     player.avatar = raw;
+    this.activityAt = now;
+    return { ok: true };
+  }
+
+  updateSettings(token: string, raw: unknown, now: number): Outcome<ActionError> {
+    const player = this.byToken.get(token);
+    if (!player) return { ok: false, error: 'not-in-room' };
+    if (!player.isHost) return { ok: false, error: 'not-host' };
+    if (this.phase.kind !== 'lobby') return { ok: false, error: 'wrong-phase' };
+    const parsed = parseLobbySettings(raw);
+    if (!parsed) return { ok: false, error: 'invalid-settings' };
+    this.currentSettings = {
+      ...parsed,
+      password: this.currentSettings.password,
+    };
+    this.activityAt = now;
+    return { ok: true };
+  }
+
+  returnToLobby(token: string, now: number): Outcome<ActionError> {
+    const player = this.byToken.get(token);
+    if (!player) return { ok: false, error: 'not-in-room' };
+    if (!player.isHost) return { ok: false, error: 'not-host' };
+    if (this.phase.kind !== 'finished') return { ok: false, error: 'wrong-phase' };
+    for (const p of this.players) {
+      p.score = 0;
+    }
+    this.questions = [];
+    this.phase = { kind: 'lobby' };
     this.activityAt = now;
     return { ok: true };
   }

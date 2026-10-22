@@ -2,9 +2,6 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createFakeSocket } from '../../multiplayer/client/fakeSocket.test-utils';
-import type { RoomSocket } from '../../multiplayer/client/socket';
-import { loadToken } from '../../multiplayer/client/tokens';
 import { GAME, GAME_PATHS } from './games';
 import type { GameId } from './games';
 import { DEFAULT_SETTINGS } from './settings';
@@ -17,13 +14,12 @@ function WhereAmI() {
   return <p>{`At ${pathname}${search}`}</p>;
 }
 
-const renderSetup = (game: GameId = GAME.Syllable, socket?: RoomSocket) =>
+const renderSetup = (game: GameId = GAME.Syllable) =>
   render(
     <MemoryRouter initialEntries={[GAME_PATHS[game]]}>
       <Routes>
-        <Route path={GAME_PATHS[game]} element={<SetupPage game={game} socket={socket} />} />
+        <Route path={GAME_PATHS[game]} element={<SetupPage game={game} />} />
         <Route path={`${GAME_PATHS[game]}/play`} element={<WhereAmI />} />
-        <Route path="/room/:roomId" element={<WhereAmI />} />
       </Routes>
     </MemoryRouter>,
   );
@@ -245,62 +241,5 @@ describe('SetupPage', () => {
     renderSetup();
     await userEvent.click(choice('Length', 'Series'));
     expect(loadSettings(GAME.Syllable)).toEqual(DEFAULT_SETTINGS);
-  });
-
-  describe('when creating a multiplayer room', () => {
-    it('shows the series and timer steppers, hides learning mode, and asks for a nickname', async () => {
-      renderSetup();
-      await userEvent.click(choice('Players', 'In a lobby'));
-
-      expect(countInput()?.value).toBe('10');
-      expect(secondsInput()?.value).toBe('15');
-      expect(screen.queryByRole('group', { name: 'Learning mode' })).toBeNull();
-      expect(screen.getByRole('group', { name: 'Answer' })).toBeDefined();
-      expect(screen.getByLabelText('Your nickname')).toBeDefined();
-      expect(screen.getByLabelText('Password (optional)')).toBeDefined();
-    });
-
-    it('creates the room, saves the host token, and navigates to /room/<id>', async () => {
-      const fake = createFakeSocket();
-      fake.replyTo('room:create', () => ({ ok: true, roomId: 'K7P2QX', token: 'tok-host' }));
-      renderSetup(GAME.Syllable, fake.socket);
-
-      await userEvent.click(choice('Players', 'In a lobby'));
-      await userEvent.click(choice('Answer', 'Tone only'));
-      await userEvent.type(screen.getByLabelText('Your nickname'), 'Anna');
-      await userEvent.click(screen.getByRole('button', { name: 'Create lobby' }));
-
-      expect(fake.emitted).toContainEqual({
-        event: 'room:create',
-        args: [
-          {
-            settings: {
-              game: 'syllable',
-              secondsPerQuestion: 15,
-              questionCount: 10,
-              answerMode: 'toneOnly',
-              password: '',
-            },
-            pseudo: 'Anna',
-          },
-        ],
-      });
-      expect(loadToken('K7P2QX')).toBe('tok-host');
-      expect(screen.getByText('At /room/K7P2QX')).toBeDefined();
-    });
-
-    it('shows the server error when the room could not be created', async () => {
-      const fake = createFakeSocket();
-      fake.replyTo('room:create', () => ({ ok: false, error: 'server-full' }));
-      renderSetup(GAME.Vowel, fake.socket);
-
-      await userEvent.click(choice('Players', 'In a lobby'));
-      await userEvent.type(screen.getByLabelText('Your nickname'), 'Anna');
-      await userEvent.click(screen.getByRole('button', { name: 'Create lobby' }));
-
-      expect(screen.getByRole('alert').textContent).toBe(
-        'The server is full, try again in a few minutes.',
-      );
-    });
   });
 });

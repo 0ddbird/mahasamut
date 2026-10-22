@@ -28,6 +28,13 @@ describe('parseRoomSettings', () => {
   it('keeps a password, and reads an empty one as none', () => {
     expect(parseRoomSettings({ ...VALID, password: 'abc' })?.password).toBe('abc');
     expect(parseRoomSettings({ ...VALID, password: '' })?.password).toBeNull();
+    expect(parseRoomSettings({ password: 'abc' })).toEqual({
+      game: 'syllable',
+      secondsPerQuestion: 15,
+      questionCount: 10,
+      answerMode: 'detailed',
+      password: 'abc',
+    });
   });
 
   it('rejects an unknown game, a time or a count out of range, or an unknown answer mode', () => {

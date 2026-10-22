@@ -20,6 +20,85 @@ $one-row: 40rem;
   text-transform: uppercase;
 }
 
+.multiplayer {
+  display: grid;
+  gap: var(--space-m);
+  margin-bottom: var(--space-l);
+  padding: var(--space-l) var(--space-m);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) * 1.5);
+  background: var(--color-surface);
+
+  @media (min-width: $one-row) {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-l);
+  }
+}
+
+.multiColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-s);
+
+  @media (min-width: $one-row) {
+    &:first-child {
+      padding-right: var(--space-l);
+      border-right: 1px solid var(--color-border);
+    }
+  }
+}
+
+.multiTitle {
+  margin: 0;
+  color: var(--color-accent-light);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.multiGoal {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.joinLabel {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.joinControls {
+  display: flex;
+  gap: var(--space-s);
+  align-items: center;
+}
+
+.joinInput {
+  width: 9rem;
+  padding: var(--space-xs) var(--space-s);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  background: var(--color-background);
+  font: inherit;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent-light);
+    outline-offset: 2px;
+  }
+}
+
+.joinError {
+  margin: 0;
+  color: var(--color-wrong);
+  font-size: 0.875rem;
+}
+
 .tiles {
   display: grid;
   gap: var(--space-m);
@@ -95,61 +174,4 @@ $one-row: 40rem;
   .tile {
     transition: none;
   }
-}
-
-.joinRoom {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-s);
-  margin-top: var(--space-l);
-  padding: var(--space-m) var(--space-l);
-  border: 1px solid var(--color-border);
-  border-radius: calc(var(--radius) * 1.5);
-  background: var(--color-surface);
-}
-
-.joinTitle {
-  margin: 0;
-  color: var(--color-accent-light);
-  font-family: var(--font-display);
-  font-size: 1.125rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.joinLabel {
-  color: var(--color-text-muted);
-  font-size: 0.875rem;
-}
-
-.joinControls {
-  display: flex;
-  gap: var(--space-s);
-  align-items: center;
-}
-
-.joinInput {
-  width: 9rem;
-  padding: var(--space-xs) var(--space-s);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  color: var(--color-text);
-  background: var(--color-background);
-  font: inherit;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-
-  &:focus-visible {
-    outline: 2px solid var(--color-accent-light);
-    outline-offset: 2px;
-  }
-}
-
-.joinError {
-  margin: 0;
-  color: var(--color-wrong);
-  font-size: 0.875rem;
 }

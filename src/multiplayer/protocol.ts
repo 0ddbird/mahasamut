@@ -100,6 +100,7 @@ export type ActionError =
   | 'not-host'
   | 'wrong-phase'
   | 'invalid-avatar'
+  | 'invalid-settings'
   | 'invalid-answer'
   | 'already-answered'
   | 'too-late';
@@ -129,9 +130,11 @@ export interface ClientToServerEvents {
     ack: (res: Ack<ResumeError>) => void,
   ) => void;
   'room:avatar': (avatar: unknown, ack: (res: Ack<ActionError>) => void) => void;
+  'room:settings': (settings: unknown, ack: (res: Ack<ActionError>) => void) => void;
   'game:start': (ack: (res: Ack<ActionError>) => void) => void;
   'game:answer': (answer: unknown, ack: (res: Ack<ActionError>) => void) => void;
   'game:next': (ack: (res: Ack<ActionError>) => void) => void;
+  'game:lobby': (ack: (res: Ack<ActionError>) => void) => void;
 }
 
 export interface ServerToClientEvents {

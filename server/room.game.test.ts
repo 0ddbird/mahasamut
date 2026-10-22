@@ -161,6 +161,10 @@ describe('Room (during a game)', () => {
     expect(room.next(host, 6_000)).toEqual({ ok: true });
     expect(room.viewFor(host, 6_000).phase.kind).toBe('finished');
     expect(room.next(host, 7_000)).toEqual({ ok: false, error: 'wrong-phase' });
+
+    expect(room.returnToLobby(anna, 7_500)).toEqual({ ok: false, error: 'not-host' });
+    expect(room.returnToLobby(host, 8_000)).toEqual({ ok: true });
+    expect(room.viewFor(host, 8_000).phase).toEqual({ kind: 'lobby' });
   });
 
   it('adds up the points over the questions', () => {

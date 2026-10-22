@@ -88,7 +88,14 @@ function ConnectedRoomPage({ roomId, socket }: { roomId: string; socket: RoomSoc
 
   const { view } = session;
   if (view.phase.kind === 'lobby') {
-    return <Lobby view={view} onStart={actions.start} onChangeAvatar={actions.setAvatar} />;
+    return (
+      <Lobby
+        view={view}
+        onStart={actions.start}
+        onChangeAvatar={actions.setAvatar}
+        onUpdateSettings={actions.updateSettings}
+      />
+    );
   }
   if (view.phase.kind === 'question') {
     return <QuestionScreen key={view.phase.index} view={view} onAnswer={actions.answer} />;
@@ -97,5 +104,5 @@ function ConnectedRoomPage({ roomId, socket }: { roomId: string; socket: RoomSoc
     return <ResultsScreen view={view} onNext={actions.next} />;
   }
 
-  return <FinalScreen view={view} />;
+  return <FinalScreen view={view} onReturnToLobby={actions.returnToLobby} />;
 }

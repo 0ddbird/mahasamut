@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import { Link } from 'react-router';
+import { Button } from '../../components/Button/Button';
 import { GAME_NAMES } from '../../games/shared/games';
 import type { RoomView } from '../protocol';
 import { Avatar } from './Avatar';
@@ -8,6 +9,7 @@ import { Ranking } from './Ranking';
 
 interface FinalScreenProps {
   view: RoomView;
+  onReturnToLobby?: () => void;
 }
 
 /** Classic podium step order: 2nd on the left, 1st in the center, 3rd on the right. */
@@ -16,9 +18,10 @@ const PODIUM_STEPS = [2, 1, 3] as const;
 /**
  * The final screen of a multiplayer game: a 3-step visual podium (2nd – 1st –
  * 3rd) with avatars and nicknames (ties included), the full ranking with
- * avatar miniatures, and a link back home.
+ * avatar miniatures, a button for the host to bring everyone back to the lobby,
+ * and a link back home.
  */
-export function FinalScreen({ view }: FinalScreenProps) {
+export function FinalScreen({ view, onReturnToLobby }: FinalScreenProps) {
   const podiumHeadingId = useId();
   const fullHeadingId = useId();
   const { phase } = view;
@@ -68,6 +71,7 @@ export function FinalScreen({ view }: FinalScreenProps) {
         </h2>
         <Ranking entries={phase.ranking} />
       </section>
+      {view.you.isHost && <Button onClick={() => onReturnToLobby?.()}>Back to lobby</Button>}
       <Link to="/" className={styles.homeLink}>
         Back to the home page
       </Link>

@@ -35,6 +35,35 @@ describe('Room (lobby and start)', () => {
     expect(room.setAvatar(token, 'dragon', 6)).toEqual({ ok: false, error: 'invalid-avatar' });
   });
 
+  it('lets only the host update the settings in the lobby', () => {
+    const { room, token: hostToken } = newRoom();
+    const anna = room.join('Anna', null, 1);
+    if (!anna.ok) throw new Error('expected join');
+
+    expect(
+      room.updateSettings(
+        anna.token,
+        { game: 'vowel', secondsPerQuestion: 20, questionCount: 8, answerMode: 'toneOnly' },
+        2,
+      ),
+    ).toEqual({ ok: false, error: 'not-host' });
+
+    expect(
+      room.updateSettings(
+        hostToken,
+        { game: 'vowel', secondsPerQuestion: 20, questionCount: 8, answerMode: 'toneOnly' },
+        3,
+      ),
+    ).toEqual({ ok: true });
+    expect(room.viewFor(hostToken, 3).game).toBe('vowel');
+    expect(room.viewFor(hostToken, 3).settings).toEqual({
+      secondsPerQuestion: 20,
+      questionCount: 8,
+      answerMode: 'toneOnly',
+      hasPassword: false,
+    });
+  });
+
   it('lets players join with a pseudo, in arrival order', () => {
     const { room, token: hostToken } = newRoom();
     const anna = room.join('Anna', null, 1);

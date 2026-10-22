@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { RoomView } from '../protocol';
 import { FinalScreen } from './FinalScreen';
 
@@ -87,5 +88,17 @@ describe('FinalScreen', () => {
     expect(within(podium).getByLabelText('Rank 1')).toBeDefined();
     expect(within(podium).getByLabelText('Rank 2')).toBeDefined();
     expect(within(podium).getByLabelText('Rank 3')).toBeDefined();
+  });
+
+  it('lets the host bring everyone back to the lobby', async () => {
+    const onReturnToLobby = vi.fn();
+    render(
+      <MemoryRouter>
+        <FinalScreen view={FINISHED_VIEW} onReturnToLobby={onReturnToLobby} />
+      </MemoryRouter>,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Back to lobby' }));
+    expect(onReturnToLobby).toHaveBeenCalledOnce();
   });
 });

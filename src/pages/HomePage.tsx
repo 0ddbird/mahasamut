@@ -8,8 +8,9 @@ import { normalizeRoomId } from '../multiplayer/roomId';
 import styles from './HomePage.module.scss';
 
 /**
- * The site home page: the logo, one tile per game, and a compact form to join
- * an open multiplayer room by its 6-character ID.
+ * The site home page: the logo, a full-width two-column Multiplayer tile at the
+ * top (Create a lobby on the left, Join a lobby on the right), and one tile per
+ * solo game below.
  */
 export function HomePage() {
   const navigate = useNavigate();
@@ -38,6 +39,38 @@ export function HomePage() {
         <Logo size="large" />
       </h1>
       <p className={styles.tagline}>Games to read Thai script</p>
+      <section className={styles.multiplayer} aria-label="Multiplayer">
+        <div className={styles.multiColumn}>
+          <h2 className={styles.multiTitle}>Play with friends</h2>
+          <p className={styles.multiGoal}>Host a live lobby and pick any game.</p>
+          <Button onClick={() => navigate('/lobby')}>Create a lobby</Button>
+        </div>
+        <form className={styles.multiColumn} onSubmit={onJoinSubmit}>
+          <h2 className={styles.multiTitle}>Join a lobby</h2>
+          <label htmlFor={roomIdInputId} className={styles.joinLabel}>
+            Lobby ID
+          </label>
+          <div className={styles.joinControls}>
+            <input
+              id={roomIdInputId}
+              type="text"
+              className={styles.joinInput}
+              value={roomIdText}
+              onChange={(e) => {
+                setRoomIdText(e.target.value);
+                if (joinError) setJoinError(false);
+              }}
+              placeholder="K7P2QX"
+            />
+            <Button onClick={joinRoom}>Join</Button>
+          </div>
+          {joinError && (
+            <p role="alert" className={styles.joinError}>
+              This is not a lobby ID.
+            </p>
+          )}
+        </form>
+      </section>
       <ul className={styles.tiles}>
         {GAME_IDS.map((game) => (
           <li key={game}>
@@ -54,31 +87,6 @@ export function HomePage() {
           </li>
         ))}
       </ul>
-      <form className={styles.joinRoom} onSubmit={onJoinSubmit}>
-        <h2 className={styles.joinTitle}>Join a lobby</h2>
-        <label htmlFor={roomIdInputId} className={styles.joinLabel}>
-          Lobby ID
-        </label>
-        <div className={styles.joinControls}>
-          <input
-            id={roomIdInputId}
-            type="text"
-            className={styles.joinInput}
-            value={roomIdText}
-            onChange={(e) => {
-              setRoomIdText(e.target.value);
-              if (joinError) setJoinError(false);
-            }}
-            placeholder="K7P2QX"
-          />
-          <Button onClick={joinRoom}>Join</Button>
-        </div>
-        {joinError && (
-          <p role="alert" className={styles.joinError}>
-            This is not a lobby ID.
-          </p>
-        )}
-      </form>
     </main>
   );
 }

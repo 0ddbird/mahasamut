@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import type { GameId } from '../../games/shared/games';
 import type { AvatarId } from '../avatars';
 import type { ActionError, GameAnswer, JoinRoomError, RoomView } from '../protocol';
+import type { LobbySettings } from '../settings';
 import type { RoomSocket } from './socket';
 import { forgetToken, loadToken, saveToken } from './tokens';
 
@@ -20,9 +21,11 @@ export type RoomSession =
 export interface RoomActions {
   join(pseudo: string, password: string | null): Promise<JoinRoomError | null>;
   setAvatar(avatar: AvatarId): void;
+  updateSettings(settings: LobbySettings): void;
   start(): void;
   answer(answer: GameAnswer): Promise<ActionError | null>;
   next(): void;
+  returnToLobby(): void;
   leave(): void;
 }
 
@@ -111,6 +114,9 @@ export function useRoomSession(socket: RoomSocket, roomId: string): [RoomSession
     setAvatar(avatar) {
       socket.emit('room:avatar', avatar, () => {});
     },
+    updateSettings(settings) {
+      socket.emit('room:settings', settings, () => {});
+    },
     start() {
       socket.emit('game:start', () => {});
     },
@@ -123,6 +129,9 @@ export function useRoomSession(socket: RoomSocket, roomId: string): [RoomSession
     },
     next() {
       socket.emit('game:next', () => {});
+    },
+    returnToLobby() {
+      socket.emit('game:lobby', () => {});
     },
     leave() {
       forgetToken(roomId);
