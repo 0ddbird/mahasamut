@@ -8,7 +8,8 @@
  * it records what is missing.
  */
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import type { Candidate } from './candidates';
 import { writeFileAtomic } from './files';
 
@@ -97,8 +98,19 @@ const isRetryable = (status: number | undefined) =>
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/** The file that marks a takes folder as being recorded into. */
+const LOCK_FILE = '.lock';
+
+/** @throws if the MP3 already exists. */
+function refuseExisting(dir: URL, file: string): void {
+  if (existsSync(new URL(file, dir))) {
+    throw new Error(`${file} already exists in the takes folder: a take is never replaced.`);
+  }
+}
+
 /**
- * Records the takes one after the other. Each MP3 is written whole before the
+ * Records the takes one after the other, one run at a time per folder (a
+ * `.lock` file; see acquireLock) and never over an existing MP3. Each MP3 is written whole before the
  * take is added to the manifest, which is rewritten at once, so that a stop at
  * any moment leaves a manifest that lists complete files only.
  *
@@ -114,10 +126,50 @@ export async function recordTakes(
   { dir, synthesize, voice, retries, delayMs, onProgress }: RecordOptions,
 ): Promise<{ done: number }> {
   mkdirSync(dir, { recursive: true });
+  const releaseLock = acquireLock(dir);
+  try {
+    return await recordLocked(jobs, { dir, synthesize, voice, retries, delayMs, onProgress });
+  } finally {
+    releaseLock();
+  }
+}
+
+/**
+ * Takes the lock of the folder: a `.lock` file, created only if it does not
+ * exist yet, so that two runs cannot write the same manifest and the same
+ * MP3 names at once.
+ *
+ * @returns the function that releases the lock.
+ * @throws if another run holds the lock, or crashed and left it behind.
+ */
+function acquireLock(dir: URL): () => void {
+  const lock = new URL(LOCK_FILE, dir);
+  try {
+    writeFileSync(lock, `${process.pid}\n`, { flag: 'wx' });
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+    throw new Error(
+      `Another recording is running in ${fileURLToPath(dir)} (${LOCK_FILE} exists). ` +
+        `If none is, a run crashed: delete ${fileURLToPath(lock)} and run again.`,
+      { cause: error },
+    );
+  }
+  return () => rmSync(lock, { force: true });
+}
+
+async function recordLocked(
+  jobs: readonly Job[],
+  { dir, synthesize, voice, retries, delayMs, onProgress }: RecordOptions,
+): Promise<{ done: number }> {
   const manifest = readManifest(dir);
   let done = 0;
 
   for (const job of jobs) {
+    const file = `${job.id}-${job.n}.mp3`;
+    // A take that exists is never replaced, whatever the manifest says: it may
+    // be the one a reviewer heard. Checked before the call, which is paid for.
+    refuseExisting(dir, file);
+
     let mp3: Uint8Array | undefined;
     for (let attempt = 0; mp3 === undefined; attempt++) {
       try {
@@ -134,7 +186,7 @@ export async function recordTakes(
       }
     }
 
-    const file = `${job.id}-${job.n}.mp3`;
+    refuseExisting(dir, file);
     writeFileAtomic(new URL(file, dir), mp3);
     (manifest[job.id] ??= []).push({
       n: job.n,

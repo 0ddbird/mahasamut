@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -166,5 +166,75 @@ describe('recordTakes', () => {
       onProgress: ({ done, total }) => progress.push(done / total),
     });
     expect(progress).toEqual([0.5, 1]);
+  });
+
+  describe('one run at a time, never over a take', () => {
+    const lockFile = () => join(folder, '.lock');
+    const mp3s = () => readdirSync(folder).filter((name) => name.endsWith('.mp3'));
+
+    it('fails at once, without synthesizing, while another run holds the lock', async () => {
+      writeFileSync(lockFile(), 'another run');
+      let calls = 0;
+      const synthesize = async () => {
+        calls++;
+        return Buffer.from('mp3');
+      };
+
+      await expect(recordTakes(jobs, options(synthesize))).rejects.toThrow(/\.lock/);
+
+      expect(calls).toBe(0);
+      // The lock of the other run is still there, and nothing was recorded.
+      expect(readFileSync(lockFile(), 'utf8')).toBe('another run');
+      expect(mp3s()).toEqual([]);
+    });
+
+    it('holds the lock during the run and removes it afterwards', async () => {
+      let lockedDuringRun = false;
+      const synthesize = async () => {
+        lockedDuringRun = existsSync(lockFile());
+        return Buffer.from('mp3');
+      };
+
+      await recordTakes(jobs, options(synthesize));
+
+      expect(lockedDuringRun).toBe(true);
+      expect(existsSync(lockFile())).toBe(false);
+    });
+
+    it('removes the lock after a failed run', async () => {
+      const synthesize = async () => {
+        throw statusError(401);
+      };
+      await expect(recordTakes(jobs, options(synthesize))).rejects.toThrow('401');
+      expect(existsSync(lockFile())).toBe(false);
+    });
+
+    it('never replaces a take that already has its file', async () => {
+      writeFileSync(join(folder, 'a-1.mp3'), 'old bytes');
+      let calls = 0;
+      const synthesize = async () => {
+        calls++;
+        return Buffer.from('new bytes');
+      };
+
+      await expect(recordTakes(jobs, options(synthesize))).rejects.toThrow(/a-1\.mp3/);
+
+      expect(calls).toBe(0);
+      expect(readFileSync(join(folder, 'a-1.mp3'), 'utf8')).toBe('old bytes');
+      expect(readManifest(dir)).toEqual({});
+      expect(existsSync(lockFile())).toBe(false);
+    });
+
+    it('never replaces a file that appeared while its take was being synthesized', async () => {
+      const synthesize = async () => {
+        writeFileSync(join(folder, 'a-1.mp3'), 'old bytes');
+        return Buffer.from('new bytes');
+      };
+
+      await expect(recordTakes(jobs, options(synthesize))).rejects.toThrow(/a-1\.mp3/);
+
+      expect(readFileSync(join(folder, 'a-1.mp3'), 'utf8')).toBe('old bytes');
+      expect(readManifest(dir)).toEqual({});
+    });
   });
 });

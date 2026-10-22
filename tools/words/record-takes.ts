@@ -8,7 +8,9 @@
  * (to try the command out). Run it again after a stop: it records only the
  * takes that are missing. With --more, three further takes of each word the
  * review marked "none" (no take says it right), numbered after the ones it has.
- * The key is read from GOOGLE_TTS_API_KEY or .env.local.
+ * Only one run at a time: data/words/takes/.lock is held during a run. After
+ * a crash, if the command says another recording is running and none is,
+ * delete that file. The key is read from GOOGLE_TTS_API_KEY or .env.local.
  */
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
