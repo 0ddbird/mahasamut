@@ -11,7 +11,7 @@ import {
   SECONDS_PER_QUESTION,
 } from '../../games/shared/settings';
 import { ANSWER_MODE_OPTIONS } from '../../games/shared/settingsLabels';
-import { AVATAR_LABELS, cycleAvatar } from '../avatars';
+import { cycleAvatar } from '../avatars';
 import type { AvatarId } from '../avatars';
 import type { RoomView } from '../protocol';
 import type { LobbySettings } from '../settings';
@@ -140,7 +140,6 @@ export function Lobby({ view, onStart, onChangeAvatar, onUpdateSettings }: Lobby
               </button>
               <div className={styles.avatarPreview}>
                 <Avatar avatar={view.you.avatar} size="large" />
-                <span className={styles.avatarName}>{AVATAR_LABELS[view.you.avatar]}</span>
               </div>
               <button
                 type="button"

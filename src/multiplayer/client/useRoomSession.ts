@@ -29,10 +29,18 @@ export interface RoomActions {
   leave(): void;
 }
 
+const pendingDisconnects = new Map<RoomSocket, ReturnType<typeof setTimeout>>();
+
 export function useRoomSession(socket: RoomSocket, roomId: string): [RoomSession, RoomActions] {
   const [session, setSession] = useState<RoomSession>({ status: 'connecting' });
 
   useEffect(() => {
+    const pending = pendingDisconnects.get(socket);
+    if (pending !== undefined) {
+      clearTimeout(pending);
+      pendingDisconnects.delete(socket);
+    }
+
     let active = true;
 
     function askInfo() {
@@ -95,6 +103,13 @@ export function useRoomSession(socket: RoomSocket, roomId: string): [RoomSession
       socket.off('connect', onConnect);
       socket.off('room:state', onState);
       socket.off('room:closed', onClosed);
+      const timer = setTimeout(() => {
+        pendingDisconnects.delete(socket);
+        if (socket.connected) {
+          socket.disconnect();
+        }
+      }, 0);
+      pendingDisconnects.set(socket, timer);
     };
   }, [socket, roomId]);
 
@@ -135,6 +150,7 @@ export function useRoomSession(socket: RoomSocket, roomId: string): [RoomSession
     },
     leave() {
       forgetToken(roomId);
+      socket.emit('room:leave');
       socket.disconnect();
     },
   };

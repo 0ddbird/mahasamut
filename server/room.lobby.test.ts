@@ -105,14 +105,23 @@ describe('Room (lobby and start)', () => {
     expect(room.join('Anna', null, 11)).toEqual({ ok: false, error: 'started' });
   });
 
-  it('counts each connection of a token', () => {
+  it('counts each connection of a token and removes disconnected or leaving players from the list', () => {
     const { room, token } = newRoom();
+    const anna = room.join('Anna', null, 1);
+    if (!anna.ok) throw new Error('expected join');
     room.connect(token, 1);
-    room.connect(token, 2);
-    room.disconnect(token, 3);
-    expect(room.viewFor(token, 3).host.connected).toBe(true);
-    room.disconnect(token, 4);
-    expect(room.viewFor(token, 4).host.connected).toBe(false);
+    room.connect(anna.token, 2);
+    expect(room.viewFor(token, 2).players.map((p) => p.pseudo)).toEqual(['Host', 'Anna']);
+
+    room.disconnect(anna.token, 3);
+    expect(room.viewFor(token, 3).players.map((p) => p.pseudo)).toEqual(['Host']);
+
+    room.connect(anna.token, 4);
+    expect(room.viewFor(token, 4).players.map((p) => p.pseudo)).toEqual(['Host', 'Anna']);
+
+    room.leave(anna.token, 5);
+    expect(room.viewFor(token, 5).players.map((p) => p.pseudo)).toEqual(['Host']);
+    expect(room.hasPlayer(anna.token)).toBe(false);
   });
 
   it('refuses an unknown token', () => {

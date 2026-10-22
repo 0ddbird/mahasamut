@@ -131,6 +131,7 @@ export interface ClientToServerEvents {
   ) => void;
   'room:avatar': (avatar: unknown, ack: (res: Ack<ActionError>) => void) => void;
   'room:settings': (settings: unknown, ack: (res: Ack<ActionError>) => void) => void;
+  'room:leave': () => void;
   'game:start': (ack: (res: Ack<ActionError>) => void) => void;
   'game:answer': (answer: unknown, ack: (res: Ack<ActionError>) => void) => void;
   'game:next': (ack: (res: Ack<ActionError>) => void) => void;

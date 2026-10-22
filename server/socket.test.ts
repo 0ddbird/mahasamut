@@ -166,7 +166,7 @@ describe('Socket.IO room server', () => {
     const disconnectState = waitForEvent<RoomView>(host, 'room:state');
     guest.disconnect();
     const afterDisconnect = await disconnectState;
-    expect(afterDisconnect.players.find((p) => p.pseudo === 'Anna')?.connected).toBe(false);
+    expect(afterDisconnect.players.find((p) => p.pseudo === 'Anna')).toBeUndefined();
 
     const guest2 = await connectClient();
     const resumeState = waitForEvent<RoomView>(host, 'room:state');

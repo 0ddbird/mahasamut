@@ -34,6 +34,7 @@ interface Player {
   avatar: AvatarId;
   isHost: boolean;
   connections: number;
+  left: boolean;
   score: number;
 }
 
@@ -102,6 +103,7 @@ export class Room {
       avatar: pickRandomAvatar(Math.random),
       isHost: true,
       connections: 0,
+      left: false,
       score: 0,
     };
     room.players.push(host);
@@ -119,12 +121,16 @@ export class Room {
 
   get status(): 'open' | 'started' | 'full' {
     if (this.phase.kind !== 'lobby') return 'started';
-    if (this.players.length >= MAX_PLAYERS_PER_ROOM) return 'full';
+    if (this.activePlayers().length >= MAX_PLAYERS_PER_ROOM) return 'full';
     return 'open';
   }
 
   hasPlayer(token: string): boolean {
     return this.byToken.has(token);
+  }
+
+  private activePlayers(): Player[] {
+    return this.players.filter((p) => !p.left);
   }
 
   join(
@@ -133,13 +139,23 @@ export class Room {
     now: number,
   ): { ok: true; token: string } | { ok: false; error: JoinError } {
     if (this.phase.kind !== 'lobby') return { ok: false, error: 'started' };
-    if (this.players.length >= MAX_PLAYERS_PER_ROOM) return { ok: false, error: 'room-full' };
+    const active = this.activePlayers();
+    if (active.length >= MAX_PLAYERS_PER_ROOM) return { ok: false, error: 'room-full' };
     if (this.settings.password !== null && !samePassword(this.settings.password, password)) {
       return { ok: false, error: 'wrong-password' };
     }
     const key = pseudoKey(pseudo);
-    if (this.players.some((p) => p.key === key)) {
+    if (active.some((p) => p.key === key)) {
       return { ok: false, error: 'pseudo-taken' };
+    }
+
+    // Remove any disconnected player who previously held the same pseudo key.
+    for (let i = this.players.length - 1; i >= 0; i--) {
+      const p = this.players[i];
+      if (p.left && p.key === key) {
+        this.players.splice(i, 1);
+        this.byToken.delete(p.token);
+      }
     }
 
     const token = randomUUID();
@@ -149,10 +165,11 @@ export class Room {
       key,
       avatar: pickRandomAvatar(
         Math.random,
-        this.players.map((p) => p.avatar),
+        active.map((p) => p.avatar),
       ),
       isHost: false,
       connections: 0,
+      left: false,
       score: 0,
     };
     this.players.push(player);
@@ -165,6 +182,7 @@ export class Room {
     const player = this.byToken.get(token);
     if (!player) return false;
     player.connections += 1;
+    player.left = false;
     this.activityAt = now;
     return true;
   }
@@ -173,6 +191,25 @@ export class Room {
     const player = this.byToken.get(token);
     if (!player) return;
     player.connections = Math.max(0, player.connections - 1);
+    if (player.connections === 0) {
+      player.left = true;
+    }
+    this.activityAt = now;
+    this.closeIfEveryoneAnswered();
+  }
+
+  leave(token: string, now: number): void {
+    const player = this.byToken.get(token);
+    if (!player) return;
+    this.byToken.delete(token);
+    const idx = this.players.indexOf(player);
+    if (idx !== -1) {
+      this.players.splice(idx, 1);
+    }
+    if (player.isHost && this.players.length > 0) {
+      const nextHost = this.activePlayers()[0] ?? this.players[0];
+      nextHost.isHost = true;
+    }
     this.activityAt = now;
     this.closeIfEveryoneAnswered();
   }
@@ -273,7 +310,7 @@ export class Room {
 
   viewFor(token: string, now: number): RoomView {
     const you = this.byToken.get(token) ?? this.players[0];
-    const host = this.players[0];
+    const host = this.players.find((p) => p.isHost) ?? this.players[0];
     return {
       roomId: this.id,
       game: this.settings.game,
@@ -285,7 +322,7 @@ export class Room {
       },
       you: { pseudo: you.pseudo, avatar: you.avatar, isHost: you.isHost },
       host: { pseudo: host.pseudo, connected: host.connections > 0 },
-      players: this.players.map((p) => ({
+      players: this.activePlayers().map((p) => ({
         pseudo: p.pseudo,
         avatar: p.avatar,
         isHost: p.isHost,

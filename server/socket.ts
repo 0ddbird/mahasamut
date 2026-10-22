@@ -331,6 +331,20 @@ export function attachRooms(
       }
     });
 
+    socket.on('room:leave', () => {
+      const { roomId, token } = socket.data;
+      if (!roomId || !token) return;
+      socket.data.roomId = undefined;
+      socket.data.token = undefined;
+      void socket.leave(roomId);
+      const room = registry.get(roomId);
+      if (room) {
+        room.leave(token, now());
+        syncRoomTimer(room);
+        broadcastRoom(room);
+      }
+    });
+
     socket.on('disconnect', () => {
       detachSocket(socket);
     });
