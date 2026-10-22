@@ -21,10 +21,10 @@ Requires **Node 24** (`.nvmrc`).
 ```bash
 npm install
 npm run dev            # start the Vite dev server
-npm run dev:server     # start the contact service (for the /contact form), in a second terminal
+npm run dev:server     # start the unified backend (contact, multiplayer, metrics), in a second terminal
 ```
 
-The contact service listens on `127.0.0.1:3002`, and the Vite dev server proxies `/api` to it. Without `RESEND_API_KEY` set, it prints each message in its terminal instead of sending it, so the form can be tried without an account. Set `CONTACT_PORT` or `CONTACT_ORIGIN` to change the port or the allowed origin (`http://localhost:5173` outside production).
+The unified backend listens on `127.0.0.1:3002`, and the Vite dev server proxies `/api` and `/socket.io` to it. Without `RESEND_API_KEY` set, it prints contact messages in its terminal instead of sending them. Set `CONTACT_PORT` or `CONTACT_ORIGIN` to change the port or the allowed origin (`http://localhost:5173` outside production). In development, metrics persist in memory unless `STATS_DB_PATH` is specified.
 
 ### Checks and build
 
@@ -34,9 +34,19 @@ npm run test:watch     # run Vitest in watch mode
 npm run lint           # lint with Oxlint
 npm run format:check   # check formatting with Prettier
 npm run format         # format with Prettier
-npm run build          # type-check (tsc -b) and build into dist/
+npm run build          # type-check (tsc -b) and build client into dist/
+npm run build:server   # bundle the backend server into dist-server/
 npm run preview        # preview the production build locally
 ```
+
+## Privacy & Analytics
+
+Mahasamut collects strictly anonymous usage metrics (page views, games started/finished, audio plays) to understand site vitality without any personal data:
+
+- No cookies, no local storage trackers, and no visitor identifiers.
+- No IP addresses are stored on disk or transmitted to metrics collectors.
+- All tracked routes and event properties use closed-set enums.
+- Counters are stored locally on the VPS in SQLite (`/var/lib/mahasamut/stats.db`) and exposed via a local Prometheus `/metrics` endpoint.
 
 ## Deployment
 
