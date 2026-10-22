@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Floating lantern">
+  <circle cx="32" cy="32" r="30" fill="#1a1d20" />
+  <path d="M21 20c0-5 22-5 22 0l-3 24H24z" fill="#f2c14e" />
+  <ellipse cx="32" cy="44" rx="8" ry="3" fill="#a8521a" />
+  <circle cx="32" cy="43" r="3.5" fill="#fff4cc" />
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Chili">
+  <circle cx="32" cy="32" r="30" fill="#3a2f0c" />
+  <path d="M40 16c2 4 4 6 6 6" fill="none" stroke="#66bb6a" stroke-width="4" stroke-linecap="round" />
+  <path d="M40 20c4 12-4 26-20 26 6-6 10-16 12-26z" fill="#c9372c" />
+</svg>

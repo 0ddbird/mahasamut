@@ -23,12 +23,9 @@ import styles from './SetupPage.module.scss';
 const ICON_SIZE = 20;
 
 /**
- * The settings of a game, chosen before it starts, a card each: its length, its
- * time, in the syllable game the answer asked, and the learning mode. The
- * number a series or a timed game needs shows under its choice, with − and +.
- * The page opens on the settings the
- * player last played with, so a regular player only has to click Play; they are
- * remembered again when Play starts the game.
+ * The settings of a solo game, chosen before it starts, a card each: its
+ * length, its time, in the syllable game the answer asked, and the learning
+ * mode.
  */
 export function SetupPage({ game }: { game: GameId }) {
   const navigate = useNavigate();
@@ -58,11 +55,11 @@ export function SetupPage({ game }: { game: GameId }) {
   // A series or a timed game always starts from the proposed number, not from
   // one left behind.
   const chooseLength = (value: LengthChoice) => {
-    if (value === 'series' && !series) setCountText(String(QUESTION_COUNT.default));
+    if (value === 'series' && length !== 'series') setCountText(String(QUESTION_COUNT.default));
     setLength(value);
   };
   const chooseTime = (value: TimeChoice) => {
-    if (value === 'timed' && !timed) setSecondsText(String(SECONDS_PER_QUESTION.default));
+    if (value === 'timed' && time !== 'timed') setSecondsText(String(SECONDS_PER_QUESTION.default));
     setTime(value);
   };
 

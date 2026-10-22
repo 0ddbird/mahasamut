@@ -1,0 +1,368 @@
+$desktop: 48rem;
+$tiles-row: 36rem;
+
+.page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: var(--space-m);
+  text-align: center;
+}
+
+.pageTitle {
+  margin: 0 0 var(--space-m);
+}
+
+// On mobile: single column (Invite + Avatar -> Game + Settings + Start -> Players at the bottom).
+// On desktop: main column on the left, sidebar (Invite + Avatar + Players) on the right.
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+
+  @media (min-width: $desktop) {
+    display: grid;
+    grid-template-columns: 1fr 20rem;
+    grid-template-rows: auto 1fr;
+    align-items: start;
+    gap: var(--space-m) var(--space-l);
+  }
+}
+
+.mainArea {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+
+  @media (min-width: $desktop) {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+}
+
+.inviteArea {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+
+  @media (min-width: $desktop) {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+.playersSection {
+  width: 100%;
+  padding: var(--space-m);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) * 1.5);
+  background: var(--color-surface);
+
+  @media (min-width: $desktop) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+
+.gameSection {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.sectionTitle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.gameTiles {
+  display: grid;
+  gap: var(--space-s);
+
+  @media (min-width: $tiles-row) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.gameTile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-m) var(--space-s);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) * 1.5);
+  color: var(--color-text);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease-out,
+    background-color 0.15s ease-out;
+
+  fieldset:disabled & {
+    cursor: default;
+  }
+
+  fieldset:not(:disabled) &:hover {
+    border-color: var(--color-accent-light);
+  }
+
+  &[data-selected] {
+    border: 2px solid var(--color-accent-light);
+    background: var(--color-right-background);
+  }
+
+  &:focus-within {
+    outline: 2px solid var(--color-accent-light);
+    outline-offset: 2px;
+  }
+}
+
+.gameRadio {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gameSample {
+  font-size: 2.75rem;
+  line-height: 1.4;
+  color: var(--color-text);
+}
+
+.gameName {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-accent-light);
+  text-transform: uppercase;
+}
+
+.gameGoal {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+}
+
+.hostSettings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+  width: 100%;
+  text-align: left;
+}
+
+.settingsGrid {
+  display: grid;
+  gap: var(--space-m);
+
+  @media (min-width: $tiles-row) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.settingCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  margin: 0;
+  padding: var(--space-m);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) * 1.5);
+  background: var(--color-surface);
+}
+
+.cardTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 0;
+  float: left;
+  width: 100%;
+  color: var(--color-accent-light);
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.settingsCard {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-s) var(--space-m);
+  width: 100%;
+  padding: var(--space-m);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) * 1.5);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.9375rem;
+}
+
+.settingItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.settingIcon {
+  display: inline-flex;
+  color: var(--color-accent-light);
+}
+
+.share {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-s);
+  width: 100%;
+  padding: var(--space-m);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) * 1.5);
+  background: var(--color-surface);
+}
+
+.lobbyCode {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+}
+
+.codeValue {
+  color: var(--color-accent-light);
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+}
+
+@keyframes copyPop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.copyWrap {
+  &[data-copied] {
+    animation: copyPop 0.25s ease-out;
+  }
+}
+
+.avatarCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: var(--space-m);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) * 1.5);
+  background: var(--color-surface);
+}
+
+.avatarPicker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-m);
+}
+
+.avatarPreview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cycleButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  background: var(--color-background);
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--color-accent-light);
+    color: var(--color-accent-light);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent-light);
+    outline-offset: 2px;
+  }
+}
+
+.heading {
+  margin: 0 0 var(--space-xs);
+  color: var(--color-accent-light);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.players {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.player {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-s);
+  padding: var(--space-xs) 0;
+  text-align: left;
+}
+
+.playerName {
+  font-weight: 600;
+}
+
+.hostIcon {
+  color: var(--color-accent-light);
+}
+
+.away {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.startArea {
+  display: flex;
+  justify-content: center;
+}
+
+.waiting {
+  margin: var(--space-xs) 0 0;
+  color: var(--color-text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gameTile {
+    transition: none;
+  }
+
+  .copyWrap[data-copied] {
+    animation: none;
+  }
+}

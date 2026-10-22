@@ -5,6 +5,7 @@
     "lib": ["ES2023"],
     "module": "esnext",
     "types": ["node"],
+    "resolveJsonModule": true,
     "skipLibCheck": true,
 
     /* Bundler mode */
@@ -21,7 +22,7 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  // The service runs in Node with its types stripped (node server/contact/main.ts),
-  // so its files import each other, and src/contact/rules.ts, with the .ts extension.
+  // The contact service runs in Node with its types stripped (node server/contact/main.ts),
+  // and the multiplayer server runs in Node via tsx (server/main.ts).
   "include": ["server"]
 }

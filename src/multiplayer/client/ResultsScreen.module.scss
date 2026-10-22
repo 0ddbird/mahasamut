@@ -1,0 +1,44 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-m);
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: var(--space-m);
+  text-align: center;
+}
+
+.points {
+  margin: 0;
+  color: var(--color-accent-light);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.panel {
+  width: 100%;
+}
+
+.rankingSection {
+  width: 100%;
+  max-width: 26rem;
+  padding: var(--space-m);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) * 1.5);
+  background: var(--color-surface);
+}
+
+.heading {
+  margin: 0 0 var(--space-s);
+  color: var(--color-accent-light);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.waiting {
+  margin: var(--space-s) 0 0;
+  color: var(--color-text-muted);
+}

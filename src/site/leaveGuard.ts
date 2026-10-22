@@ -21,6 +21,9 @@ interface LeaveGuard {
   /** Ends the game on the page; `null` when no game is in progress. */
   endGame: (() => void) | null;
   setEndGame: (end: (() => void) | null) => void;
+  /** The label of the end button in the bar ('End' in solo, 'Leave' in a room). */
+  endLabel: string;
+  setEndLabel: (label: string) => void;
   /** Asks the player before going to `to`; `focusOnStay` gets the focus back if they stay. */
   askToLeave: (to: string, focusOnStay: HTMLElement | null) => void;
 }
@@ -30,6 +33,8 @@ export const LeaveGuardContext = createContext<LeaveGuard>({
   setGuarded: () => {},
   endGame: null,
   setEndGame: () => {},
+  endLabel: 'End',
+  setEndLabel: () => {},
   askToLeave: () => {},
 });
 
@@ -50,22 +55,31 @@ export function useIsLeaveGuarded(): boolean {
  * Hands `end` to the bar while `active` is true, and takes it back once the
  * game is over or the page is gone. The bar always calls the latest `end`.
  */
-export function useGameEndInBar(active: boolean, end: () => void): void {
-  const { setEndGame } = useContext(LeaveGuardContext);
+export function useGameEndInBar(active: boolean, end: () => void, label = 'End'): void {
+  const { setEndGame, setEndLabel } = useContext(LeaveGuardContext);
   const latestEnd = useRef(end);
   useEffect(() => {
     latestEnd.current = end;
   });
   useEffect(() => {
     if (!active) return;
+    setEndLabel(label);
     setEndGame(() => latestEnd.current());
-    return () => setEndGame(null);
-  }, [active, setEndGame]);
+    return () => {
+      setEndGame(null);
+      setEndLabel('End');
+    };
+  }, [active, label, setEndGame, setEndLabel]);
 }
 
 /** How to end the game on the page, or `null` when none is in progress. */
 export function useGameEnd(): (() => void) | null {
   return useContext(LeaveGuardContext).endGame;
+}
+
+/** The label of the end button in the bar ('End' by default, 'Leave' in a room). */
+export function useGameEndLabel(): string {
+  return useContext(LeaveGuardContext).endLabel;
 }
 
 /**

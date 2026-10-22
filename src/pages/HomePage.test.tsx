@@ -1,13 +1,23 @@
 import { render, screen, within } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import { GAME, GAME_IDS, GAME_NAMES, GAME_PATHS, GAME_SAMPLES } from '../games/shared/games';
 import { HomePage } from './HomePage';
 
+function RoomLocation() {
+  const { pathname } = useLocation();
+  return <p>{`Room at ${pathname}`}</p>;
+}
+
 const renderHome = () =>
   render(
-    <MemoryRouter>
-      <HomePage />
+    <MemoryRouter initialEntries={['/']}>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/lobby" element={<RoomLocation />} />
+        <Route path="/room/:roomId" element={<RoomLocation />} />
+      </Routes>
     </MemoryRouter>,
   );
 
@@ -38,5 +48,26 @@ describe('HomePage', () => {
   it('has no navigation bar: the logo is the way home', () => {
     renderHome();
     expect(screen.queryByRole('navigation')).toBeNull();
+  });
+
+  it('opens the lobby creation page when Create a lobby is clicked', async () => {
+    renderHome();
+    await userEvent.click(screen.getByRole('button', { name: 'Create a lobby' }));
+    expect(screen.getByText('Room at /lobby')).toBeDefined();
+  });
+
+  it('joins a lobby by its ID', async () => {
+    renderHome();
+    expect(screen.getByRole('heading', { level: 2, name: 'Join a lobby' })).toBeDefined();
+    await userEvent.type(screen.getByLabelText('Lobby ID'), ' k7p 2qx ');
+    await userEvent.click(screen.getByRole('button', { name: 'Join' }));
+    expect(screen.getByText('Room at /room/K7P2QX')).toBeDefined();
+  });
+
+  it('refuses an ID that cannot be one', async () => {
+    renderHome();
+    await userEvent.type(screen.getByLabelText('Lobby ID'), 'bad');
+    await userEvent.click(screen.getByRole('button', { name: 'Join' }));
+    expect(screen.getByRole('alert').textContent).toBe('This is not a lobby ID.');
   });
 });

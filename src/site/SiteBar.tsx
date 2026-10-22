@@ -4,7 +4,7 @@ import type { FocusEvent, KeyboardEvent, MouseEvent } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
 import { Logo } from '../components/Logo/Logo';
 import { GAME_IDS, GAME_NAMES, GAME_PATHS } from '../games/shared/games';
-import { useGameEnd, useLeaveLink } from './leaveGuard';
+import { useGameEnd, useGameEndLabel, useLeaveLink } from './leaveGuard';
 import styles from './SiteBar.module.scss';
 
 /**
@@ -20,6 +20,7 @@ export function SiteBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const listId = useId();
   const endGame = useGameEnd();
+  const endLabel = useGameEndLabel();
   const leaveLink = useLeaveLink();
   const menuButton = useRef<HTMLButtonElement>(null);
 
@@ -62,7 +63,7 @@ export function SiteBar() {
       </Link>
       {endGame !== null ? (
         <button type="button" className={styles.end} onClick={endGame}>
-          End
+          {endLabel}
         </button>
       ) : (
         <nav aria-label="Games" onKeyDown={closeOnEscape} onBlur={closeOnFocusOut}>

@@ -1,0 +1,108 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-m);
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: var(--space-m);
+  text-align: center;
+}
+
+.section {
+  width: 100%;
+  max-width: 28rem;
+  padding: var(--space-m);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) * 1.5);
+  background: var(--color-surface);
+}
+
+.heading {
+  margin: 0 0 var(--space-m);
+  color: var(--color-accent-light);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.podium {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: end;
+  gap: var(--space-s);
+  padding-top: var(--space-s);
+}
+
+.podiumColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.podiumPlayers {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-xs);
+  min-height: 4.5rem;
+}
+
+.podiumPlayer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+
+  &[data-you] .podiumPseudo {
+    color: var(--color-accent-light);
+  }
+}
+
+.podiumPseudo {
+  font-size: 0.875rem;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.podiumScore {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.podiumStep {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  border-radius: var(--radius) var(--radius) 0 0;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+
+  &[data-rank='1'] {
+    height: 5.5rem;
+    border: 2px solid var(--color-accent);
+    background: var(--color-right-background);
+    color: var(--color-accent-light);
+  }
+
+  &[data-rank='2'] {
+    height: 4rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-raised);
+    color: var(--color-text);
+  }
+
+  &[data-rank='3'] {
+    height: 2.75rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-raised);
+    color: var(--color-text-muted);
+  }
+}
+
+.homeLink {
+  color: var(--color-accent-light);
+}

@@ -6,8 +6,15 @@ import { defineConfig } from 'vite';
 export default defineConfig(({ isSsrBuild }) => ({
   plugins: [react()],
   server: {
-    // The contact service (npm run dev:server) answers /api/contact in development.
-    proxy: { '/api': 'http://127.0.0.1:3002' },
+    // In development, /api/contact goes to the contact service (port 3002) and
+    // /socket.io goes to the multiplayer room server (port 3001).
+    proxy: {
+      '/api': 'http://127.0.0.1:3002',
+      '/socket.io': {
+        target: 'http://localhost:3001',
+        ws: true,
+      },
+    },
   },
   build: {
     // The SSR build bundles the contact service: it has no use for the public folder.

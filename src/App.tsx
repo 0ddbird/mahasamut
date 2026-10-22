@@ -2,6 +2,8 @@ import { Route, Routes } from 'react-router';
 import { GAME_IDS, GAME_PATHS } from './games/shared/games';
 import { PlayRoute } from './games/shared/PlayRoute';
 import { SetupPage } from './games/shared/SetupPage';
+import { CreateLobbyPage } from './multiplayer/client/CreateLobbyPage';
+import { RoomPage } from './multiplayer/client/RoomPage';
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
 import { HomePage } from './pages/HomePage';
@@ -35,6 +37,8 @@ function App() {
               element={<PlayRoute game={game} />}
             />,
           ])}
+          <Route path="/lobby" element={<CreateLobbyPage />} />
+          <Route path="/room/:roomId" element={<RoomPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="*" element={<NotFoundPage />} />

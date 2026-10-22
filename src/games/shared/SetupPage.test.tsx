@@ -35,6 +35,7 @@ const playButton = () => screen.getByRole('button', { name: 'Play' }) as HTMLBut
 
 afterEach(() => {
   localStorage.clear();
+  sessionStorage.clear();
 });
 
 describe('SetupPage', () => {
