@@ -13,6 +13,7 @@ export function LeaveGuardProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const [guarded, setGuarded] = useState(false);
   const [endGame, setEndGameState] = useState<(() => void) | null>(null);
+  const [endLabel, setEndLabel] = useState('End');
   // A function given to a state setter would be called as an updater: wrap it.
   const [setEndGame] = useState(() => (end: (() => void) | null) => setEndGameState(() => end));
 
@@ -37,7 +38,9 @@ export function LeaveGuardProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <LeaveGuardContext value={{ guarded, setGuarded, endGame, setEndGame, askToLeave }}>
+    <LeaveGuardContext
+      value={{ guarded, setGuarded, endGame, setEndGame, endLabel, setEndLabel, askToLeave }}
+    >
       {children}
       {/* After the page, outside the bar, which stays behind the help panels: the dialog goes over both. */}
       {leavingTo !== null && (

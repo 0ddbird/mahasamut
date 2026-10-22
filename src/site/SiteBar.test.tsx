@@ -130,5 +130,24 @@ describe('SiteBar', () => {
       expect(screen.queryByRole('button', { name: 'End' })).toBeNull();
       expect(screen.getByRole('navigation', { name: 'Games' })).toBeDefined();
     });
+
+    it('uses a custom label such as Leave when given', async () => {
+      function RoomStandIn({ onLeave }: { onLeave: () => void }) {
+        useGameEndInBar(true, onLeave, 'Leave');
+        return <h1>Room</h1>;
+      }
+      const onLeave = vi.fn();
+      render(
+        <MemoryRouter initialEntries={['/room/K7P2QX']}>
+          <LeaveGuardProvider>
+            <SiteBar />
+            <RoomStandIn onLeave={onLeave} />
+          </LeaveGuardProvider>
+        </MemoryRouter>,
+      );
+
+      await userEvent.click(screen.getByRole('button', { name: 'Leave' }));
+      expect(onLeave).toHaveBeenCalledOnce();
+    });
   });
 });
