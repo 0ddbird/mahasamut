@@ -94,6 +94,32 @@ function showBanner(message) {
   banner.hidden = !message;
 }
 
+/** The words whose last save failed, with the sentence to show for each. */
+const failedSaves = new Map();
+/** Whether the banner currently shows a failed save, not a load error. */
+let saveBannerShown = false;
+
+/**
+ * Shows the banner while a save is failing, so that a run of key decisions
+ * (the page moves on to the next word after each) cannot go on unnoticed with
+ * a server that is gone. Each success clears its own word; the banner goes
+ * when no word is left that failed.
+ */
+function updateSaveBanner() {
+  if (failedSaves.size === 0) {
+    if (saveBannerShown) showBanner('');
+    saveBannerShown = false;
+    return;
+  }
+  const [lastMessage] = [...failedSaves.values()].slice(-1);
+  const count = failedSaves.size === 1 ? '' : ` (${failedSaves.size} words)`;
+  const hint = lastMessage.includes('words:review')
+    ? ''
+    : ' Is `npm run words:review` still running?';
+  showBanner(`Not saved${count}: ${lastMessage}${hint}`);
+  saveBannerShown = true;
+}
+
 async function loadState() {
   const data = await api('api/state');
   Object.assign(state, data);
@@ -258,9 +284,13 @@ function decide(row, decision, take) {
       updateRow(row);
       updateProgress();
       setFeedback(row, 'Saved', 'ok');
+      failedSaves.delete(text);
     } catch (error) {
       setFeedback(row, `Not saved: ${error.message}`, 'error');
+      failedSaves.delete(text);
+      failedSaves.set(text, error.message);
     }
+    updateSaveBanner();
   });
   saves.set(text, save);
   return save;
@@ -678,6 +708,8 @@ async function start() {
     event.currentTarget.blur();
     try {
       showBanner('');
+      failedSaves.clear();
+      saveBannerShown = false;
       await loadState();
       renderOrphans();
       updateProgress();

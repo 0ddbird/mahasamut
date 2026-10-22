@@ -211,7 +211,12 @@ main {
 }
 
 .banner {
+  /* Stays in view while the page is scrolled: a failed save must not go unseen. */
+  position: sticky;
+  top: 0;
+  z-index: 5;
   margin: 0 0 1rem;
+  background: var(--surface);
   padding: 0.6rem 0.9rem;
   border: 1px solid var(--removed);
   border-radius: 0.4rem;
