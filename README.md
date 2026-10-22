@@ -1,32 +1,47 @@
-# React + TypeScript + Vite
+# Mahasamut · มหาสมุด
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Short games to learn to read Thai script, served at <https://mahasamut.app>.
 
-Currently, two official plugins are available:
+The name is a pun on _mahasamut_: spelled **มหาสมุด** (from มหา _maha_, "great", and สมุด _samut_, "notebook") rather than มหาสมุทร ("ocean"), it means **"great notebook"**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Games
 
-## React Compiler
+In the order the site lists them, from the letters to the syllable:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Vowel sounds** (`/vowel`) — Read a Thai vowel and find how it sounds, among answers written in the International Phonetic Alphabet and played aloud.
+- **Consonant classes** (`/consonant-class`) — Read a Thai consonant and find its class (`mid`, `high`, or `low`), the first step towards the tone of a syllable.
+- **Find the tone** (`/syllable`) — Read a one-syllable Thai word and find its tone, either step by step (consonant class, tone mark, vowel length, final, live or dead) or by tone alone.
 
-## Expanding the Oxlint configuration
+Each game can be played as an endless run or a fixed series, untimed or timed, with optional cheat sheets for the reading rules in learning mode.
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## Development
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+Requires **Node 24** (`.nvmrc`).
+
+```bash
+npm install
+npm run dev            # start the Vite dev server
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+### Checks and build
+
+```bash
+npm test               # run the Vitest test suite once
+npm run test:watch     # run Vitest in watch mode
+npm run lint           # lint with Oxlint
+npm run format:check   # check formatting with Prettier
+npm run format         # format with Prettier
+npm run build          # type-check (tsc -b) and build into dist/
+npm run preview        # preview the production build locally
+```
+
+## Deployment
+
+Server provisioning and deployment live in the companion repository [`0ddbird/mahasamut-infra`](https://github.com/0ddbird/mahasamut-infra).
+
+After pushing to GitHub, deploy from `mahasamut-infra`:
+
+```bash
+just deploy            # build and publish origin/main on https://mahasamut.app
+just deploy <ref>      # publish a specific branch, tag, or commit
+```
