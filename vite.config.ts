@@ -10,14 +10,6 @@ export default defineConfig({
     // pool of real words for Find the tone (about 55 kB). Splitting the routes
     // into their own chunks is left for later.
     chunkSizeWarningLimit: 600,
-    rollupOptions: {
-      // Two pages from one build: the Thai site, and Scriptomancy's home page
-      // (dist/home/), which Caddy serves on the root domain.
-      input: {
-        main: 'index.html',
-        home: 'home/index.html',
-      },
-    },
   },
   test: {
     // Two kinds of tests, told apart by their file extension:
@@ -28,7 +20,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: 'logic',
-          include: ['src/**/*.test.ts', 'home/**/*.test.ts', 'tools/**/*.test.ts'],
+          include: ['src/**/*.test.ts', 'tools/**/*.test.ts'],
           environment: 'node',
         },
       },
