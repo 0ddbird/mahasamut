@@ -1,5 +1,9 @@
 import { useEffect, useRef } from 'react';
+import { playSound } from '../../audio/playSound';
+import type { PlaySound } from '../../audio/playSound';
 import { Button } from '../../components/Button/Button';
+import { Recap } from './Recap';
+import type { RecapEntry } from './recap';
 import { resultSentence, resultTitle, streakSentence } from './resultText';
 import type { Score } from './score';
 import type { GameSettings } from './settings';
@@ -8,18 +12,29 @@ import styles from './Summary.module.scss';
 
 interface SummaryProps {
   score: Score;
+  /** The questions played, listed under the score. */
+  recap: readonly RecapEntry[];
   /** The settings of the game just played, which Play again keeps. */
   settings: GameSettings;
   /** Whether the game has an answer mode to describe (the syllable game). */
   withAnswerMode: boolean;
   onPlayAgain: () => void;
+  /** Plays the sound of a question in the recap; replaced in tests. */
+  play?: PlaySound;
 }
 
 /**
  * The results of a game, once a series is over or the player ended it. Home
  * and the game's settings are in the navigation bar above.
  */
-export function Summary({ score, settings, withAnswerMode, onPlayAgain }: SummaryProps) {
+export function Summary({
+  score,
+  recap,
+  settings,
+  withAnswerMode,
+  onPlayAgain,
+  play = playSound,
+}: SummaryProps) {
   const sentence = resultSentence(score);
   const streak = streakSentence(score);
 
@@ -38,6 +53,7 @@ export function Summary({ score, settings, withAnswerMode, onPlayAgain }: Summar
       {sentence !== null && <p className={styles.score}>{sentence}</p>}
       {streak !== null && <p>{streak}</p>}
       <p className={styles.settings}>{describeSettings(settings, withAnswerMode)}</p>
+      <Recap entries={recap} play={play} />
       <Button onClick={onPlayAgain}>Play again</Button>
     </section>
   );

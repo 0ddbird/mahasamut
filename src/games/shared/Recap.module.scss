@@ -1,0 +1,103 @@
+.recap {
+  width: 100%;
+  max-width: 32rem;
+  margin-top: var(--space-m);
+  text-align: start;
+}
+
+.title {
+  margin: 0 0 var(--space-s);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--color-accent-light);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// Wraps on a narrow screen: the answer drops under the Thai text.
+.row {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-m);
+  padding: var(--space-s) var(--space-m);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.number {
+  min-width: 1.5rem;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.text {
+  font-size: 1.5rem;
+}
+
+.verdict {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-xs) var(--space-s);
+  margin: 0;
+}
+
+.rightMark {
+  color: var(--color-right);
+}
+
+.wrongMark,
+.given {
+  color: var(--color-wrong);
+}
+
+.expected {
+  font-weight: 700;
+}
+
+// The vowel labels are IPA, which the body font lacks.
+.ipa {
+  font-family: var(--font-ipa);
+}
+
+// Pushes the Listen button to the end of the line.
+.listen {
+  display: inline-flex;
+  margin-inline-start: auto;
+  padding: var(--space-xs) var(--space-s);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-accent-light);
+  background: none;
+  cursor: pointer;
+
+  // Not the row's own background: it would not show.
+  &:hover {
+    border-color: var(--color-accent-light);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent-light);
+    outline-offset: 2px;
+  }
+}
+
+// Read by screen readers only: on screen, the marks and the strike-through
+// already tell the result.
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

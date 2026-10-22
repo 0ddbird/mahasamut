@@ -17,6 +17,7 @@ import { currentCard, newDeck, nextCard } from '../shared/deck';
 import type { Deck } from '../shared/deck';
 import { GAME, GAME_NAMES } from '../shared/games';
 import { QuestionBar } from '../shared/QuestionBar';
+import { vowelEntry } from '../shared/recap';
 import { DEFAULT_SETTINGS } from '../shared/settings';
 import type { GameSettings } from '../shared/settings';
 import { Summary } from '../shared/Summary';
@@ -71,12 +72,16 @@ export function VowelPage({
   const [chosen, setChosen] = useState<string | undefined>(undefined);
 
   // The game always calls the latest callback, so `question` is the one shown.
-  const game = useSoloGame(settings, () => {
-    setQuestion(questionAt(nextCard(question.deck, rng), rng));
-    setChosen(undefined);
-  });
-
   const vowel = currentCard(question.deck);
+  const game = useSoloGame(
+    settings,
+    () => {
+      setQuestion(questionAt(nextCard(question.deck, rng), rng));
+      setChosen(undefined);
+    },
+    (result) => vowelEntry(vowel.id, vowelOnCarrier(vowel), chosen ?? null, result),
+  );
+
   const expected = VOWEL_IPA[vowel.id];
   const checked = game.phase === 'checked';
 
@@ -94,9 +99,11 @@ export function VowelPage({
         {title}
         <Summary
           score={game.score}
+          recap={game.recap}
           settings={settings}
           withAnswerMode={false}
           onPlayAgain={game.restart}
+          play={play}
         />
       </main>
     );

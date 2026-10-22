@@ -167,6 +167,101 @@ describe('Room (during a game)', () => {
     expect(room.viewFor(host, 8_000).phase).toEqual({ kind: 'lobby' });
   });
 
+  describe('recap', () => {
+    const questions = SERVER_GAMES.syllable.drawQuestions(SETTINGS, seededRng(1));
+
+    /** Plays the two questions: Host always right, Anna wrong then silent. */
+    function playedRoom() {
+      const { room, host, anna } = startedRoom();
+      const q0 = answersFor(0);
+      const q1 = answersFor(1);
+      room.answer(host, q0.right, 3_500);
+      room.answer(anna, q0.wrong, 4_000);
+      room.next(host, 5_000);
+      room.answer(host, q1.right, 6_000);
+      room.expire(21_000);
+      room.next(host, 22_000);
+      return { room, host, anna, q0, q1 };
+    }
+
+    function recapOf(room: Room, token: string, now: number) {
+      const phase = room.viewFor(token, now).phase;
+      if (phase.kind !== 'finished') throw new Error('expected the finished phase');
+      return phase.recap;
+    }
+
+    it('gives each player their own answers, in the order of the game, once finished', () => {
+      const { room, host, anna, q0, q1 } = playedRoom();
+
+      expect(recapOf(room, host, 22_000)).toEqual([
+        {
+          question: questions[0].view,
+          reveal: questions[0].reveal,
+          answer: q0.right,
+          correct: true,
+        },
+        {
+          question: questions[1].view,
+          reveal: questions[1].reveal,
+          answer: q1.right,
+          correct: true,
+        },
+      ]);
+      expect(recapOf(room, anna, 22_000)).toEqual([
+        {
+          question: questions[0].view,
+          reveal: questions[0].reveal,
+          answer: q0.wrong,
+          correct: false,
+        },
+        { question: questions[1].view, reveal: questions[1].reveal, answer: null, correct: false },
+      ]);
+    });
+
+    it('shows time up for a player who was away during a question', () => {
+      const { room, host, anna } = startedRoom();
+      const q0 = answersFor(0);
+      room.disconnect(anna, 2_000);
+      room.answer(host, q0.right, 3_000);
+      room.connect(anna, 3_500);
+      room.next(host, 4_000);
+      room.expire(20_000);
+      room.next(host, 21_000);
+
+      expect(recapOf(room, anna, 21_000)[0]).toEqual({
+        question: questions[0].view,
+        reveal: questions[0].reveal,
+        answer: null,
+        correct: false,
+      });
+    });
+
+    it('keeps the list for a player who comes back once the game is over', () => {
+      const { room, anna } = playedRoom();
+      const before = recapOf(room, anna, 22_000);
+
+      room.disconnect(anna, 23_000);
+      room.connect(anna, 24_000);
+
+      expect(recapOf(room, anna, 24_000)).toEqual(before);
+    });
+
+    it('forgets the answers of the previous game', () => {
+      const { room, host } = playedRoom();
+      expect(room.returnToLobby(host, 23_000)).toEqual({ ok: true });
+      expect(room.start(host, 24_000)).toEqual({ ok: true });
+      room.expire(40_000);
+      room.next(host, 41_000);
+      room.expire(60_000);
+      room.next(host, 61_000);
+
+      const recap = recapOf(room, host, 61_000);
+      expect(recap).toHaveLength(2);
+      expect(recap.map((round) => round.answer)).toEqual([null, null]);
+      expect(recap.map((round) => round.correct)).toEqual([false, false]);
+    });
+  });
+
   it('adds up the points over the questions', () => {
     const { room, host, anna } = startedRoom();
     const q0 = answersFor(0);

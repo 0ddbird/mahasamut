@@ -222,6 +222,64 @@ describe('ConsonantClassPage', () => {
       expect(screen.getByText('You got 0 out of 5 right (0%).')).toBeDefined();
     });
 
+    it('lists the question on the results, with the right class', async () => {
+      render(
+        <ConsonantClassPage rng={seededRng(SEED)} settings={withSettings({ questionCount: 1 })} />,
+      );
+      await choose(WRONG_CLASS);
+      await userEvent.click(validateButton());
+      await userEvent.click(screen.getByRole('button', { name: 'See results' }));
+
+      const line = within(screen.getByRole('region', { name: 'Your answers' })).getByRole(
+        'listitem',
+      );
+      expect(line.textContent).toContain(FIRST.char);
+      expect(line.textContent).toContain(`Right answer: ${className(FIRST.consonantClass)}`);
+    });
+
+    it('lists each question with its own answer, the second one included', async () => {
+      const wrongClassOf = (consonant: Consonant): ConsonantClass =>
+        consonant.consonantClass === 'mid' ? 'low' : 'mid';
+      render(
+        <ConsonantClassPage rng={seededRng(SEED)} settings={withSettings({ questionCount: 2 })} />,
+      );
+      await choose(wrongClassOf(FIRST));
+      await userEvent.click(validateButton());
+      await userEvent.click(nextButton());
+      await choose(wrongClassOf(SECOND));
+      await userEvent.click(validateButton());
+      await userEvent.click(screen.getByRole('button', { name: 'See results' }));
+
+      const lines = within(screen.getByRole('region', { name: 'Your answers' })).getAllByRole(
+        'listitem',
+      );
+      [FIRST, SECOND].forEach((consonant, index) => {
+        const text = lines[index]?.textContent;
+        expect(text).toContain(consonant.char);
+        expect(text).toContain(`Your answer: ${className(wrongClassOf(consonant))}`);
+        expect(text).toContain(`Right answer: ${className(consonant.consonantClass)}`);
+      });
+    });
+
+    it('lists the question shown when the time ran out, without an answer', () => {
+      vi.useFakeTimers();
+      render(
+        <ConsonantClassPage
+          rng={seededRng(SEED)}
+          settings={withSettings({ questionCount: 1, secondsPerQuestion: 10 })}
+        />,
+      );
+      letTimeRunOut();
+      fireEvent.click(screen.getByRole('button', { name: 'See results' }));
+
+      const line = within(screen.getByRole('region', { name: 'Your answers' })).getByRole(
+        'listitem',
+      );
+      expect(line.textContent).toContain(FIRST.char);
+      expect(line.textContent).toContain("Time's up");
+      expect(line.textContent).not.toContain('Your answer');
+    });
+
     it('ends the game with End', async () => {
       render(<ConsonantClassPage rng={seededRng(SEED)} />);
       await userEvent.click(screen.getByRole('button', { name: 'End' }));

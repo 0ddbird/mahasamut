@@ -15,6 +15,7 @@ import { wordGroups } from '../../thai/words';
 import { wordSoundUrl } from '../../thai/words/sounds';
 import { GAME, GAME_NAMES } from '../shared/games';
 import { QuestionBar } from '../shared/QuestionBar';
+import { syllableEntry } from '../shared/recap';
 import { DEFAULT_SETTINGS } from '../shared/settings';
 import type { GameSettings } from '../shared/settings';
 import { Summary } from '../shared/Summary';
@@ -66,17 +67,23 @@ export function SyllablePage({
   const [answers, setAnswers] = useState<PlayerAnswers>(NO_ANSWERS);
   const mode = settings.answerMode;
 
-  const game = useSoloGame(settings, () => {
-    setSyllable(generateSyllable(rng, groups));
-    setAnswers(NO_ANSWERS);
-  });
+  const sound = soundOf(syllable.text);
+  const game = useSoloGame(
+    settings,
+    () => {
+      setSyllable(generateSyllable(rng, groups));
+      setAnswers(NO_ANSWERS);
+    },
+    // All the homographs of a word have the same tone.
+    (result) =>
+      syllableEntry(syllable.text, syllable.analyses[0].tone, answers.tone ?? null, result, sound),
+  );
 
   const check = () => checkAnswers(answers, syllable.analyses, syllable.parts.mark, mode);
   const checked = game.phase === 'checked';
   // Once checked, by Validate or by the end of the time, the rows show what the
   // player had chosen against the right answers.
   const result = checked ? check() : null;
-  const sound = soundOf(syllable.text);
 
   const validate = () => {
     if (!isComplete(answers, mode)) return;
@@ -89,7 +96,14 @@ export function SyllablePage({
     return (
       <main className={styles.page}>
         {title}
-        <Summary score={game.score} settings={settings} withAnswerMode onPlayAgain={game.restart} />
+        <Summary
+          score={game.score}
+          recap={game.recap}
+          settings={settings}
+          withAnswerMode
+          onPlayAgain={game.restart}
+          play={play}
+        />
       </main>
     );
   }

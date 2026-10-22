@@ -1,8 +1,13 @@
 import { useId } from 'react';
 import { Link } from 'react-router';
 import { Button } from '../../components/Button/Button';
+import { playSound } from '../../audio/playSound';
+import type { PlaySound } from '../../audio/playSound';
 import { GAME_NAMES } from '../../games/shared/games';
+import { Recap } from '../../games/shared/Recap';
+import { wordSoundUrl } from '../../thai/words/sounds';
 import type { RoomView } from '../protocol';
+import { roundEntry } from '../recap';
 import { Avatar } from './Avatar';
 import styles from './FinalScreen.module.scss';
 import { Ranking } from './Ranking';
@@ -10,6 +15,8 @@ import { Ranking } from './Ranking';
 interface FinalScreenProps {
   view: RoomView;
   onReturnToLobby?: () => void;
+  play?: PlaySound;
+  soundOf?: (text: string) => string | null;
 }
 
 /** Classic podium step order: 2nd on the left, 1st in the center, 3rd on the right. */
@@ -18,10 +25,15 @@ const PODIUM_STEPS = [2, 1, 3] as const;
 /**
  * The final screen of a multiplayer game: a 3-step visual podium (2nd – 1st –
  * 3rd) with avatars and nicknames (ties included), the full ranking with
- * avatar miniatures, a button for the host to bring everyone back to the lobby,
- * and a link back home.
+ * avatar miniatures, the recap of the player's own answers, a button for the
+ * host to bring everyone back to the lobby, and a link back home.
  */
-export function FinalScreen({ view, onReturnToLobby }: FinalScreenProps) {
+export function FinalScreen({
+  view,
+  onReturnToLobby,
+  play = playSound,
+  soundOf = wordSoundUrl,
+}: FinalScreenProps) {
   const podiumHeadingId = useId();
   const fullHeadingId = useId();
   const { phase } = view;
@@ -71,6 +83,7 @@ export function FinalScreen({ view, onReturnToLobby }: FinalScreenProps) {
         </h2>
         <Ranking entries={phase.ranking} />
       </section>
+      <Recap entries={phase.recap.map((round) => roundEntry(round, soundOf))} play={play} />
       {view.you.isHost && <Button onClick={() => onReturnToLobby?.()}>Back to lobby</Button>}
       <Link to="/" className={styles.homeLink}>
         Back to the home page

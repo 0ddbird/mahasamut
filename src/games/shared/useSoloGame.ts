@@ -5,10 +5,12 @@
  * A game only keeps its own question and the player's answers. It tells the
  * hook when the player validates (`check`); the hook counts the result, moves
  * on by itself after a right answer, waits for Next after a wrong one, and
- * asks the game for a new question (`onNewQuestion`) when one starts.
+ * asks the game for a new question (`onNewQuestion`) when one starts. It also
+ * keeps the list of the questions played, built with the game's `entryOf`.
  */
 import { useEffect, useRef, useState } from 'react';
 import { useGameEndInBar, useLeaveGuard } from '../../site/leaveGuard';
+import type { RecapEntry, RecapResult } from './recap';
 import { addResult, EMPTY_SCORE } from './score';
 import type { Score } from './score';
 import type { GameSettings } from './settings';
@@ -24,6 +26,8 @@ export interface SoloGame {
   /** The question shown, from 1. */
   questionNumber: number;
   score: Score;
+  /** The questions played, in order; one per question counted in the score. */
+  recap: readonly RecapEntry[];
   /** The time left to answer; null in free time, and once the question is checked. */
   remainingMs: number | null;
   /** The checked question ended because the time ran out. */
@@ -45,14 +49,21 @@ export interface SoloGame {
 /**
  * @param onNewQuestion called when a question starts after the first one: the
  *   game draws it and clears the answers.
+ * @param entryOf builds the line of the question being counted, from its
+ *   result and the answers the game holds at that moment.
  */
-export function useSoloGame(settings: GameSettings, onNewQuestion: () => void): SoloGame {
+export function useSoloGame(
+  settings: GameSettings,
+  onNewQuestion: () => void,
+  entryOf: (result: RecapResult) => RecapEntry,
+): SoloGame {
   const timeLimitMs =
     settings.secondsPerQuestion === null ? null : settings.secondsPerQuestion * 1000;
 
   const [phase, setPhase] = useState<SoloPhase>('answering');
   const [questionNumber, setQuestionNumber] = useState(1);
   const [score, setScore] = useState(EMPTY_SCORE);
+  const [recap, setRecap] = useState<readonly RecapEntry[]>([]);
   const [remainingMs, setRemainingMs] = useState<number | null>(timeLimitMs);
   const [timedOut, setTimedOut] = useState(false);
   const [correct, setCorrect] = useState(false);
@@ -68,12 +79,22 @@ export function useSoloGame(settings: GameSettings, onNewQuestion: () => void): 
     onNewQuestionRef.current = onNewQuestion;
   });
 
+  // The latest `entryOf`, which reads the answers of the question being counted,
+  // also for the timer started with an older render.
+  const entryOfRef = useRef(entryOf);
+  useEffect(() => {
+    entryOfRef.current = entryOf;
+  });
+
   const isLast = settings.questionCount !== null && questionNumber >= settings.questionCount;
 
   const finishQuestion = (right: boolean, timeUp: boolean) => {
     if (!answering.current) return;
     answering.current = false;
+    // Counted with the score, under the same guard, so that they never diverge.
+    const entry = entryOfRef.current(timeUp ? 'timeUp' : right ? 'right' : 'wrong');
     setScore((current) => addResult(current, right));
+    setRecap((current) => [...current, entry]);
     setCorrect(right);
     setTimedOut(timeUp);
     setRemainingMs(null);
@@ -134,6 +155,7 @@ export function useSoloGame(settings: GameSettings, onNewQuestion: () => void): 
 
   const restart = () => {
     setScore(EMPTY_SCORE);
+    setRecap([]);
     setQuestionNumber(1);
     startQuestion();
   };
@@ -142,6 +164,7 @@ export function useSoloGame(settings: GameSettings, onNewQuestion: () => void): 
     phase,
     questionNumber,
     score,
+    recap,
     remainingMs,
     timedOut,
     correct,

@@ -12,6 +12,7 @@ import type {
   GameAnswer,
   PhaseView,
   RankingEntry,
+  RecapRoundView,
   RoomView,
   RoundResultView,
 } from '../src/multiplayer/protocol';
@@ -73,6 +74,13 @@ export class Room {
   private readonly players: Player[] = [];
   private readonly byToken = new Map<string, Player>();
   private questions: ServerQuestion[] = [];
+  /**
+   * What every player did on each closed question, by question index, so the
+   * final screen can recap the game. Kept in memory only, never logged or
+   * written anywhere, and emptied when a game starts or the room returns to
+   * the lobby.
+   */
+  private roundResults: Map<string, RoundResultView>[] = [];
   private phase: InternalPhase = { kind: 'lobby' };
   private activityAt: number;
 
@@ -262,6 +270,7 @@ export class Room {
       p.score = 0;
     }
     this.questions = [];
+    this.roundResults = [];
     this.phase = { kind: 'lobby' };
     this.activityAt = now;
     return { ok: true };
@@ -274,6 +283,7 @@ export class Room {
     if (this.phase.kind !== 'lobby') return { ok: false, error: 'wrong-phase' };
 
     this.questions = SERVER_GAMES[this.settings.game].drawQuestions(this.settings, this.rng);
+    this.roundResults = [];
     this.openQuestion(0, now);
     this.activityAt = now;
     return { ok: true };
@@ -385,6 +395,7 @@ export class Room {
       results.set(player.token, { answer: sub.answer, correct, points });
     }
 
+    this.roundResults[index] = results;
     this.phase = { kind: 'results', index, results };
   }
 
@@ -428,6 +439,20 @@ export class Room {
     return {
       kind: 'finished',
       ranking: this.rankingFor(token),
+      recap: this.recapFor(token),
     };
+  }
+
+  /** One entry per question of the game, with only this player's own result. */
+  private recapFor(token: string): RecapRoundView[] {
+    return this.questions.map((q, index) => {
+      const own = this.roundResults[index]?.get(token);
+      return {
+        question: q.view,
+        reveal: q.reveal,
+        answer: own?.answer ?? null,
+        correct: own?.correct ?? false,
+      };
+    });
   }
 }
