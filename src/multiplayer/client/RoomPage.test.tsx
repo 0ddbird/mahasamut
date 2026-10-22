@@ -80,7 +80,8 @@ describe('RoomPage', () => {
       fake.push('room:state', LOBBY_VIEW);
     });
 
-    expect(screen.getByText('Lobby K7P2QX')).toBeDefined();
+    expect(screen.getByRole('region', { name: 'Invite friends' })).toBeDefined();
+    expect(screen.getByText('K7P2QX')).toBeDefined();
     expect(screen.getByRole('button', { name: 'Start' })).toBeDefined();
   });
 

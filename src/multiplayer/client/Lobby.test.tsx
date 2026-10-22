@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { GAME, GAME_SAMPLES } from '../../games/shared/games';
 import type { RoomView } from '../protocol';
 import { Lobby } from './Lobby';
 
@@ -23,14 +24,18 @@ const BASE_VIEW: RoomView = {
 };
 
 describe('Lobby', () => {
-  it('lets the host edit the game and settings live, while guests see the compact summary', async () => {
+  it('shows all three Thai game tiles to everyone, letting the host switch games and settings', async () => {
     const onUpdateSettings = vi.fn();
     const { rerender } = render(
       <Lobby view={BASE_VIEW} onStart={() => {}} onUpdateSettings={onUpdateSettings} />,
     );
 
     const gameGroup = screen.getByRole('group', { name: 'Game' });
-    await userEvent.click(within(gameGroup).getByRole('radio', { name: 'Vowel sounds' }));
+    expect(within(gameGroup).getByText(GAME_SAMPLES[GAME.Vowel])).toBeDefined();
+    expect(within(gameGroup).getByText(GAME_SAMPLES[GAME.ConsonantClass])).toBeDefined();
+    expect(within(gameGroup).getByText(GAME_SAMPLES[GAME.Syllable])).toBeDefined();
+
+    await userEvent.click(within(gameGroup).getByRole('radio', { name: /Vowel sounds/ }));
     expect(onUpdateSettings).toHaveBeenCalledWith({
       game: 'vowel',
       questionCount: 10,
@@ -55,10 +60,22 @@ describe('Lobby', () => {
         onStart={() => {}}
       />,
     );
+    expect(
+      within(screen.getByRole('group', { name: 'Game' })).getByText(GAME_SAMPLES[GAME.Vowel]),
+    ).toBeDefined();
     const settings = screen.getByRole('region', { name: 'Settings' });
     expect(within(settings).getByText('10 questions')).toBeDefined();
     expect(within(settings).getByText('15 s per question')).toBeDefined();
     expect(within(settings).getByText('Tone only')).toBeDefined();
+  });
+
+  it('shows Invite friends with the lobby code and confirms when the link is copied', async () => {
+    render(<Lobby view={BASE_VIEW} onStart={() => {}} />);
+
+    const invite = screen.getByRole('region', { name: 'Invite friends' });
+    expect(within(invite).getByText('K7P2QX')).toBeDefined();
+    await userEvent.click(within(invite).getByRole('button', { name: 'Copy the link' }));
+    expect(within(invite).getByRole('button', { name: '✓ Link copied!' })).toBeDefined();
   });
 
   it('lets only the host start', async () => {
