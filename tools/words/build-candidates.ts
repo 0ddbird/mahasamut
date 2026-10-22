@@ -58,9 +58,17 @@ function parseCsvLine(line: string): string[] {
   return fields;
 }
 
-/** The lines of a CSV after its header, without blank lines. */
+/**
+ * The byte order mark that opens the CSV. Excel reads a UTF-8 CSV without it
+ * as ANSI and garbles the Thai, and a CSV saved from it with a BOM would match
+ * no word of the next merge if the mark were left on the first field.
+ */
+const BOM = '﻿';
+
+/** The lines of a CSV after its header, without blank lines, a leading BOM ignored. */
 function bodyLines(csv: string | null): string[] {
   return (csv ?? '')
+    .replace(/^﻿/, '')
     .split(/\r?\n/)
     .slice(1)
     .filter((line) => line !== '');
@@ -85,7 +93,8 @@ export function orphanedAnswerRows(
  * The CSV of the level 2 candidates, one row each, with the `exists` answers
  * of the previous CSV (if any) kept next to their words. A new word gets an
  * empty answer. A row with an answer whose word has left level 2 is never
- * erased: it stays, unchanged, after the current rows.
+ * erased: it stays, unchanged, after the current rows. The text starts with a
+ * BOM, whether or not the previous CSV had one.
  */
 export function mergeCorpusCsv(previous: string | null, level2: readonly Candidate[]): string {
   const answers = new Map<string, string>();
@@ -106,7 +115,7 @@ export function mergeCorpusCsv(previous: string | null, level2: readonly Candida
       .map(csvField)
       .join(','),
   );
-  return [CSV_HEADER, ...rows, ...orphanedAnswerRows(previous, level2)].join('\n') + '\n';
+  return BOM + [CSV_HEADER, ...rows, ...orphanedAnswerRows(previous, level2)].join('\n') + '\n';
 }
 
 export interface BuildOptions {

@@ -7,6 +7,8 @@ import type { Candidate } from './candidates';
 import { wordId } from './ids';
 
 const HEADER = 'word,frequency,tone_case,tone,link,exists';
+/** Excel opens a UTF-8 CSV as ANSI, garbling the Thai, unless it starts with this. */
+const BOM = '﻿';
 
 /** A level 2 candidate, with only what the CSV shows filled in properly. */
 function level2(text: string, frequency = 7): Candidate {
@@ -25,8 +27,34 @@ function level2(text: string, frequency = 7): Candidate {
 describe('mergeCorpusCsv', () => {
   it('writes the header, then one row per word with an empty answer', () => {
     expect(mergeCorpusCsv(null, [level2('อั๊ว', 12)])).toBe(
-      `${HEADER}\nอั๊ว,12,mid dead short trii,high,https://en.wiktionary.org/wiki/อั๊ว,\n`,
+      `${BOM}${HEADER}\nอั๊ว,12,mid dead short trii,high,https://en.wiktionary.org/wiki/อั๊ว,\n`,
     );
+  });
+
+  it('starts with one BOM, so that Excel reads the Thai as UTF-8', () => {
+    expect(mergeCorpusCsv(null, [level2('อั๊ว')]).startsWith(`${BOM}${HEADER}\n`)).toBe(true);
+    expect(mergeCorpusCsv(null, [])).toBe(`${BOM}${HEADER}\n`);
+  });
+
+  it('keeps the answers of a CSV that Excel saved: a BOM, CRLF line ends', () => {
+    const previous =
+      `${BOM}${HEADER}\r\n` +
+      'อั๊ว,12,mid dead short trii,high,https://en.wiktionary.org/wiki/อั๊ว,yes\r\n' +
+      'ก๊อ,9,mid dead short trii,high,https://en.wiktionary.org/wiki/ก๊อ,no\r\n';
+    const current = [level2('อั๊ว', 12)];
+
+    const merged = mergeCorpusCsv(previous, current);
+
+    expect(merged.startsWith(`${BOM}${HEADER}\n`)).toBe(true);
+    expect(merged.indexOf(BOM, 1)).toBe(-1);
+    expect(merged.trimEnd().split('\n')).toEqual([
+      `${BOM}${HEADER}`,
+      'อั๊ว,12,mid dead short trii,high,https://en.wiktionary.org/wiki/อั๊ว,yes',
+      'ก๊อ,9,mid dead short trii,high,https://en.wiktionary.org/wiki/ก๊อ,no',
+    ]);
+    expect(orphanedAnswerRows(previous, current)).toEqual([
+      'ก๊อ,9,mid dead short trii,high,https://en.wiktionary.org/wiki/ก๊อ,no',
+    ]);
   });
 
   it('keeps the answers already given, and leaves the new words empty', () => {
@@ -56,7 +84,7 @@ describe('mergeCorpusCsv', () => {
     expect(orphanedAnswerRows(previous, current)).toEqual([answered]);
     // The unanswered rows of words that left are dropped, the answered one stays.
     expect(mergeCorpusCsv(previous, current)).toBe(
-      `${HEADER}\nตั๊ว,7,mid dead short trii,high,https://en.wiktionary.org/wiki/ตั๊ว,\n${answered}\n`,
+      `${BOM}${HEADER}\nตั๊ว,7,mid dead short trii,high,https://en.wiktionary.org/wiki/ตั๊ว,\n${answered}\n`,
     );
   });
 
@@ -100,7 +128,10 @@ describe('buildCandidates', () => {
     expect(written.candidates.filter((c) => c.level === 1)).toHaveLength(counts.level1);
     expect(written.candidates.filter((c) => c.level === 2)).toHaveLength(counts.level2);
     const csv = readFileSync(join(outDir, 'corpus-check.csv'), 'utf8');
-    expect(csv.startsWith(`${HEADER}\n`)).toBe(true);
+    expect(csv.startsWith(`${BOM}${HEADER}\n`)).toBe(true);
+    expect(readFileSync(join(outDir, 'corpus-check.csv')).subarray(0, 3)).toEqual(
+      Buffer.from([0xef, 0xbb, 0xbf]),
+    );
     expect(csv.trimEnd().split('\n')).toHaveLength(counts.level2 + 1);
 
     expect(buildCandidates({ outDir, force: true })).toEqual(counts);
@@ -128,5 +159,24 @@ describe('buildCandidates', () => {
     expect(after).toHaveLength(level2 + 2);
     expect(after[1]!.endsWith(',no')).toBe(true);
     expect(after.at(-1)).toBe(gone);
+  });
+
+  it('keeps the answers of a CSV saved with a BOM, and writes one BOM again', () => {
+    const outDir = tempDir();
+    buildCandidates({ outDir, force: false });
+    const csvFile = join(outDir, 'corpus-check.csv');
+
+    // The file is already BOM-led; a spreadsheet saves it back with CRLF line ends.
+    const rows = readFileSync(csvFile, 'utf8').trimEnd().split('\n');
+    expect(rows[0]!.startsWith(BOM)).toBe(true);
+    rows[1] += 'yes';
+    writeFileSync(csvFile, rows.join('\r\n') + '\r\n');
+
+    buildCandidates({ outDir, force: true });
+
+    const after = readFileSync(csvFile, 'utf8');
+    expect(after.startsWith(`${BOM}${HEADER}\n`)).toBe(true);
+    expect(after.indexOf(BOM, 1)).toBe(-1);
+    expect(after.split('\n')[1]!.endsWith(',yes')).toBe(true);
   });
 });
