@@ -9,7 +9,7 @@ if (!KEY) {
   console.error('Set GOOGLE_TTS_API_KEY first.');
   process.exit(1);
 }
-const OUT = process.argv[2] ?? join(process.env.HOME, 'code/wannayuk/.superpowers/tts-sample');
+const OUT = process.argv[2] ?? join(process.env.HOME, 'code/mahasamut/.superpowers/tts-sample');
 const API = 'https://texttospeech.googleapis.com/v1';
 
 // Each sound: its IPA, the text the game reads today (the vowel on อ), and
