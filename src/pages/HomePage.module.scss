@@ -1,8 +1,8 @@
-// From this width, the tiles stand side by side.
-$two-columns: 40rem;
+// From this width, the three tiles stand side by side, on one row.
+$one-row: 40rem;
 
 .page {
-  max-width: 48rem;
+  max-width: 60rem;
   margin: 0 auto;
   padding: var(--space-l) var(--space-m);
   text-align: center;
@@ -27,8 +27,8 @@ $two-columns: 40rem;
   padding: 0;
   list-style: none;
 
-  @media (min-width: $two-columns) {
-    grid-template-columns: 1fr 1fr;
+  @media (min-width: $one-row) {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 

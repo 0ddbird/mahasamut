@@ -26,10 +26,13 @@ describe('HomePage', () => {
     expect(within(tile).getByText(/^Find .+\.$/)).toBeDefined();
   });
 
-  it('lists the consonant class game first: the classes come before the tones', () => {
+  it('lists the vowels, then the consonant classes, then the tone of a syllable', () => {
     renderHome();
-    const [first] = screen.getAllByRole('link');
-    expect(first?.getAttribute('href')).toBe(GAME_PATHS[GAME.ConsonantClass]);
+    expect(screen.getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual([
+      GAME_PATHS[GAME.Vowel],
+      GAME_PATHS[GAME.ConsonantClass],
+      GAME_PATHS[GAME.Syllable],
+    ]);
   });
 
   it('has no navigation bar: the logo is the way home', () => {

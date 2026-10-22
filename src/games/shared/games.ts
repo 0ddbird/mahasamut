@@ -4,14 +4,14 @@
  * from GAME_NAMES, so that a game can be renamed in one place.
  *
  * In the order the site lists them, from the letters to the syllable: the
- * consonant classes and the vowels come first, since the tone of a syllable
- * starts from them.
+ * vowels, then the consonant classes, since the tone of a syllable starts
+ * from them.
  */
 export const GAME = {
-  /** Read a consonant and find its class. */
-  ConsonantClass: 'consonantClass',
   /** Read a vowel and find how it sounds. */
   Vowel: 'vowel',
+  /** Read a consonant and find its class. */
+  ConsonantClass: 'consonantClass',
   /** Read a syllable and find its tone, step by step. */
   Syllable: 'syllable',
 } as const;
