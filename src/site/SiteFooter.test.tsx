@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it } from 'vitest';
 import App from '../App';
 import { GAME, GAME_PATHS } from '../games/shared/games';
+import { KOFI_LABEL } from './support';
 
 const renderAt = (path: string) =>
   render(
@@ -31,6 +32,13 @@ describe('SiteFooter', () => {
     expect(footer().getByRole('link', { name: 'About' }).getAttribute('href')).toBe('/about');
   });
 
+  it('links to the contact page between About and Ko-fi', () => {
+    renderAt('/');
+    const links = footer().getAllByRole('link');
+    expect(links.map((link) => link.textContent)).toEqual(['About', 'Contact', KOFI_LABEL]);
+    expect(footer().getByRole('link', { name: 'Contact' }).getAttribute('href')).toBe('/contact');
+  });
+
   // Ko-fi opens in a new tab: the game in this one is not lost.
   it('links to Ko-fi in a new tab', () => {
     renderAt('/');
@@ -50,5 +58,17 @@ describe('SiteFooter', () => {
     expect(screen.getByRole('alertdialog', { name: 'Leave the game?' })).toBeDefined();
     await userEvent.click(screen.getByRole('button', { name: 'Leave' }));
     expect(screen.getByRole('heading', { level: 1, name: 'About Mahasamut' })).toBeDefined();
+  });
+
+  it('asks before leaving a game for the contact page, like the logo', async () => {
+    renderAt(`${GAME_PATHS[GAME.ConsonantClass]}/play`);
+    const row = within(screen.getByRole('group', { name: 'Consonant class' }));
+    await userEvent.click(row.getByRole('radio', { name: 'High' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Validate' }));
+
+    await userEvent.click(footer().getByRole('link', { name: 'Contact' }));
+    expect(screen.getByRole('alertdialog', { name: 'Leave the game?' })).toBeDefined();
+    await userEvent.click(screen.getByRole('button', { name: 'Leave' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Contact' })).toBeDefined();
   });
 });

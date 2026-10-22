@@ -4,9 +4,10 @@ import { KOFI_LABEL, KOFI_URL } from './support';
 import styles from './SiteFooter.module.scss';
 
 /**
- * The foot of every page, quiet under it: the about page, the support page on
- * Ko-fi, and the copyright. Like the bar's links, About asks first during a
- * game; Ko-fi opens in a new tab, where the game is not lost.
+ * The foot of every page, quiet under it: the about page, the contact page, the
+ * support page on Ko-fi, and the copyright. Like the bar's links, About and
+ * Contact ask first during a game; Ko-fi opens in a new tab, where the game is
+ * not lost.
  */
 export function SiteFooter() {
   const leaveLink = useLeaveLink();
@@ -16,6 +17,11 @@ export function SiteFooter() {
         <li>
           <Link to="/about" onClick={leaveLink('/about')}>
             About
+          </Link>
+        </li>
+        <li>
+          <Link to="/contact" onClick={leaveLink('/contact')}>
+            Contact
           </Link>
         </li>
         <li>

@@ -1,0 +1,69 @@
+// A column of text, like the about page, with a form in it.
+.page {
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: var(--space-m);
+  line-height: 1.6;
+
+  a {
+    color: var(--color-accent-light);
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-m);
+
+  label {
+    font-weight: 700;
+  }
+}
+
+.input {
+  padding: var(--space-s);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  background: transparent;
+  font: inherit;
+
+  &[aria-invalid='true'] {
+    border-color: var(--color-wrong);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent-light);
+    outline-offset: 2px;
+  }
+}
+
+textarea.input {
+  resize: vertical;
+}
+
+.error,
+.notice {
+  margin: 0;
+  color: var(--color-wrong);
+}
+
+.notice {
+  margin-bottom: var(--space-m);
+}
+
+// Out of sight and out of reach, but still on the page, so that robots fill it in.
+.trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.privacy {
+  margin-top: var(--space-m);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
