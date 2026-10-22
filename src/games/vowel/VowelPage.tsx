@@ -1,4 +1,3 @@
-import { Volume2 } from 'lucide-react';
 import { useState } from 'react';
 import { playSound } from '../../audio/playSound';
 import type { PlaySound } from '../../audio/playSound';
@@ -6,6 +5,7 @@ import { AnswerRow } from '../../components/AnswerRow/AnswerRow';
 import type { Option } from '../../components/AnswerRow/option';
 import { Button } from '../../components/Button/Button';
 import { HelpPanels } from '../../components/HelpPanels/HelpPanels';
+import { ListenButton } from '../../components/ListenButton/ListenButton';
 import { ThaiDisplay } from '../../components/ThaiDisplay/ThaiDisplay';
 import { Verdict } from '../../components/Verdict/Verdict';
 import { VOWELS_PANEL } from '../../help/panels';
@@ -115,18 +115,7 @@ export function VowelPage({
           onEnd={game.end}
         />
         <ThaiDisplay text={vowelOnCarrier(vowel)} />
-        {/* Always there, hidden until the check: appearing would push the
-            answers down just as the correction shows. Hidden this way, it is
-            out of the tab order and of what screen readers say. */}
-        <button
-          type="button"
-          className={styles.listen}
-          style={{ visibility: checked ? 'visible' : 'hidden' }}
-          onClick={() => play(vowelSoundUrl(vowel.id))}
-        >
-          <Volume2 size={18} aria-hidden="true" />
-          Listen
-        </button>
+        <ListenButton visible={checked} onClick={() => play(vowelSoundUrl(vowel.id))} />
         <div className={styles.answer}>
           <AnswerRow
             title="Sound"
