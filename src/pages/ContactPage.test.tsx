@@ -196,6 +196,11 @@ describe('ContactPage', () => {
     expect(trap.getAttribute('name')).toBe('website');
     expect(trap.getAttribute('tabindex')).toBe('-1');
     expect(trap.getAttribute('autocomplete')).toBe('off');
+    // Password managers that ignore autocomplete="off" honour these.
+    expect(trap.hasAttribute('data-1p-ignore')).toBe(true);
+    expect(trap.getAttribute('data-lpignore')).toBe('true');
+    expect(trap.hasAttribute('data-bwignore')).toBe(true);
+    expect(trap.getAttribute('data-form-type')).toBe('other');
     expect(trap.closest('[aria-hidden="true"]')).not.toBeNull();
   });
 

@@ -150,6 +150,11 @@ export function ContactPage() {
             type="text"
             tabIndex={-1}
             autoComplete="off"
+            // Password managers that ignore autocomplete="off" honour these.
+            data-1p-ignore
+            data-lpignore="true"
+            data-bwignore
+            data-form-type="other"
             value={website}
             onChange={(event) => setWebsite(event.target.value)}
           />
