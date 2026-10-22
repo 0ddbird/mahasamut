@@ -231,4 +231,27 @@ describe('createContactHandler', () => {
       expect(text).not.toContain(secret);
     }
   });
+
+  it('records outcomes in metrics collaborator when provided', async () => {
+    const outcomes: string[] = [];
+    const metricsHandler = createContactHandler({
+      origin: ORIGIN,
+      to: OWNER,
+      limits: createLimits(() => 0),
+      send: () => Promise.resolve({ ok: true, via: 'primary' }),
+      log: () => {},
+      metrics: {
+        recordContactOutcome(outcome) {
+          outcomes.push(outcome);
+        },
+      },
+    });
+
+    await metricsHandler(request({}, { ...valid, website: 'bot' }));
+    await metricsHandler(request({}, { ...valid, elapsedMs: 1 }));
+    await metricsHandler(request({}, { ...valid, email: 'bad' }));
+    await metricsHandler(request());
+
+    expect(outcomes).toEqual(['fake_ok', 'fake_ok', 'invalid', 'sent']);
+  });
 });

@@ -119,6 +119,20 @@ export class Room {
     return this.phase.kind === 'question' ? this.phase.deadline : null;
   }
 
+  get phaseKind(): 'lobby' | 'playing' | 'finished' {
+    if (this.phase.kind === 'lobby') return 'lobby';
+    if (this.phase.kind === 'finished') return 'finished';
+    return 'playing';
+  }
+
+  get connectedPlayers(): number {
+    return this.players.filter((p) => p.connections > 0).length;
+  }
+
+  get activePlayerCount(): number {
+    return this.activePlayers().length;
+  }
+
   get status(): 'open' | 'started' | 'full' {
     if (this.phase.kind !== 'lobby') return 'started';
     if (this.activePlayers().length >= MAX_PLAYERS_PER_ROOM) return 'full';

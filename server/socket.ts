@@ -4,6 +4,7 @@
  * and sweeps idle rooms.
  */
 import type { Server, Socket } from 'socket.io';
+import type { GameId } from '../src/games/shared/games';
 import type { ClientToServerEvents, ServerToClientEvents } from '../src/multiplayer/protocol';
 import { normalizePseudo } from '../src/multiplayer/pseudo';
 import { normalizeRoomId } from '../src/multiplayer/roomId';
@@ -32,11 +33,25 @@ type RoomSocket = Socket<
   SocketData
 >;
 
+export interface AttachRoomsMetrics {
+  recordRoomCreated(hasPassword: boolean, now?: number): void;
+  recordMultiGameStarted(game: GameId, playerCount: number, now?: number): void;
+  recordMultiGameFinished(game: GameId, now?: number): void;
+  recordMultiBackToLobby(now?: number): void;
+}
+
+export interface AttachRoomsOptions {
+  now?: () => number;
+  metrics?: AttachRoomsMetrics;
+}
+
 export function attachRooms(
   io: RoomServer,
   registry: RoomRegistry,
-  now: () => number = Date.now,
+  optionsOrNow: (() => number) | AttachRoomsOptions = Date.now,
 ): { sweep(): void; close(): void } {
+  const now = typeof optionsOrNow === 'function' ? optionsOrNow : (optionsOrNow.now ?? Date.now);
+  const metrics = typeof optionsOrNow === 'function' ? undefined : optionsOrNow.metrics;
   const timers = new Map<string, ReturnType<typeof setTimeout>>();
 
   function clearRoomTimer(roomId: string): void {
@@ -64,7 +79,11 @@ export function attachRooms(
     const delayMs = Math.max(0, deadline - now());
     const timer = setTimeout(() => {
       timers.delete(room.id);
+      const prevPhase = room.phaseKind;
       if (room.expire(now())) {
+        if (prevPhase !== 'finished' && room.phaseKind === 'finished') {
+          metrics?.recordMultiGameFinished(room.settings.game, now());
+        }
         broadcastRoom(room);
       }
     }, delayMs);
@@ -123,6 +142,7 @@ export function attachRooms(
           ack(created);
           return;
         }
+        metrics?.recordRoomCreated(settings.password !== null, now());
         attachSocket(socket, created.room, created.token);
         ack({ ok: true, roomId: created.room.id, token: created.token });
       } catch {
@@ -262,6 +282,7 @@ export function attachRooms(
         }
         const outcome = room.start(token, now());
         if (outcome.ok) {
+          metrics?.recordMultiGameStarted(room.settings.game, room.activePlayerCount, now());
           syncRoomTimer(room);
           broadcastRoom(room);
         }
@@ -280,8 +301,12 @@ export function attachRooms(
           ack({ ok: false, error: 'not-in-room' });
           return;
         }
+        const prevPhase = room.phaseKind;
         const outcome = room.answer(token, answer, now());
         if (outcome.ok || outcome.error === 'too-late') {
+          if (prevPhase !== 'finished' && room.phaseKind === 'finished') {
+            metrics?.recordMultiGameFinished(room.settings.game, now());
+          }
           syncRoomTimer(room);
           broadcastRoom(room);
         }
@@ -300,8 +325,12 @@ export function attachRooms(
           ack({ ok: false, error: 'not-in-room' });
           return;
         }
+        const prevPhase = room.phaseKind;
         const outcome = room.next(token, now());
         if (outcome.ok) {
+          if (prevPhase !== 'finished' && room.phaseKind === 'finished') {
+            metrics?.recordMultiGameFinished(room.settings.game, now());
+          }
           syncRoomTimer(room);
           broadcastRoom(room);
         }
@@ -322,6 +351,7 @@ export function attachRooms(
         }
         const outcome = room.returnToLobby(token, now());
         if (outcome.ok) {
+          metrics?.recordMultiBackToLobby(now());
           syncRoomTimer(room);
           broadcastRoom(room);
         }

@@ -6,12 +6,11 @@ import { defineConfig } from 'vite';
 export default defineConfig(({ isSsrBuild }) => ({
   plugins: [react()],
   server: {
-    // In development, /api/contact goes to the contact service (port 3002) and
-    // /socket.io goes to the multiplayer room server (port 3001).
+    // In development, /api (contact, event) and /socket.io go to the unified server (port 3002).
     proxy: {
       '/api': 'http://127.0.0.1:3002',
       '/socket.io': {
-        target: 'http://127.0.0.1:3001',
+        target: 'http://127.0.0.1:3002',
         ws: true,
       },
     },
@@ -22,7 +21,7 @@ export default defineConfig(({ isSsrBuild }) => ({
     noExternal: true,
   },
   build: {
-    // The SSR build bundles the contact service: it has no use for the public folder.
+    // The SSR build bundles the unified server: it has no use for the public folder.
     copyPublicDir: !isSsrBuild,
     // The main chunk is just over Vite's default 500 kB since it bundles the
     // pool of real words for Find the tone (about 55 kB). Splitting the routes

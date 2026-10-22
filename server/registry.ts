@@ -48,6 +48,30 @@ export class RoomRegistry {
     return removed;
   }
 
+  counts(): { lobby: number; playing: number; finished: number; connectedPlayers: number } {
+    let lobby = 0;
+    let playing = 0;
+    let finished = 0;
+    let connectedPlayers = 0;
+
+    for (const room of this.rooms.values()) {
+      switch (room.phaseKind) {
+        case 'lobby':
+          lobby++;
+          break;
+        case 'playing':
+          playing++;
+          break;
+        case 'finished':
+          finished++;
+          break;
+      }
+      connectedPlayers += room.connectedPlayers;
+    }
+
+    return { lobby, playing, finished, connectedPlayers };
+  }
+
   get size(): number {
     return this.rooms.size;
   }

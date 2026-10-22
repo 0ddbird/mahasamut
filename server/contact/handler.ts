@@ -41,6 +41,12 @@ export interface ContactHandlerDeps {
   send: (mail: Mail) => Promise<DeliverResult>;
   /** Receives one line per decision, never the content, the addresses or the IP. */
   log: (line: string) => void;
+  metrics?: {
+    recordContactOutcome(
+      outcome: 'sent' | 'fake_ok' | 'rate_limited' | 'invalid' | 'error',
+      now?: number,
+    ): void;
+  };
 }
 
 /** The body as a payload, or undefined when it is not JSON or a field has the wrong type. */
@@ -80,7 +86,7 @@ function refused(status: number): ContactResponse {
 export function createContactHandler(
   deps: ContactHandlerDeps,
 ): (request: ContactRequest) => Promise<ContactResponse> {
-  const { origin, to, limits, send, log } = deps;
+  const { origin, to, limits, send, log, metrics } = deps;
 
   return async (request) => {
     if (request.method !== 'POST') return refused(405);
@@ -91,16 +97,19 @@ export function createContactHandler(
 
     if (payload.website !== '') {
       log('contact: dropped (honeypot)');
+      metrics?.recordContactOutcome('fake_ok');
       return { status: 200, reply: { result: 'sent' } };
     }
     if (payload.elapsedMs < MIN_ELAPSED_MS) {
       log('contact: dropped (too fast)');
+      metrics?.recordContactOutcome('fake_ok');
       return { status: 200, reply: { result: 'sent' } };
     }
 
     const reservation = limits.reserve(ipKey(request.ip));
     if (typeof reservation === 'string') {
       log(`contact: limited (${reservation})`);
+      metrics?.recordContactOutcome('rate_limited');
       return { status: 429, reply: { result: 'limited', scope: reservation } };
     }
 
@@ -109,6 +118,7 @@ export function createContactHandler(
     if (invalid.length > 0) {
       reservation.cancel();
       log(`contact: invalid (${invalid.join(',')})`);
+      metrics?.recordContactOutcome('invalid');
       return { status: 400, reply: { result: 'invalid', fields } };
     }
 
@@ -116,10 +126,12 @@ export function createContactHandler(
     if (!result.ok) {
       reservation.cancel();
       log(`contact: failed (${result.codes.join(', ')})`);
+      metrics?.recordContactOutcome('error');
       return { status: 502, reply: { result: 'failed' } };
     }
 
     log(`contact: sent via ${result.via}`);
+    metrics?.recordContactOutcome('sent');
     return { status: 200, reply: { result: 'sent' } };
   };
 }

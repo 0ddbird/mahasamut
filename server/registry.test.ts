@@ -68,4 +68,25 @@ describe('RoomRegistry', () => {
     expect(registry.get(id)).toBeUndefined();
     expect(registry.size).toBe(0);
   });
+
+  it('reports counts of rooms by phase and connected players', () => {
+    const registry = new RoomRegistry(seededRng(5));
+    expect(registry.counts()).toEqual({
+      lobby: 0,
+      playing: 0,
+      finished: 0,
+      connectedPlayers: 0,
+    });
+
+    const created1 = registry.create(SETTINGS, 'Host', 0);
+    if (!created1.ok) throw new Error('creation failed');
+    created1.room.connect(created1.token, 0);
+
+    expect(registry.counts()).toEqual({
+      lobby: 1,
+      playing: 0,
+      finished: 0,
+      connectedPlayers: 1,
+    });
+  });
 });
