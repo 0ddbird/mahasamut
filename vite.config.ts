@@ -3,9 +3,15 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ isSsrBuild }) => ({
   plugins: [react()],
+  server: {
+    // The contact service (npm run dev:server) answers /api/contact in development.
+    proxy: { '/api': 'http://127.0.0.1:3001' },
+  },
   build: {
+    // The SSR build bundles the contact service: it has no use for the public folder.
+    copyPublicDir: !isSsrBuild,
     // The main chunk is just over Vite's default 500 kB since it bundles the
     // pool of real words for Find the tone (about 55 kB). Splitting the routes
     // into their own chunks is left for later.
@@ -35,4 +41,4 @@ export default defineConfig({
       },
     ],
   },
-});
+}));
