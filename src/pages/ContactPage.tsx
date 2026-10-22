@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link } from 'react-router';
 import { Button } from '../components/Button/Button';
@@ -50,6 +50,13 @@ export function ContactPage() {
   // Set at once on submit, before the button is disabled by the next render.
   const busy = useRef(false);
   const baseId = useId();
+  const thanksRef = useRef<HTMLParagraphElement>(null);
+
+  // The form and its focused button are gone once the thanks shows: move focus
+  // to the thanks, so a screen reader reads it out.
+  useEffect(() => {
+    if (sentTo !== null) thanksRef.current?.focus();
+  }, [sentTo]);
 
   const errors: ContactErrors = attempted ? { ...checkContact(draft), ...serviceErrors } : {};
 
@@ -92,7 +99,9 @@ export function ContactPage() {
     return (
       <main className={styles.page}>
         <h1>Contact</h1>
-        <p>Thanks, your message is on its way. I&apos;ll reply to {sentTo}.</p>
+        <p ref={thanksRef} role="status" tabIndex={-1}>
+          Thanks, your message is on its way. I&apos;ll reply to {sentTo}.
+        </p>
         <p>
           <Link to="/">Back to home</Link>
         </p>

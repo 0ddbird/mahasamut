@@ -126,6 +126,18 @@ describe('ContactPage', () => {
     expect(page().queryByLabelText('Message')).toBeNull();
   });
 
+  it('announces the thanks and moves focus to it', async () => {
+    answers(SENT);
+    renderContact();
+    await fill();
+    await send();
+
+    const thanks = await page().findByText(/Thanks, your message is on its way/);
+    const status = thanks.closest('[role="status"]');
+    expect(status).not.toBeNull();
+    expect(document.activeElement).toBe(status);
+  });
+
   it.each([
     ['ip', "You've already sent a few messages. Please try again later."],
     ['site', 'Too many messages today. Please try again tomorrow.'],
