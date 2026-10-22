@@ -1,4 +1,7 @@
 .summary {
+  // The page centres its children and shrinks them to their content: the
+  // recap needs the width of the page for its lines.
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;

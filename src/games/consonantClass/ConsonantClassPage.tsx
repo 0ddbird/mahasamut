@@ -10,6 +10,7 @@ import type { ConsonantClass } from '../../thai/types';
 import { GAME, GAME_NAMES } from '../shared/games';
 import { CONSONANT_CLASS_OPTIONS } from '../shared/options';
 import { QuestionBar } from '../shared/QuestionBar';
+import { consonantClassEntry } from '../shared/recap';
 import { DEFAULT_SETTINGS } from '../shared/settings';
 import type { GameSettings } from '../shared/settings';
 import { Summary } from '../shared/Summary';
@@ -44,12 +45,17 @@ export function ConsonantClassPage({
   const [deck, setDeck] = useState(() => newDeck(CONSONANTS, rng));
   const [chosen, setChosen] = useState<ConsonantClass | undefined>(undefined);
 
-  const game = useSoloGame(settings, () => {
-    setDeck((current) => nextCard(current, rng));
-    setChosen(undefined);
-  });
-
   const consonant = currentCard(deck);
+  const game = useSoloGame(
+    settings,
+    () => {
+      setDeck((current) => nextCard(current, rng));
+      setChosen(undefined);
+    },
+    (result) =>
+      consonantClassEntry(consonant.char, consonant.consonantClass, chosen ?? null, result),
+  );
+
   const expected = consonant.consonantClass;
   const checked = game.phase === 'checked';
 
@@ -61,6 +67,7 @@ export function ConsonantClassPage({
         {title}
         <Summary
           score={game.score}
+          recap={game.recap}
           settings={settings}
           withAnswerMode={false}
           onPlayAgain={game.restart}

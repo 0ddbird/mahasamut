@@ -364,6 +364,45 @@ describe('SyllablePage', () => {
       expect(screen.getByText('You got 0 out of 5 right (0%).')).toBeDefined();
     });
 
+    it('lists the question on the results, with the right tone', async () => {
+      render(
+        <SyllablePage
+          rng={seededRng(UNMARKED_SEED)}
+          settings={withSettings({ questionCount: 1, answerMode: 'toneOnly' })}
+        />,
+      );
+      const wrongTone = RIGHT.tone === 'mid' ? 'low' : 'mid';
+      await answerWith({ tone: wrongTone });
+      await userEvent.click(validateButton());
+      await userEvent.click(screen.getByRole('button', { name: 'See results' }));
+
+      const line = within(screen.getByRole('region', { name: 'Your answers' })).getByRole(
+        'listitem',
+      );
+      expect(line.textContent).toContain(firstSyllable(UNMARKED_SEED).text);
+      expect(line.textContent).toContain(`Right answer: ${choiceName('tone', RIGHT.tone)}`);
+    });
+
+    // Full reasoning grades the steps too: the tone is right but a step is wrong.
+    it('lists a question with a right tone but a wrong step with nothing struck', async () => {
+      render(
+        <SyllablePage
+          rng={seededRng(UNMARKED_SEED)}
+          settings={withSettings({ questionCount: 1, answerMode: 'detailed' })}
+        />,
+      );
+      const wrongClass = RIGHT.consonantClass === 'mid' ? 'low' : 'mid';
+      await answerWith({ ...RIGHT, consonantClass: wrongClass });
+      await userEvent.click(validateButton());
+      await userEvent.click(screen.getByRole('button', { name: 'See results' }));
+
+      const line = within(screen.getByRole('region', { name: 'Your answers' })).getByRole(
+        'listitem',
+      );
+      expect(line.querySelector('s')).toBeNull();
+      expect(line.textContent).toContain('Wrong');
+    });
+
     it('ends the game with End', async () => {
       render(<SyllablePage rng={seededRng(UNMARKED_SEED)} />);
       await userEvent.click(screen.getByRole('button', { name: 'End' }));

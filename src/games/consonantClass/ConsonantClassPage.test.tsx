@@ -222,6 +222,21 @@ describe('ConsonantClassPage', () => {
       expect(screen.getByText('You got 0 out of 5 right (0%).')).toBeDefined();
     });
 
+    it('lists the question on the results, with the right class', async () => {
+      render(
+        <ConsonantClassPage rng={seededRng(SEED)} settings={withSettings({ questionCount: 1 })} />,
+      );
+      await choose(WRONG_CLASS);
+      await userEvent.click(validateButton());
+      await userEvent.click(screen.getByRole('button', { name: 'See results' }));
+
+      const line = within(screen.getByRole('region', { name: 'Your answers' })).getByRole(
+        'listitem',
+      );
+      expect(line.textContent).toContain(FIRST.char);
+      expect(line.textContent).toContain(`Right answer: ${className(FIRST.consonantClass)}`);
+    });
+
     it('ends the game with End', async () => {
       render(<ConsonantClassPage rng={seededRng(SEED)} />);
       await userEvent.click(screen.getByRole('button', { name: 'End' }));
