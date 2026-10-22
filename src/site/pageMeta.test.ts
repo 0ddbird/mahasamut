@@ -40,6 +40,13 @@ describe('pageMeta', () => {
     expect(about.description).not.toBe(pageMeta('/').description);
   });
 
+  it('gives the contact page its own title, description and address', () => {
+    const contact = pageMeta('/contact');
+    expect(contact.title).toBe('Contact — Mahasamut');
+    expect(contact.canonical).toBe(`${SITE_URL}/contact`);
+    expect(contact.description).not.toBe(pageMeta('/').description);
+  });
+
   it('keeps an unknown page out of search engines', () => {
     expect(pageMeta('/nowhere')).toEqual({
       title: 'Page not found — Mahasamut',
@@ -94,7 +101,7 @@ describe('robots.txt and sitemap.xml', () => {
     expect(robots).toContain(`Sitemap: ${SITE_URL}/sitemap.xml`);
   });
 
-  it('lists the home page, every game and the about page, and nothing else', () => {
+  it('lists the home page, every game, the about page and the contact page, and nothing else', () => {
     const locs = [...read('../../public/sitemap.xml').matchAll(/<loc>([^<]+)<\/loc>/g)].map(
       ([, loc]) => loc,
     );
@@ -102,6 +109,7 @@ describe('robots.txt and sitemap.xml', () => {
       `${SITE_URL}/`,
       ...GAME_IDS.map((game) => `${SITE_URL}${GAME_PATHS[game]}`),
       `${SITE_URL}/about`,
+      `${SITE_URL}/contact`,
     ]);
   });
 });
