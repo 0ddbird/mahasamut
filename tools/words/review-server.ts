@@ -144,6 +144,13 @@ export async function startReviewServer({
 }: ReviewServerOptions): Promise<ReviewServer> {
   const takesDir = new URL('takes/', dataDir);
   const reviewFile = new URL('review.json', dataDir);
+  const translationsContent = readIfPresent(new URL('translations.json', dataDir));
+  const translations = translationsContent
+    ? (JSON.parse(translationsContent.toString('utf8')) as Record<
+        string,
+        { en?: string; fr?: string }
+      >)
+    : {};
   const { candidates } = JSON.parse(readFileSync(new URL('candidates.json', dataDir), 'utf8')) as {
     candidates: Candidate[];
   };
@@ -165,6 +172,7 @@ export async function startReviewServer({
       takes: Object.fromEntries(
         level1.map(({ id, text }) => [text, uniqueTakes(manifest[id] ?? [])]),
       ),
+      translations,
       review,
       orphans: orphans(review, level1),
       pageSize: PAGE_SIZE,

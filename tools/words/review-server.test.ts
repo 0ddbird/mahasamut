@@ -30,6 +30,7 @@ const take = (id: string, n: number, md5: string) => ({
 interface State {
   candidates: { text: string }[];
   takes: Record<string, Take[]>;
+  translations: Record<string, { en?: string; fr?: string }>;
   review: Review;
   orphans: string[];
   pageSize: number;
@@ -167,6 +168,17 @@ describe('the review server', () => {
       const state = await getState(server);
       expect(state.review).toEqual({});
       expect(state.orphans).toEqual([]);
+      expect(state.translations).toEqual({});
+    });
+
+    it('includes the translations when translations.json is present', async () => {
+      writeFileSync(
+        join(folder, 'data', 'translations.json'),
+        JSON.stringify({ กา: { en: 'crow', fr: 'corbeau' } }),
+      );
+      const server = await start();
+      const state = await getState(server);
+      expect(state.translations).toEqual({ กา: { en: 'crow', fr: 'corbeau' } });
     });
 
     it('sees takes recorded while it runs', async () => {

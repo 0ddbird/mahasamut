@@ -39,7 +39,14 @@ const FILTER_NAMES = [
 const SAVED_MESSAGE_MS = 2500;
 const ADVANCE_KEY = 'word-review-advance';
 
-const state = { candidates: [], takes: {}, review: {}, orphans: [], pageSize: 50 };
+const state = {
+  candidates: [],
+  takes: {},
+  translations: {},
+  review: {},
+  orphans: [],
+  pageSize: 50,
+};
 /** The candidates that match the filters, in order. */
 let visible = [];
 let page = 0;
@@ -432,6 +439,31 @@ function buildRow(candidate) {
   });
   row.note.value = drafts.get(text) ?? state.review[text]?.note ?? '';
 
+  const translation = state.translations[text];
+  const translationBlock =
+    translation && (translation.fr || translation.en)
+      ? el(
+          'div',
+          { class: 'translations' },
+          translation.fr
+            ? el(
+                'p',
+                { class: 'translation', lang: 'fr' },
+                el('span', { class: 'lang-tag' }, 'FR'),
+                translation.fr,
+              )
+            : '',
+          translation.en
+            ? el(
+                'p',
+                { class: 'translation muted', lang: 'en' },
+                el('span', { class: 'lang-tag' }, 'EN'),
+                translation.en,
+              )
+            : '',
+        )
+      : '';
+
   row.li = el(
     'li',
     {
@@ -462,7 +494,12 @@ function buildRow(candidate) {
         ? el('span', { class: 'case muted' }, `also reads: ${otherTones.join(', ')}`)
         : '',
     ),
-    el('div', { class: 'decide-cell' }, ...takeControls, row.noneButton, row.removeButton),
+    el(
+      'div',
+      { class: 'decide-cell' },
+      el('div', { class: 'decide-controls' }, ...takeControls, row.noneButton, row.removeButton),
+      translationBlock,
+    ),
     el(
       'div',
       { class: 'side-cell' },
