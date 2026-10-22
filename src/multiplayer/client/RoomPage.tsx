@@ -3,6 +3,7 @@ import { useGameEndInBar, useLeaveGuard } from '../../site/leaveGuard';
 import { normalizeRoomId } from '../roomId';
 import { JoinForm } from './JoinForm';
 import { Lobby } from './Lobby';
+import { QuestionScreen } from './QuestionScreen';
 import styles from './RoomPage.module.scss';
 import { getRoomSocket } from './socket';
 import type { RoomSocket } from './socket';
@@ -86,6 +87,9 @@ function ConnectedRoomPage({ roomId, socket }: { roomId: string; socket: RoomSoc
   const { view } = session;
   if (view.phase.kind === 'lobby') {
     return <Lobby view={view} onStart={actions.start} />;
+  }
+  if (view.phase.kind === 'question') {
+    return <QuestionScreen key={view.phase.index} view={view} onAnswer={actions.answer} />;
   }
 
   return (
