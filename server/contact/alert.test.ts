@@ -41,17 +41,21 @@ describe('createAlerter', () => {
     expect(transport.sent).toHaveLength(2);
   });
 
-  it('never puts the message or the visitor in the alert', async () => {
+  it("sends only the fixed alert, with Resend's code", async () => {
     const transport = recording();
     const alerter = createAlerter({ transport, to: 'owner@example.com', now: () => 0 });
-    // The alerter only receives the code, so nothing else can reach the mail;
-    // check it anyway against what a visitor would have typed.
-    await alerter.notify('timeout');
-    const [alert] = transport.sent;
-    for (const secret of ['visitor@example.org', 'My private subject', 'My private message']) {
-      expect(alert.subject).not.toContain(secret);
-      expect(alert.text).not.toContain(secret);
-    }
+    // The content cannot carry the message or the visitor, because `notify`
+    // takes only a code: pinning the whole mail keeps it that way.
+    await alerter.notify('http-401');
+    expect(transport.sent).toEqual([
+      {
+        from: 'Mahasamut <hello@mahasamut.app>',
+        to: 'owner@example.com',
+        replyTo: 'hello@mahasamut.app',
+        subject: '[Mahasamut] Resend failed, Brevo took over',
+        text: 'Resend failed (http-401), so Brevo sent a contact message. Check the Resend dashboard and its key in the vault.',
+      },
+    ]);
   });
 
   it('swallows a failed alert', async () => {
