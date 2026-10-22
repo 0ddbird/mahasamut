@@ -2,8 +2,8 @@
   <!-- Placeholder until the real logo: the site's dark page, its glow and its yellow accent. -->
   <defs>
     <radialGradient id="glow" cx="50%" cy="0%" r="100%">
-      <stop offset="0%" stop-color="#1d4a35" />
-      <stop offset="70%" stop-color="#121614" />
+      <stop offset="0%" stop-color="#1d374a" />
+      <stop offset="70%" stop-color="#121416" />
     </radialGradient>
   </defs>
   <rect width="64" height="64" rx="14" fill="url(#glow)" />

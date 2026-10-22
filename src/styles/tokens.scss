@@ -3,20 +3,20 @@
 :root {
   --color-text: #f2f1ee;
   // Secondary text: notes, what was played.
-  --color-text-muted: #b5bdb8;
+  --color-text-muted: #b5b8bd;
 
-  // The page: near-black, with a green glow at the top (see base.scss).
-  --color-background: #121614;
-  --color-background-deep: #0c0e0d;
-  --color-glow: #1d4a35;
+  // The page: near-black, with a blue glow at the top (see base.scss).
+  --color-background: #121416;
+  --color-background-deep: #0c0d0e;
+  --color-glow: #1d374a;
 
   // See-through surfaces on the page (tiles, the bar), and opaque ones that
   // cover it (the help panel, the menu, dialogs).
   --color-surface: rgb(255 255 255 / 6%);
-  --color-surface-raised: #1a201d;
+  --color-surface-raised: #1a1d20;
   --color-border: rgb(255 255 255 / 16%);
 
-  // The accent, yellow so that it stands out on the green-tinted page: solid
+  // The accent, yellow so that it stands out on the blue-tinted page: solid
   // behind dark text (buttons, selected choices), and a little lighter as a
   // text colour on the page.
   --color-accent: #f2c14e;

@@ -27,7 +27,7 @@ const PAIRS: [text: string, background: string][] = [
   ['color-help-text', 'color-help-orange'],
 ];
 
-/** The accent is yellow: light enough to stand out on the green-tinted page. */
+/** The accent is yellow: light enough to stand out on the blue-tinted page. */
 const isYellow = (hex: string) => {
   const [r, g, b] = [1, 3, 5].map((start) => parseInt(hex.slice(start, start + 2), 16));
   return r! > 200 && g! > 160 && b! < r! - 80;
@@ -50,7 +50,7 @@ describe('colour tokens', () => {
     expect(isYellow(COLORS.get('color-right')!)).toBe(true);
   });
 
-  // A dark red tint melts into the green-tinted page: a wrong answer is solid red.
+  // A dark red tint melts into the blue-tinted page: a wrong answer is solid red.
   it('mark a wrong answer in a solid red', () => {
     const [r, g, b] = [1, 3, 5].map((start) =>
       parseInt(COLORS.get('color-wrong-background')!.slice(start, start + 2), 16),
