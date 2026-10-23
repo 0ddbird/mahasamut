@@ -1,0 +1,128 @@
+// Over everything, like ConfirmDialog: the page, the help panels (10) and the bar (20).
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: var(--space-m);
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 60%);
+}
+
+.dialog {
+  position: relative;
+  // On a short screen the window scrolls rather than the page behind it.
+  max-height: 100%;
+  overflow-y: auto;
+  width: min(100%, 26rem);
+  padding: var(--space-l) var(--space-m) var(--space-m);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius) * 1.5);
+  background: var(--color-surface-raised);
+}
+
+.title {
+  margin: 0 0 var(--space-s);
+  font-family: var(--font-display);
+  text-align: center;
+}
+
+// The question being reported, large enough to read its marks.
+.text {
+  margin: 0 0 var(--space-m);
+  font-size: 3rem;
+  // Thai vowel signs and tone marks stack above and below the consonants:
+  // leave them room so they are not cut off.
+  line-height: 1.6;
+  text-align: center;
+}
+
+.reasons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  margin: 0 0 var(--space-m);
+  padding: 0;
+  border: none;
+}
+
+.legend {
+  margin-bottom: var(--space-s);
+  padding: 0;
+  font-weight: 700;
+}
+
+.reason {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  cursor: pointer;
+
+  input {
+    accent-color: var(--color-accent);
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-m);
+
+  label {
+    font-weight: 700;
+  }
+}
+
+.comment {
+  padding: var(--space-s);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  background: transparent;
+  font: inherit;
+  resize: vertical;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent-light);
+    outline-offset: 2px;
+  }
+}
+
+.failure {
+  margin: 0 0 var(--space-m);
+  color: var(--color-wrong);
+}
+
+.thanks {
+  margin: 0 0 var(--space-l);
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-s);
+}
+
+// Like the app's Button.
+.close {
+  padding: var(--space-s) var(--space-l);
+  border: none;
+  border-radius: var(--radius);
+  color: var(--color-accent-text);
+  background: var(--color-accent);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent-light);
+    outline-offset: 2px;
+  }
+}
