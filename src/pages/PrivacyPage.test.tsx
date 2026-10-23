@@ -53,7 +53,9 @@ describe('PrivacyPage', () => {
 
   it('says what stays in the browser, and what is counted on the server', () => {
     renderPrivacy();
-    const browser = page().getByText('In your browser.').closest('li') as HTMLElement;
+    const browser = page()
+      .getByRole('heading', { level: 3, name: 'In your browser' })
+      .closest('section') as HTMLElement;
     expect(browser.textContent).toContain('stay in localStorage on your device');
     // The seat is a token the server issued, sent back to it to resume.
     expect(browser.textContent).toContain('a token kept in sessionStorage');

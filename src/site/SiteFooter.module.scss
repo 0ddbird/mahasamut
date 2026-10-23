@@ -1,6 +1,12 @@
 // At the bottom of the window when the page is short (see #root in base.scss),
-// after the page when it is long.
+// after the page when it is long. The links and the copyright share one line;
+// on a narrow screen, the copyright goes under them, with room in between.
 .footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: var(--space-s) var(--space-l);
   margin-top: auto;
   padding: var(--space-l) var(--space-m) var(--space-m);
   color: var(--color-text-muted);
@@ -8,13 +14,12 @@
   text-align: center;
 }
 
-// On one line, a dot between them.
 .links {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: var(--space-xs) var(--space-m);
-  margin: 0 0 var(--space-xs);
+  gap: var(--space-s) var(--space-l);
+  margin: 0;
   padding: 0;
   list-style: none;
 
@@ -31,11 +36,6 @@
       outline: 2px solid var(--color-accent-light);
       outline-offset: 2px;
     }
-  }
-
-  li + li::before {
-    content: '·';
-    margin-right: var(--space-m);
   }
 }
 

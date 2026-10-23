@@ -2,15 +2,15 @@ import { useId, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { Button } from '../components/Button/Button';
-import { Logo } from '../components/Logo/Logo';
+import { Masthead } from '../components/Masthead/Masthead';
 import { GAME_GOALS, GAME_IDS, GAME_NAMES, GAME_PATHS, GAME_SAMPLES } from '../games/shared/games';
 import { normalizeRoomId } from '../multiplayer/roomId';
 import styles from './HomePage.module.scss';
 
 /**
- * The site home page: the logo, a full-width two-column Multiplayer tile at the
- * top (Create a lobby on the left, Join a lobby on the right), and one tile per
- * solo game below.
+ * The site home page: the masthead, a full-width two-column Multiplayer tile
+ * at the top (Create a lobby on the left, Join a lobby on the right), and one
+ * tile per solo game below, under the tagline.
  */
 export function HomePage() {
   const navigate = useNavigate();
@@ -36,9 +36,8 @@ export function HomePage() {
   return (
     <main className={styles.page}>
       <h1 className={styles.title}>
-        <Logo size="large" />
+        <Masthead />
       </h1>
-      <p className={styles.tagline}>Games to read Thai script</p>
       <section className={styles.multiplayer} aria-label="Multiplayer">
         <div className={styles.multiColumn}>
           <h2 className={styles.multiTitle}>Play with friends</h2>
@@ -71,6 +70,7 @@ export function HomePage() {
           )}
         </form>
       </section>
+      <h2 className={styles.tagline}>Games to read Thai script</h2>
       <ul className={styles.tiles}>
         {GAME_IDS.map((game) => (
           <li key={game}>

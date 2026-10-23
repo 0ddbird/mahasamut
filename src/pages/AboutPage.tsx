@@ -14,8 +14,9 @@ export function AboutPage() {
     <main className={styles.page}>
       <h1>About Mahasamut</h1>
       <p>
-        From <span lang="th">มหา</span> <i>maha</i>, “great”, and <span lang="th">สมุด</span>{' '}
-        <i>samut</i>, “notebook”, and it sounds just like <span lang="th">มหาสมุทร</span>, “ocean”.
+        A great notebook for an ocean of letters: <span lang="th">มหา</span> <i>maha</i> means
+        “great” and <span lang="th">สมุด</span> <i>samut</i> “notebook”. Said aloud, the name sounds
+        just like <span lang="th">มหาสมุทร</span>, “ocean”.
       </p>
       <p>A set of short games to learn to read Thai script, made by a developer learning Thai.</p>
 
@@ -23,7 +24,7 @@ export function AboutPage() {
       <ul>
         {GAME_IDS.map((game) => (
           <li key={game}>
-            <Link to={GAME_PATHS[game]}>{GAME_NAMES[game]}</Link> — {GAME_GOALS[game]}
+            <Link to={GAME_PATHS[game]}>{GAME_NAMES[game]}</Link>: {GAME_GOALS[game]}
           </li>
         ))}
       </ul>
@@ -39,8 +40,10 @@ export function AboutPage() {
       </ul>
 
       <p>
-        If you like the games, you can <a href={KOFI_URL}>support me on Ko-fi</a>. A question, an
-        idea, a mistake in a word? <Link to="/contact">Write to me</Link>.
+        If you like the games, you can <a href={KOFI_URL}>support me on Ko-fi</a>.
+      </p>
+      <p>
+        A question, an idea, a mistake in a word? <Link to="/contact">Write to me</Link>.
       </p>
     </main>
   );

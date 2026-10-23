@@ -9,13 +9,15 @@ $one-row: 40rem;
 }
 
 .title {
-  margin: var(--space-m) 0 var(--space-xs);
+  margin: var(--space-m) 0 var(--space-l);
 }
 
+// The heading of the solo games, as quiet as a caption.
 .tagline {
-  margin: 0 0 var(--space-l);
+  margin: 0 0 var(--space-m);
   color: var(--color-text-muted);
   font-size: 0.875rem;
+  font-weight: 400;
   letter-spacing: 0.15em;
   text-transform: uppercase;
 }

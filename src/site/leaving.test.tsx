@@ -19,7 +19,7 @@ const logo = () => screen.getByRole('link', { name: 'Mahasamut' });
 const barLink = (name: string) =>
   within(screen.getByRole('navigation', { name: 'Games' })).getByRole('link', { name });
 const dialog = () => screen.queryByRole('alertdialog', { name: 'Leave the game?' });
-const onHomePage = () => screen.queryByRole('heading', { level: 1, name: 'Mahasamut' }) !== null;
+const onHomePage = () => screen.queryByRole('heading', { level: 1, name: /^Mahasamut/ }) !== null;
 
 /** Answers the question shown, right or wrong: it counts as played. */
 const answerOne = async () => {

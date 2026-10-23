@@ -1,0 +1,17 @@
+.masthead {
+  display: block;
+  // As wide as the page lets it, up to a size where the subtitle stays fine.
+  width: min(100%, 30rem);
+  height: auto;
+  margin: 0 auto;
+}
+
+// Read by screen readers and search engines, not shown.
+.text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

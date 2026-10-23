@@ -5,8 +5,8 @@ import { KOFI_LABEL, KOFI_URL } from './support';
 import styles from './SiteFooter.module.scss';
 
 /**
- * The foot of every page, quiet under it: the about page, the contact page, the
- * privacy page, the support page on Ko-fi, and the copyright. Like the bar's
+ * The foot of every page, quiet under it, on one line: the about page, the
+ * contact page, the privacy page, the support page on Ko-fi, and the copyright. Like the bar's
  * links, About, Contact and Privacy ask first during a game; Ko-fi opens in a
  * new tab, where the game is not lost.
  */
