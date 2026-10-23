@@ -170,6 +170,27 @@ describe('POST /api/report', () => {
     expect(Object.keys(init?.headers ?? {})).toEqual(['Content-Type']);
   });
 
+  it('refuses a body over 256 KB that comes without a Content-Length', async () => {
+    const chunk = new TextEncoder().encode('x'.repeat(64 * 1024));
+    // A stream has no known length, so the request is sent chunked and only the reading can stop it.
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        for (let i = 0; i < 5; i++) controller.enqueue(chunk);
+        controller.close();
+      },
+    });
+
+    const res = await fetch(`${baseUrl}/api/report`, {
+      method: 'POST',
+      headers: { origin: 'https://mahasamut.app', 'x-real-ip': IP },
+      body,
+      duplex: 'half',
+    } as RequestInit);
+
+    expect(res.status).toBe(413);
+    expect(sentry).not.toHaveBeenCalled();
+  });
+
   it('refuses a body over 256 KB', async () => {
     const res = await post('x'.repeat(256 * 1024 + 1));
 

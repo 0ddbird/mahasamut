@@ -79,6 +79,41 @@ describe('createReportTunnel', () => {
     expect(forward).not.toHaveBeenCalled();
   });
 
+  it('refuses the key of another DSN', async () => {
+    expect(await send(report('https://other@o1.ingest.de.sentry.io/42'))).toEqual({ status: 403 });
+
+    expect(forward).not.toHaveBeenCalled();
+  });
+
+  it('refuses an event with anything else in the envelope, without counting it', async () => {
+    const event = JSON.stringify({ tags: { kind: 'error' } });
+    const withItem = (type: string) =>
+      [
+        JSON.stringify({ dsn: DSN }),
+        '{"type":"event"}',
+        event,
+        JSON.stringify({ type }),
+        '{}',
+      ].join('\n');
+
+    for (const type of ['transaction', 'attachment', 'session', 'replay_event', 'client_report']) {
+      expect(await send(withItem(type)), type).toEqual({ status: 400 });
+    }
+    expect(forward).not.toHaveBeenCalled();
+
+    // The budgets are intact: all of the 3 errors a minute are still there.
+    for (let i = 0; i < 3; i++) expect(await send(error())).toEqual({ status: 200 });
+    expect(forward).toHaveBeenCalledTimes(3);
+  });
+
+  it('refuses an item of an unknown type, without counting it', async () => {
+    expect(await send(envelope('transaction'))).toEqual({ status: 400 });
+    expect(await send(envelope('mystery'))).toEqual({ status: 400 });
+
+    expect(forward).not.toHaveBeenCalled();
+    for (let i = 0; i < 3; i++) expect(await send(error())).toEqual({ status: 200 });
+  });
+
   it('refuses a wrong origin', async () => {
     expect(await send(report(), '203.0.113.7', { origin: 'https://evil.example.com' })).toEqual({
       status: 403,

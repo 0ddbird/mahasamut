@@ -37,9 +37,10 @@ export interface ReportTunnelDeps {
 /**
  * Creates the tunnel as a function of the request, which answers with the status
  * for the site: 405 for a method other than POST, 403 for another origin, 404
- * when the tunnel is off, 400 for an envelope that cannot be read, 403 for an
- * envelope of another project or host, 200 without forwarding for what is
- * neither an error nor a report, 429 when the budget of its kind is spent, then
+ * when the tunnel is off, 400 for an envelope that cannot be read or holds more
+ * than one event or anything but sessions and client reports beside it, 403 for
+ * an envelope of another project, host or key, 200 without forwarding for
+ * sessions and client reports, 429 when the budget of its kind is spent, then
  * 200 if Sentry took it and 502 if not.
  */
 export function createReportTunnel(
@@ -54,10 +55,15 @@ export function createReportTunnel(
 
     const envelope = readEnvelope(request.body);
     if (!envelope) return { status: 400 };
-    if (envelope.dsn.host !== siteDsn.host || envelope.dsn.projectId !== siteDsn.projectId) {
+    const { dsn } = envelope;
+    if (
+      dsn.host !== siteDsn.host ||
+      dsn.projectId !== siteDsn.projectId ||
+      dsn.publicKey !== siteDsn.publicKey
+    ) {
       return { status: 403 };
     }
-    // Sessions, client reports and the like are not passed on: they would eat the quota.
+    // Sessions and client reports are not passed on: they would eat the quota.
     if (envelope.kind === 'other') return { status: 200 };
     if (!budgets.take(envelope.kind, request.ip)) return { status: 429 };
 

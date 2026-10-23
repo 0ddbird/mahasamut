@@ -59,43 +59,92 @@ describe('readEnvelope', () => {
     expect(readEnvelope(envelope([[{ type: 'event' }, event(undefined)]]))?.kind).toBe('error');
   });
 
-  it('is not a report unless an event says so', () => {
-    const body = envelope([
-      [{ type: 'attachment' }, '{"tags":{"kind":"report"}}'],
-      [{ type: 'event' }, event('error')],
+  const SESSION = '{"sid":"1","status":"ok"}';
+  const CLIENT_REPORT = '{"discarded_events":[]}';
+
+  it('says other for sessions and client reports only', () => {
+    const session = envelope([[{ type: 'session' }, SESSION]]);
+    const clientReport = envelope([[{ type: 'client_report' }, CLIENT_REPORT]]);
+    const both = envelope([
+      [{ type: 'session' }, SESSION],
+      [{ type: 'client_report' }, CLIENT_REPORT],
     ]);
-
-    expect(readEnvelope(body)?.kind).toBe('error');
-  });
-
-  it('says other for an envelope without an event', () => {
-    const session = envelope([[{ type: 'session' }, '{"sid":"1","status":"ok"}']]);
-    const clientReport = envelope([[{ type: 'client_report' }, '{"discarded_events":[]}']]);
 
     expect(readEnvelope(session)).toEqual({ dsn: PARSED, kind: 'other' });
     expect(readEnvelope(clientReport)).toEqual({ dsn: PARSED, kind: 'other' });
+    expect(readEnvelope(both)).toEqual({ dsn: PARSED, kind: 'other' });
     expect(readEnvelope(envelope([]))).toEqual({ dsn: PARSED, kind: 'other' });
   });
 
+  it('refuses an event with any other item beside it, whatever the order', () => {
+    for (const [type, payload] of [
+      ['transaction', '{}'],
+      ['attachment', 'x'],
+      ['session', SESSION],
+      ['client_report', CLIENT_REPORT],
+      ['replay_event', '{}'],
+      ['span', '{}'],
+      ['log', '{}'],
+      ['feedback', '{}'],
+      ['check_in', '{}'],
+    ]) {
+      const first = envelope([
+        [{ type: 'event' }, event('error')],
+        [{ type }, payload],
+      ]);
+      const last = envelope([
+        [{ type }, payload],
+        [{ type: 'event' }, event('error')],
+      ]);
+
+      expect(readEnvelope(first), `${type} after`).toBeNull();
+      expect(readEnvelope(last), `${type} before`).toBeNull();
+    }
+  });
+
+  it('refuses an item of a type it does not know, alone or beside a session', () => {
+    expect(readEnvelope(envelope([[{ type: 'transaction' }, '{}']]))).toBeNull();
+    expect(readEnvelope(envelope([[{ type: 'attachment' }, 'x']]))).toBeNull();
+    expect(readEnvelope(envelope([[{ type: 'mystery' }, '{}']]))).toBeNull();
+    expect(readEnvelope(envelope([[{ type: 42 }, '{}']]))).toBeNull();
+    expect(readEnvelope(envelope([[{}, '{}']]))).toBeNull();
+    expect(
+      readEnvelope(
+        envelope([
+          [{ type: 'session' }, SESSION],
+          [{ type: 'replay_event' }, '{}'],
+        ]),
+      ),
+    ).toBeNull();
+  });
+
   it('follows the length of an item, whose payload may hold newlines', () => {
-    // The attachment looks like an event, but its length says it is one line of an attachment.
-    const attachment = `x\n{"type":"event"}\n{"tags":{"kind":"report"}}`;
+    // The session looks like it holds an event, but its length says it is one payload.
+    const session = `x\n{"type":"event"}\n{"tags":{"kind":"report"}}`;
     const body = envelope([
-      [{ type: 'attachment', length: Buffer.byteLength(attachment) }, attachment],
-      [{ type: 'event', length: Buffer.byteLength(event('error')) }, event('error')],
+      [{ type: 'session', length: Buffer.byteLength(session) }, session],
+      [{ type: 'client_report', length: Buffer.byteLength(CLIENT_REPORT) }, CLIENT_REPORT],
     ]);
 
-    expect(readEnvelope(body)?.kind).toBe('error');
+    expect(readEnvelope(body)?.kind).toBe('other');
+  });
+
+  it('follows the length of an event too', () => {
+    const body = envelope([
+      [{ type: 'event', length: Buffer.byteLength(event('report')) }, event('report')],
+    ]);
+
+    expect(readEnvelope(body)?.kind).toBe('report');
   });
 
   it('counts the length in bytes, not in characters', () => {
     const text = 'ทดสอบ';
     const body = envelope([
-      [{ type: 'attachment', length: Buffer.byteLength(text) }, text],
-      [{ type: 'event' }, event('report')],
+      [{ type: 'session', length: Buffer.byteLength(text) }, text],
+      [{ type: 'client_report' }, CLIENT_REPORT],
     ]);
 
-    expect(readEnvelope(body)?.kind).toBe('report');
+    expect(readEnvelope(body)?.kind).toBe('other');
   });
 
   it('accepts a newline at the end', () => {
@@ -125,6 +174,14 @@ describe('readEnvelope', () => {
   });
 
   it('refuses several events, which would get around the budgets', () => {
+    expect(
+      readEnvelope(
+        envelope([
+          [{ type: 'event' }, event('report')],
+          [{ type: 'event' }, event('error')],
+        ]),
+      ),
+    ).toBeNull();
     const body = envelope([
       [{ type: 'event' }, event('error')],
       [{ type: 'event' }, event('error')],

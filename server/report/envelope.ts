@@ -31,11 +31,14 @@ export function parseDsn(dsn: string): ParsedDsn | null {
 /**
  * What an envelope is for the tunnel: a question 'report' (an event tagged
  * `kind: report` by the site), a JavaScript 'error' (any other event), or
- * 'other' (a session, a client report, a transaction…), which is not passed on.
+ * 'other' (sessions and client reports only), which is not passed on.
  */
 export type EnvelopeKind = 'report' | 'error' | 'other';
 
 const NEWLINE = 0x0a;
+
+/** The items that are let through as 'other', to be dropped. */
+const DROPPED_TYPES = ['session', 'client_report'];
 
 /** The JSON object in `text`, or `null` when it is anything else. */
 function parseObject(text: string): Record<string, unknown> | null {
@@ -62,9 +65,12 @@ function readLine(bytes: Buffer, from: number): { text: string; next: number } {
  * item header gives a `length`, in which case it is exactly that many bytes and
  * may hold newlines. Returns `null` when the envelope cannot be read.
  *
- * An envelope with several events is refused as unreadable: the SDK and the
- * report form send one, and the budgets count envelopes, so a hundred events in
- * one of them would get around the limits and eat the quota.
+ * Only the two shapes the site sends are accepted: an envelope of exactly one
+ * event and nothing else, or one of sessions and client reports only (kind
+ * 'other'). Anything else is refused as unreadable. The budgets count envelopes
+ * and Sentry has a quota for each type of item, so an event with a hundred
+ * transactions, replays or attachments beside it, or several events, would get
+ * around the limits and eat the quota.
  */
 export function readEnvelope(body: string): { dsn: ParsedDsn; kind: EnvelopeKind } | null {
   const bytes = Buffer.from(body, 'utf8');
@@ -75,6 +81,8 @@ export function readEnvelope(body: string): { dsn: ParsedDsn; kind: EnvelopeKind
   if (!dsn) return null;
 
   let kind: EnvelopeKind = 'other';
+  let events = 0;
+  let dropped = 0;
   let position = header.next;
   while (position < bytes.length) {
     const itemLine = readLine(bytes, position);
@@ -100,12 +108,18 @@ export function readEnvelope(body: string): { dsn: ParsedDsn; kind: EnvelopeKind
     }
 
     if (item.type === 'event') {
-      if (kind !== 'other') return null;
+      if (events > 0 || dropped > 0) return null;
+      events++;
       const event = parseObject(payload);
       if (!event) return null;
       const tags = event.tags;
       const tagged = typeof tags === 'object' && tags !== null && !Array.isArray(tags);
       kind = tagged && (tags as Record<string, unknown>).kind === 'report' ? 'report' : 'error';
+    } else if (typeof item.type === 'string' && DROPPED_TYPES.includes(item.type)) {
+      if (events > 0) return null;
+      dropped++;
+    } else {
+      return null;
     }
   }
 
