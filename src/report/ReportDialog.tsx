@@ -202,6 +202,9 @@ export function ReportDialog({
             )}
 
             <div className={styles.buttons}>
+              <button type="button" className={styles.cancel} onClick={onClose}>
+                Cancel
+              </button>
               <Button type="submit" disabled={!canSend}>
                 {phase === 'sending' ? 'Sending…' : 'Send'}
               </Button>

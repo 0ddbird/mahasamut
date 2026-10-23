@@ -35,6 +35,7 @@ const renderDialog = (
 };
 
 const sendButton = () => screen.getByRole('button', { name: 'Send' });
+const cancelButton = () => screen.getByRole('button', { name: 'Cancel' });
 const commentBox = () => screen.getByRole('textbox', { name: 'Tell me more' });
 
 describe('ReportDialog', () => {
@@ -176,9 +177,11 @@ describe('ReportDialog', () => {
     renderDialog();
     const [first] = screen.getAllByRole('checkbox');
     await userEvent.click(screen.getByRole('checkbox', { name: 'Other' }));
-    // Reasons, comment, Send: Send is the last stop and takes the focus.
+    // Reasons, comment, Cancel, Send: Send is the last stop and takes the focus.
     await userEvent.tab();
     expect(document.activeElement).toBe(commentBox());
+    await userEvent.tab();
+    expect(document.activeElement).toBe(cancelButton());
     await userEvent.tab();
     expect(document.activeElement).toBe(sendButton());
     await userEvent.tab();
@@ -189,13 +192,34 @@ describe('ReportDialog', () => {
 
   it('keeps the focus inside when Send is disabled', async () => {
     renderDialog();
-    // Nothing checked: the comment is the last stop.
+    // Nothing checked: Cancel is the last stop.
     await userEvent.tab();
     await userEvent.tab();
     await userEvent.tab();
-    expect(document.activeElement).toBe(commentBox());
+    await userEvent.tab();
+    expect(document.activeElement).toBe(cancelButton());
     await userEvent.tab();
     expect(document.activeElement).toBe(screen.getAllByRole('checkbox')[0]);
+    await userEvent.tab({ shift: true });
+    expect(document.activeElement).toBe(cancelButton());
+  });
+
+  it('closes without sending on Cancel', async () => {
+    const { send, onClose, onSent } = renderDialog();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Other' }));
+    await userEvent.click(cancelButton());
+
+    expect(onClose).toHaveBeenCalledOnce();
+    expect(send).not.toHaveBeenCalled();
+    expect(onSent).not.toHaveBeenCalled();
+  });
+
+  it('has no Cancel once sent: Close is enough', async () => {
+    renderDialog();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Other' }));
+    await userEvent.click(sendButton());
+    await screen.findByText('Thanks!');
+    expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
   });
 
   it('keeps the focus inside after a click on its text', async () => {
