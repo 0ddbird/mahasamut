@@ -53,8 +53,13 @@ describe('PrivacyPage', () => {
 
   it('says what stays in the browser, and what is counted on the server', () => {
     renderPrivacy();
-    expect(page().getByText(/localStorage/)).toBeDefined();
-    expect(page().getByText(/sessionStorage/)).toBeDefined();
+    const browser = page().getByText('In your browser.').closest('li') as HTMLElement;
+    expect(browser.textContent).toContain('stay in localStorage on your device');
+    // The seat is a token the server issued, sent back to it to resume.
+    expect(browser.textContent).toContain('a token kept in sessionStorage');
+    expect(browser.textContent).toContain('cleared when you close the tab');
+    expect(browser.textContent).toContain('sent only to the Mahasamut server');
+    expect(browser.textContent).not.toContain('leaves your device');
     expect(page().getByText(/counts/)).toBeDefined();
     expect(page().getByText(/nickname/)).toBeDefined();
   });
@@ -63,7 +68,7 @@ describe('PrivacyPage', () => {
     renderPrivacy();
     const contact = page().getByText(/Resend/);
     expect(contact.textContent).toContain('EU');
-    expect(contact.textContent).toContain('keeps nothing');
+    expect(contact.textContent).toContain('keeps no copy of your message or your address');
   });
 
   it('says reports go to Sentry in Frankfurt through the server, without the IP address, for 30 days', () => {
@@ -73,6 +78,7 @@ describe('PrivacyPage', () => {
     expect(reports.textContent).toContain('Frankfurt');
     expect(reports.textContent).toContain('through the Mahasamut server');
     expect(reports.textContent).toContain('never sees your IP address');
+    expect(reports.textContent).toContain('what happened on the page just before it');
     expect(reports.textContent).toContain('30 days');
   });
 

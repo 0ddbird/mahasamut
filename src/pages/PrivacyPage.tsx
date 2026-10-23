@@ -35,10 +35,10 @@ export function PrivacyPage() {
           site to another.
         </li>
         <li>
-          <strong>In your browser only.</strong> Your game settings are saved in{' '}
-          <code>localStorage</code>. Your place in a multiplayer room is saved in{' '}
-          <code>sessionStorage</code>, which is cleared when you close the tab. Neither leaves your
-          device.
+          <strong>In your browser.</strong> Your game settings stay in <code>localStorage</code> on
+          your device. Your seat in a multiplayer room is a token kept in{' '}
+          <code>sessionStorage</code> (cleared when you close the tab) and sent only to the
+          Mahasamut server, to bring you back to your seat.
         </li>
         <li>
           <strong>Usage statistics.</strong> Mahasamut counts, on its own server, the pages viewed,
@@ -52,16 +52,17 @@ export function PrivacyPage() {
         </li>
         <li>
           <strong>Contact form.</strong> Your email address and your message are sent by Resend (EU
-          region) to the mailbox of the author. The site keeps nothing, and replies come from that
-          mailbox.
+          region) to the mailbox of the author. The site keeps no copy of your message or your
+          address, and replies come from that mailbox.
         </li>
         <li>
           <strong>Error reports and question reports.</strong> They are sent to Sentry (Functional
           Software, Inc.), which stores them in Frankfurt, Germany. They go through the Mahasamut
           server, so Sentry never sees your IP address. An error report holds your browser (its
-          User-Agent), the page and the error. A question report, sent only when you report a
-          question, holds the question, the reasons you ticked and your comment, if you write one.
-          Neither holds an email address. Sentry keeps them for 30 days.
+          User-Agent), the page, the error, and what happened on the page just before it. A question
+          report, sent only when you report a question, holds the question, the reasons you ticked
+          and your comment, if you write one. Neither holds an email address. Sentry keeps them for
+          30 days.
         </li>
         <li>
           <strong>Your rights.</strong> To ask about or delete a contact message, write through the{' '}
