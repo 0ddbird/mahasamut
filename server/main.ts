@@ -18,7 +18,7 @@ const HOST = '127.0.0.1';
 const log = (line: string) => console.log(line);
 
 // First, so that an error while starting is reported too.
-const monitoring = createServerMonitoring(process.env);
+const monitoring = createServerMonitoring(process.env, undefined, { log });
 if (monitoring.enabled) log('mahasamut: reporting errors to Sentry');
 
 let config;

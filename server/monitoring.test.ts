@@ -1,3 +1,4 @@
+import type { ErrorEvent, Event, NodeOptions } from '@sentry/node';
 import { describe, expect, it, vi } from 'vitest';
 import { buildMail } from './contact/mail.ts';
 import { createServerMonitoring, noopMonitoring } from './monitoring.ts';
@@ -70,6 +71,8 @@ describe('createServerMonitoring', () => {
       'Console',
       'LocalVariables',
       'LocalVariablesAsync',
+      // Dedupe would hide repeats that the daily cap already bounds.
+      'Dedupe',
     ]) {
       expect(names).not.toContain(name);
     }
@@ -125,6 +128,110 @@ describe('createServerMonitoring', () => {
       expect(sent).not.toContain(value);
     }
     expect(sdk.captureException).not.toHaveBeenCalled();
+  });
+});
+
+describe('the daily cap of server events', () => {
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  // 23:59 UTC, so that one minute later is the next day.
+  const LATE = Date.UTC(2026, 9, 23, 23, 59);
+
+  /** A stand-in that, like the SDK, runs each event through the `beforeSend` it was started with. */
+  function sendingSdk() {
+    const sent: Event[] = [];
+    let beforeSend: NodeOptions['beforeSend'];
+    const pass = (event: Event) => {
+      const kept = beforeSend ? beforeSend(event as ErrorEvent, {}) : event;
+      if (kept) sent.push(kept as Event);
+    };
+    const sdk: MonitoringSdk = {
+      init: (options) => {
+        beforeSend = options.beforeSend;
+      },
+      captureException: (error) => {
+        const { name, message } = error as Error;
+        pass({ exception: { values: [{ type: name, value: message }] } });
+      },
+      captureEvent: (event) => pass(event),
+    };
+    return { sdk, sent, pass };
+  }
+
+  function setUp(env: NodeJS.ProcessEnv = { SENTRY_DSN: DSN }) {
+    const clock = { now: LATE };
+    const lines: string[] = [];
+    const { sdk, sent, pass } = sendingSdk();
+    const monitoring = createServerMonitoring(env, sdk, {
+      now: () => clock.now,
+      log: (line) => lines.push(line),
+    });
+    return { monitoring, sent, pass, clock, lines };
+  }
+
+  it('sends at most 100 events a UTC day, then again the next day', () => {
+    const { monitoring, sent, clock, lines } = setUp();
+
+    for (let i = 0; i < 100; i++) monitoring.captureError(new Error(`error ${i}`));
+    expect(sent).toHaveLength(100);
+
+    monitoring.captureError(new Error('error 100'));
+    monitoring.captureError(new Error('error 101'));
+    expect(sent).toHaveLength(100);
+    // One line the first time the cap is hit, with nothing of the events.
+    expect(lines).toEqual(['monitoring: 100 server events today, dropping the rest of the day']);
+
+    clock.now = LATE + 60_000;
+    monitoring.captureError(new Error('error 102'));
+    expect(sent).toHaveLength(101);
+
+    for (let i = 0; i < 101; i++) monitoring.captureError(new Error(`next day ${i}`));
+    expect(lines).toHaveLength(2);
+  });
+
+  it('counts the failed contact sends toward the same cap', () => {
+    const { monitoring, sent } = setUp();
+
+    for (let i = 0; i < 95; i++) monitoring.captureError(new Error(`error ${i}`));
+    for (let i = 0; i < 5; i++) monitoring.contactSendFailed(['timeout'], 'resend');
+    expect(sent).toHaveLength(100);
+
+    monitoring.captureError(new Error('one more'));
+    expect(sent).toHaveLength(100);
+  });
+
+  it('sends at most 10 of the same error a day', () => {
+    const { monitoring, sent, clock, lines } = setUp();
+
+    for (let i = 0; i < 12; i++) monitoring.captureError(new Error('the same'));
+    for (let i = 0; i < 12; i++) monitoring.contactSendFailed(['network'], 'resend');
+    monitoring.captureError(new Error('another'));
+
+    expect(sent).toHaveLength(21);
+    expect(lines).toEqual([]);
+
+    clock.now += DAY_MS;
+    monitoring.captureError(new Error('the same'));
+    expect(sent).toHaveLength(22);
+  });
+
+  it('caps the events the SDK raises by itself too, such as an uncaught exception', () => {
+    const { sent, pass } = setUp();
+
+    for (let i = 0; i < 12; i++) {
+      pass({ level: 'fatal', exception: { values: [{ type: 'Error', value: 'uncaught' }] } });
+    }
+
+    expect(sent).toHaveLength(10);
+  });
+
+  it('changes nothing without a DSN', () => {
+    const { monitoring, sent, lines } = setUp({});
+
+    for (let i = 0; i < 200; i++) monitoring.captureError(new Error(`error ${i}`));
+
+    expect(monitoring.enabled).toBe(false);
+    expect(sent).toEqual([]);
+    expect(lines).toEqual([]);
   });
 });
 
