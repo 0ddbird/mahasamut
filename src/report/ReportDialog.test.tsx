@@ -151,6 +151,42 @@ describe('ReportDialog', () => {
     expect(sendButton().hasAttribute('disabled')).toBe(false);
   });
 
+  it.each(['failed', 'limited'] as const)(
+    'puts the focus back on Send when sending ends %s, not on Cancel',
+    async (outcome) => {
+      renderDialog({ send: vi.fn().mockResolvedValue(outcome) });
+      await userEvent.click(screen.getByRole('checkbox', { name: 'Other' }));
+      await userEvent.click(sendButton());
+      await screen.findByRole('alert');
+
+      expect(document.activeElement).toBe(sendButton());
+    },
+  );
+
+  it('treats a send that rejects as failed, and lets the player try again', async () => {
+    const send = vi.fn().mockRejectedValueOnce(new Error('boom')).mockResolvedValueOnce('sent');
+    const { onSent } = renderDialog({ send });
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Other' }));
+    await userEvent.click(sendButton());
+
+    expect((await screen.findByRole('alert')).textContent).toBe(
+      'Your report could not be sent. Please try again.',
+    );
+    expect(onSent).not.toHaveBeenCalled();
+    expect(sendButton().hasAttribute('disabled')).toBe(false);
+
+    await userEvent.click(sendButton());
+    expect(await screen.findByText('Thanks!')).toBeTruthy();
+  });
+
+  it('announces the thanks', async () => {
+    renderDialog();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Other' }));
+    await userEvent.click(sendButton());
+
+    expect((await screen.findByRole('status')).textContent).toBe('Thanks!');
+  });
+
   it('forgets the failure message when the player tries again', async () => {
     const send = vi.fn().mockResolvedValueOnce('failed').mockResolvedValueOnce('sent');
     renderDialog({ send });

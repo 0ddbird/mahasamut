@@ -76,7 +76,8 @@ export function ReportDialog({
   useEffect(() => {
     if (phase === 'sending') dialog.current?.focus();
     else if (phase === 'sent') closeButton.current?.focus();
-    else if (failure) form.current?.querySelector('button')?.focus();
+    // Send, never Cancel: a stray Enter must not throw away what the player wrote.
+    else if (failure) form.current?.querySelector<HTMLElement>('button[type="submit"]')?.focus();
   }, [phase, failure]);
 
   const onKeyDown = (event: KeyboardEvent) => {
@@ -117,14 +118,20 @@ export function ReportDialog({
     setPhase('sending');
     setFailure(null);
 
-    // In the order of the form, not of the clicks.
-    const outcome = await send({
-      question,
-      reasons: offered.filter((reason) => checked.has(reason)),
-      comment,
-      where,
-      mode,
-    });
+    // A send that rejects would leave the form waiting for ever: it is a failure like any other.
+    let outcome: ReportOutcome;
+    try {
+      // In the order of the form, not of the clicks.
+      outcome = await send({
+        question,
+        reasons: offered.filter((reason) => checked.has(reason)),
+        comment,
+        where,
+        mode,
+      });
+    } catch {
+      outcome = 'failed';
+    }
     sending.current = false;
     if (outcome === 'sent') {
       setPhase('sent');
@@ -159,7 +166,9 @@ export function ReportDialog({
 
         {phase === 'sent' ? (
           <>
-            <p className={styles.thanks}>Thanks!</p>
+            <p role="status" className={styles.thanks}>
+              Thanks!
+            </p>
             <div className={styles.buttons}>
               <button ref={closeButton} type="button" className={styles.close} onClick={onClose}>
                 Close
