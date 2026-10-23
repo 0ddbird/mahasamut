@@ -32,21 +32,23 @@ export interface ReportInput {
 export type ReportOutcome = 'sent' | 'failed' | 'limited';
 
 /** The reasons each game offers, in the order the form lists them. */
-export const REASONS: Record<GameId, readonly ReportReason[]> = {
+export const REASONS = {
   [GAME.Vowel]: ['sound', 'expected', 'other'],
   [GAME.ConsonantClass]: ['expected', 'other'],
   [GAME.Syllable]: ['sound', 'expected', 'other'],
-};
+} as const satisfies Record<GameId, readonly ReportReason[]>;
 
-/** What the form says for each reason: the answer a game expects is not the same kind of thing in each. */
-export const REASON_LABELS: Record<GameId, Record<ReportReason, string>> = {
+/**
+ * What the form says for each reason: the answer a game expects is not the same
+ * kind of thing in each. A game has a label for the reasons it offers and no other.
+ */
+export const REASON_LABELS: { [G in GameId]: Record<(typeof REASONS)[G][number], string> } = {
   [GAME.Vowel]: {
     sound: 'The sound is wrong',
     expected: 'The expected answer is wrong',
     other: 'Other',
   },
   [GAME.ConsonantClass]: {
-    sound: 'The sound is wrong',
     expected: 'The expected class is wrong',
     other: 'Other',
   },

@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react';
-import { describe, expect, it, vi } from 'vitest';
-import { initMonitoring, REPORT_TUNNEL } from './sentry';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { initMonitoring, REPORT_TUNNEL, siteDsn } from './sentry';
 
 type Integration = ReturnType<typeof Sentry.getDefaultIntegrations>[number];
 
@@ -18,6 +18,34 @@ const initOptions = async (sdk: { init: ReturnType<typeof vi.fn> }) => {
   await vi.waitFor(() => expect(sdk.init).toHaveBeenCalledOnce());
   return sdk.init.mock.calls[0][0];
 };
+
+describe('siteDsn', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('gives the DSN of a production build', () => {
+    vi.stubEnv('MODE', 'production');
+    vi.stubEnv('VITE_SENTRY_DSN', DSN);
+
+    expect(siteDsn()).toBe(DSN);
+  });
+
+  it('gives nothing outside production, so the dev server and the tests send nothing', () => {
+    vi.stubEnv('VITE_SENTRY_DSN', DSN);
+    for (const mode of ['development', 'test']) {
+      vi.stubEnv('MODE', mode);
+      expect(siteDsn()).toBeUndefined();
+    }
+  });
+
+  it('gives nothing without a DSN', () => {
+    vi.stubEnv('MODE', 'production');
+    vi.stubEnv('VITE_SENTRY_DSN', '');
+
+    expect(siteDsn()).toBeUndefined();
+  });
+});
 
 describe('initMonitoring', () => {
   it('does nothing without a DSN, and does not even load the SDK', () => {

@@ -30,8 +30,13 @@ type LoadSdk = () => Promise<Sdk>;
 /** The SDK once started, or `undefined` if it could not be loaded. Unset while the monitoring is off. */
 let started: Promise<Sdk | undefined> | undefined;
 
-/** The DSN of this build, if any. Question reports go to the same project. */
+/**
+ * The DSN of this build, if any. Question reports go to the same project. Only a
+ * production build has one, so that errors and reports follow the same rule: the
+ * dev server and the tests send nothing, even if a DSN is set in their environment.
+ */
 export function siteDsn(): string | undefined {
+  if (import.meta.env.MODE !== 'production') return undefined;
   return import.meta.env.VITE_SENTRY_DSN || undefined;
 }
 

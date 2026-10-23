@@ -45,7 +45,6 @@ describe('REASONS', () => {
         other: 'Other',
       },
       [GAME.ConsonantClass]: {
-        sound: 'The sound is wrong',
         expected: 'The expected class is wrong',
         other: 'Other',
       },
