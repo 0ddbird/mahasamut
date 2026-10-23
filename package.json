@@ -8,6 +8,7 @@
     "dev:server": "tsx watch server/main.ts",
     "build": "tsc -b && vite build",
     "build:server": "vite build --ssr server/main.ts --outDir dist-server --emptyOutDir",
+    "check:sourcemaps": "node scripts/check-no-sourcemaps.mjs",
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run",
@@ -37,6 +38,7 @@
     "socket.io-client": "^4.8.4"
   },
   "devDependencies": {
+    "@sentry/vite-plugin": "11.8.0",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.8",
