@@ -1,0 +1,7 @@
+// Centred like the other pages, but without the site bar above it.
+.page {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: var(--space-l) var(--space-m);
+  text-align: center;
+}
