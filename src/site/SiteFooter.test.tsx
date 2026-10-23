@@ -48,7 +48,7 @@ describe('SiteFooter', () => {
   // Ko-fi opens in a new tab: the game in this one is not lost.
   it('links to Ko-fi in a new tab', () => {
     renderAt('/');
-    const kofi = footer().getByRole('link', { name: /Ko-fi/ });
+    const kofi = footer().getByRole('link', { name: KOFI_LABEL });
     expect(kofi.getAttribute('href')).toBe('https://ko-fi.com/mahasamut');
     expect(kofi.getAttribute('target')).toBe('_blank');
     expect(kofi.getAttribute('rel')).toContain('noopener');
