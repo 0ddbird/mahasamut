@@ -1,4 +1,4 @@
-import type * as Sentry from '@sentry/react';
+import type * as Sentry from './sdk';
 import type { ErrorInfo } from 'react';
 
 /**
@@ -23,7 +23,8 @@ type Sdk = Pick<typeof Sentry, 'init' | 'captureException'>;
 /**
  * Brings the SDK in. It is a dynamic import so that the SDK, which is about as
  * heavy as the rest of the site, is its own chunk and is only fetched when the
- * monitoring is on. Tests pass a stand-in.
+ * monitoring is on. It loads `./sdk`, not the whole package, so that only the
+ * functions used are bundled. Tests pass a stand-in.
  */
 type LoadSdk = () => Promise<Sdk>;
 
@@ -60,7 +61,7 @@ export function reportsEnabled(): boolean {
  */
 export function initMonitoring(
   env: MonitoringEnv,
-  load: LoadSdk = () => import('@sentry/react'),
+  load: LoadSdk = () => import('./sdk'),
 ): boolean {
   if (!env.dsn || env.mode !== 'production') return false;
 
