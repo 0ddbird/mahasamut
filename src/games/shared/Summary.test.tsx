@@ -67,6 +67,25 @@ describe('Summary', () => {
     expect(screen.queryByRole('region', { name: 'Your answers' })).toBeNull();
   });
 
+  it('reports a question of the recap as made in a solo game', async () => {
+    const send = vi.fn().mockResolvedValue('sent');
+    render(
+      <Summary
+        score={SCORE}
+        recap={RECAP}
+        settings={DEFAULT_SETTINGS}
+        withAnswerMode
+        onPlayAgain={() => {}}
+        send={send}
+      />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Report the question ก' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'The expected class is wrong' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Send' }));
+
+    expect(send).toHaveBeenCalledWith(expect.objectContaining({ where: 'recap', mode: 'solo' }));
+  });
+
   it('plays again', async () => {
     const onPlayAgain = vi.fn();
     renderSummary(SCORE, onPlayAgain);

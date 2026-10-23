@@ -131,6 +131,38 @@ describe('FinalScreen', () => {
     expect(recap.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
+  it('reports a question of the recap as made in a multiplayer game', async () => {
+    const send = vi.fn().mockResolvedValue('sent');
+    render(
+      <MemoryRouter>
+        <FinalScreen
+          send={send}
+          view={{
+            ...FINISHED_VIEW,
+            game: 'consonantClass',
+            phase: {
+              kind: 'finished',
+              ranking: [{ rank: 1, pseudo: 'Host', avatar: 'elephant', score: 100, isYou: true }],
+              recap: [
+                {
+                  question: { game: 'consonantClass', text: 'ก' },
+                  reveal: { game: 'consonantClass', consonantClass: 'mid' },
+                  answer: { game: 'consonantClass', consonantClass: 'mid' },
+                  correct: true,
+                },
+              ],
+            },
+          }}
+        />
+      </MemoryRouter>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Report the question ก' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'The expected class is wrong' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Send' }));
+
+    expect(send).toHaveBeenCalledWith(expect.objectContaining({ where: 'recap', mode: 'multi' }));
+  });
+
   it('shows no answers when no question was played', () => {
     render(
       <MemoryRouter>
