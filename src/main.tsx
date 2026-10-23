@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/react';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
@@ -7,6 +6,7 @@ import './styles/tokens.scss';
 import './styles/base.scss';
 import './styles/fonts.scss';
 import App from './App.tsx';
+import { ErrorBoundary } from './monitoring/ErrorBoundary';
 import { ErrorFallback } from './monitoring/ErrorFallback';
 import { initMonitoring, siteDsn } from './monitoring/sentry';
 
@@ -20,9 +20,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       {/* The boundary does not depend on the monitoring being on: without it, a render error leaves a blank page. */}
-      <Sentry.ErrorBoundary fallback={<ErrorFallback />}>
+      <ErrorBoundary fallback={<ErrorFallback />}>
         <App />
-      </Sentry.ErrorBoundary>
+      </ErrorBoundary>
     </BrowserRouter>
   </StrictMode>,
 );
