@@ -1,5 +1,11 @@
+import type { AddressInfo } from 'node:net';
+import { io as createClient } from 'socket.io-client';
+import type { Socket as ClientSocket } from 'socket.io-client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ClientToServerEvents, ServerToClientEvents } from '../src/multiplayer/protocol';
 import { createUnifiedServer } from './app';
+import type { ServerMonitoring } from './monitoring';
+import { RoomRegistry } from './registry';
 import { parseDsn } from './report/envelope';
 
 describe('Unified Server (createUnifiedServer)', () => {
@@ -102,6 +108,136 @@ describe('Unified Server (createUnifiedServer)', () => {
     });
 
     expect(res.status).toBe(404);
+  });
+});
+
+describe('server monitoring', () => {
+  const EMAIL = 'visitor@example.org';
+  const SUBJECT = 'A question about tones';
+  const MESSAGE = 'Hello, how do I practise the falling tone?';
+  const OWNER = 'owner@example.com';
+  let server: ReturnType<typeof createUnifiedServer>;
+  let baseUrl: string;
+  let monitoring: {
+    enabled: boolean;
+    captureError: ReturnType<typeof vi.fn<ServerMonitoring['captureError']>>;
+    contactSendFailed: ReturnType<typeof vi.fn<ServerMonitoring['contactSendFailed']>>;
+  };
+
+  async function start(options: Parameters<typeof createUnifiedServer>[0]) {
+    server = createUnifiedServer({ origin: 'https://mahasamut.app', monitoring, ...options });
+    await new Promise<void>((resolve) => {
+      server.httpServer.listen(0, '127.0.0.1', () => resolve());
+    });
+    const { port } = server.httpServer.address() as AddressInfo;
+    baseUrl = `http://127.0.0.1:${port}`;
+  }
+
+  function postContact() {
+    return fetch(`${baseUrl}/api/contact`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', origin: 'https://mahasamut.app' },
+      body: JSON.stringify({
+        email: EMAIL,
+        subject: SUBJECT,
+        message: MESSAGE,
+        website: '',
+        elapsedMs: 5000,
+      }),
+    });
+  }
+
+  beforeEach(() => {
+    monitoring = { enabled: true, captureError: vi.fn(), contactSendFailed: vi.fn() };
+  });
+
+  afterEach(async () => {
+    await server.close();
+  });
+
+  it('reports an exception in the contact handler', async () => {
+    const error = new Error('transport broke its promise');
+    await start({
+      contactTo: OWNER,
+      contactTransport: { name: 'resend', send: () => Promise.reject(error) },
+    });
+
+    const res = await postContact();
+
+    expect(res.status).toBe(500);
+    expect(monitoring.captureError).toHaveBeenCalledWith(error, { handler: 'contact' });
+    expect(monitoring.contactSendFailed).not.toHaveBeenCalled();
+  });
+
+  it('reports a failed delivery with its codes and transport, nothing of the message', async () => {
+    await start({
+      contactTo: OWNER,
+      contactTransport: {
+        name: 'resend',
+        send: () => Promise.resolve({ ok: false, transient: false, code: 'http-422' }),
+      },
+    });
+
+    const res = await postContact();
+
+    expect(res.status).toBe(502);
+    expect(monitoring.contactSendFailed.mock.calls).toEqual([[['http-422'], 'resend']]);
+    expect(monitoring.captureError).not.toHaveBeenCalled();
+    const reported = JSON.stringify(monitoring.contactSendFailed.mock.calls);
+    for (const value of [EMAIL, SUBJECT, MESSAGE, OWNER]) expect(reported).not.toContain(value);
+  });
+
+  it('reports nothing for a sent message', async () => {
+    await start({
+      contactTo: OWNER,
+      contactTransport: { name: 'resend', send: () => Promise.resolve({ ok: true }) },
+    });
+
+    expect((await postContact()).status).toBe(200);
+    expect(monitoring.contactSendFailed).not.toHaveBeenCalled();
+    expect(monitoring.captureError).not.toHaveBeenCalled();
+  });
+
+  it('reports an exception while serving /metrics', async () => {
+    const registry = new RoomRegistry();
+    const error = new Error('counts broke');
+    vi.spyOn(registry, 'counts').mockImplementation(() => {
+      throw error;
+    });
+    await start({ registry });
+
+    expect((await fetch(`${baseUrl}/metrics`)).status).toBe(500);
+    expect(monitoring.captureError).toHaveBeenCalledWith(error, { handler: 'metrics' });
+  });
+
+  it('reports an exception in a room handler', async () => {
+    const registry = new RoomRegistry();
+    const error = new Error('create broke');
+    vi.spyOn(registry, 'create').mockImplementation(() => {
+      throw error;
+    });
+    await start({ registry });
+    const client: ClientSocket<ServerToClientEvents, ClientToServerEvents> = createClient(baseUrl, {
+      transports: ['websocket'],
+      reconnection: false,
+    });
+
+    try {
+      const res = await client.emitWithAck('room:create', {
+        settings: {
+          game: 'syllable',
+          secondsPerQuestion: 15,
+          questionCount: 5,
+          answerMode: 'toneOnly',
+          password: '',
+        },
+        pseudo: 'Host',
+      });
+      expect(res).toEqual({ ok: false, error: 'invalid-settings' });
+    } finally {
+      client.disconnect();
+    }
+    expect(monitoring.captureError).toHaveBeenCalledWith(error, { handler: 'room:create' });
   });
 });
 

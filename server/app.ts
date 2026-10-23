@@ -17,6 +17,8 @@ import type { Transport } from './contact/transports';
 import { MAX_MESSAGE_BYTES, SWEEP_INTERVAL_MS } from './limits';
 import { createEventHandler, MAX_EVENT_BODY_BYTES } from './metrics/eventHandler';
 import { MetricsStore } from './metrics/store';
+import { noopMonitoring } from './monitoring';
+import type { ServerMonitoring } from './monitoring';
 import { RoomRegistry } from './registry';
 import { createBudgets } from './report/budgets';
 import type { ParsedDsn } from './report/envelope';
@@ -40,6 +42,8 @@ export interface UnifiedServerOptions {
   siteDsn?: ParsedDsn | null;
   /** What the report tunnel reaches Sentry with. Tests pass a stand-in. */
   fetch?: typeof fetch;
+  /** Where the server's own errors and failed contact sends are reported. Off by default. */
+  monitoring?: ServerMonitoring;
 }
 
 function clientIp(req: IncomingMessage): string {
@@ -81,6 +85,7 @@ export function createUnifiedServer(options: UnifiedServerOptions = {}): {
   const now = options.now ?? Date.now;
   const store = options.store ?? new MetricsStore();
   const registry = options.registry ?? new RoomRegistry();
+  const monitoring = options.monitoring ?? noopMonitoring;
 
   const origin =
     options.origin ??
@@ -102,6 +107,7 @@ export function createUnifiedServer(options: UnifiedServerOptions = {}): {
       }),
     log,
     metrics: store,
+    onSendFailed: (codes) => monitoring.contactSendFailed(codes, contactTransport.name),
   });
 
   const eventHandler = createEventHandler({
@@ -174,8 +180,9 @@ export function createUnifiedServer(options: UnifiedServerOptions = {}): {
             'Cache-Control': 'no-store',
           });
           res.end(JSON.stringify(answer.reply));
-        } catch {
+        } catch (error) {
           log('contact: error');
+          monitoring.captureError(error, { handler: 'contact' });
           store.recordContactOutcome('error');
           if (!res.headersSent) {
             res.writeHead(500, {
@@ -214,7 +221,8 @@ export function createUnifiedServer(options: UnifiedServerOptions = {}): {
           });
           res.writeHead(answer.status, { 'Cache-Control': 'no-store' });
           res.end();
-        } catch {
+        } catch (error) {
+          monitoring.captureError(error, { handler: 'event' });
           if (!res.headersSent) {
             res.writeHead(500, { 'Cache-Control': 'no-store' });
             res.end();
@@ -249,8 +257,9 @@ export function createUnifiedServer(options: UnifiedServerOptions = {}): {
           });
           res.writeHead(answer.status, { 'Cache-Control': 'no-store' });
           res.end();
-        } catch {
+        } catch (error) {
           log('report: error');
+          monitoring.captureError(error, { handler: 'report' });
           if (!res.headersSent) {
             res.writeHead(500, { 'Cache-Control': 'no-store' });
             res.end();
@@ -280,7 +289,8 @@ export function createUnifiedServer(options: UnifiedServerOptions = {}): {
             'Cache-Control': 'no-store',
           });
           res.end(text);
-        } catch {
+        } catch (error) {
+          monitoring.captureError(error, { handler: 'metrics' });
           if (!res.headersSent) {
             res.writeHead(500, {
               'Content-Type': 'text/plain; charset=utf-8',
@@ -301,7 +311,11 @@ export function createUnifiedServer(options: UnifiedServerOptions = {}): {
     maxHttpBufferSize: MAX_MESSAGE_BYTES,
   });
 
-  const rooms = attachRooms(io, registry, { now, metrics: store });
+  const rooms = attachRooms(io, registry, {
+    now,
+    metrics: store,
+    onError: (error, event) => monitoring.captureError(error, { handler: event }),
+  });
   const sweepTimer = setInterval(() => rooms.sweep(), SWEEP_INTERVAL_MS);
 
   async function close(): Promise<void> {

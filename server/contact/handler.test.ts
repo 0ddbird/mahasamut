@@ -232,6 +232,25 @@ describe('createContactHandler', () => {
     }
   });
 
+  it('hands the codes of a failed delivery to onSendFailed, and nothing for a sent one', async () => {
+    const failures: (readonly string[])[] = [];
+    const watched = createContactHandler({
+      origin: ORIGIN,
+      to: OWNER,
+      limits: createLimits(() => now),
+      send,
+      log: () => {},
+      onSendFailed: (codes) => failures.push(codes),
+    });
+
+    await watched(request());
+    expect(failures).toEqual([]);
+
+    send.mockResolvedValueOnce({ ok: false, codes: ['timeout', 'http-503'] });
+    expect(await watched(request())).toEqual({ status: 502, reply: { result: 'failed' } });
+    expect(failures).toEqual([['timeout', 'http-503']]);
+  });
+
   it('records outcomes in metrics collaborator when provided', async () => {
     const outcomes: string[] = [];
     const metricsHandler = createContactHandler({
