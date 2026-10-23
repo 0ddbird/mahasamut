@@ -180,10 +180,11 @@ describe('SyllablePage', () => {
 
   it('offers Validate, and no Next, before the answers are checked', () => {
     render(<SyllablePage rng={seededRng(7)} />);
-    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual([
-      'End',
-      'Validate',
-    ]);
+    expect(
+      screen
+        .getAllByRole('button')
+        .map((button) => button.getAttribute('aria-label') ?? button.textContent),
+    ).toEqual(['End', 'Validate', 'Report a problem with this question']);
   });
 
   describe('validating a syllable with no tone mark', () => {
@@ -516,6 +517,75 @@ describe('SyllablePage', () => {
       render(<SyllablePage rng={seededRng(UNMARKED_SEED)} settings={LEARNING} />);
       await userEvent.click(screen.getByRole('button', { name: 'End' }));
       expect(helpHandle('Consonants')).toBeNull();
+    });
+  });
+
+  describe('reporting a question', () => {
+    const flag = () =>
+      screen.queryByRole('button', { name: 'Report a problem with this question' });
+    const timed = { ...DEFAULT_SETTINGS, secondsPerQuestion: 10 };
+
+    it('offers the flag before and after the answer, and not on the results', async () => {
+      render(
+        <SyllablePage
+          rng={seededRng(UNMARKED_SEED)}
+          settings={{ ...DEFAULT_SETTINGS, questionCount: 1 }}
+        />,
+      );
+      expect(flag()).not.toBeNull();
+
+      await userEvent.click(screen.getByRole('button', { name: 'End' }));
+      expect(flag()).toBeNull();
+    });
+
+    it('keeps the flag once the answer is checked', async () => {
+      const answers = allAnswersOf(UNMARKED_SEED);
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} />);
+      await answerWith({ ...answers, tone: answers.tone === 'mid' ? 'low' : 'mid' });
+      await userEvent.click(validateButton());
+      expect(nextButton()).toBeDefined();
+      expect(flag()).not.toBeNull();
+    });
+
+    it('opens the window on the word shown, with the reasons of the game', async () => {
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} />);
+      await userEvent.click(flag()!);
+
+      const dialog = within(screen.getByRole('dialog', { name: 'Report a problem' }));
+      expect(dialog.getByText(firstSyllable(UNMARKED_SEED).text)).toBeDefined();
+      expect(dialog.getAllByRole('checkbox').map((box) => box.parentElement?.textContent)).toEqual([
+        'The sound is wrong',
+        'The expected tone is wrong',
+        'Other',
+      ]);
+    });
+
+    it.each([
+      ['Escape', () => fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' })],
+      ['Cancel', () => fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))],
+    ])('stops the clock while the window is open, and starts it again on %s', (_way, close) => {
+      vi.useFakeTimers();
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} settings={timed} />);
+      wait(4000);
+      fireEvent.click(flag()!);
+      wait(60_000);
+      expect(screen.queryByRole('status')).toBeNull();
+
+      close();
+      // The 6 seconds that were left, not a fresh 10.
+      wait(5000);
+      expect(screen.queryByRole('status')).toBeNull();
+      wait(1000);
+      expect(screen.getByRole('status').textContent).toBe("Time's up!");
+    });
+
+    it('closes the window if the game ends under it', async () => {
+      render(<SyllablePage rng={seededRng(UNMARKED_SEED)} settings={timed} />);
+      await userEvent.click(flag()!);
+      // End sits in the site bar, outside the window.
+      await userEvent.click(screen.getByRole('button', { name: 'End' }));
+      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(screen.getByRole('heading', { name: 'No answers this time.' })).toBeDefined();
     });
   });
 });

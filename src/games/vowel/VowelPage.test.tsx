@@ -160,4 +160,49 @@ describe('VowelPage', () => {
     expect(screen.getByRole('button', { name: 'Vowels' })).toBeDefined();
     expect(screen.queryByRole('button', { name: 'Consonants' })).toBeNull();
   });
+
+  describe('reporting a question', () => {
+    const flag = () =>
+      screen.queryByRole('button', { name: 'Report a problem with this question' });
+
+    it('offers the flag before and after the answer, and not on the results', async () => {
+      renderPage({ ...DEFAULT_SETTINGS, questionCount: 1 });
+      expect(flag()).not.toBeNull();
+
+      await choose(WRONG);
+      await userEvent.click(validateButton());
+      expect(flag()).not.toBeNull();
+
+      await userEvent.click(screen.getByRole('button', { name: 'See results' }));
+      expect(flag()).toBeNull();
+    });
+
+    it('opens the window on the vowel shown, with the reasons of the game', async () => {
+      renderPage();
+      await userEvent.click(flag()!);
+
+      const dialog = within(screen.getByRole('dialog', { name: 'Report a problem' }));
+      expect(dialog.getByText(vowelOnCarrier(FIRST.vowel))).toBeDefined();
+      expect(dialog.getAllByRole('checkbox').map((box) => box.parentElement?.textContent)).toEqual([
+        'The sound is wrong',
+        'The expected answer is wrong',
+        'Other',
+      ]);
+    });
+
+    it('holds the move to the next question while the window is open', async () => {
+      renderPage();
+      await choose(RIGHT);
+      vi.useFakeTimers();
+      fireEvent.click(validateButton());
+      fireEvent.click(flag()!);
+
+      act(() => vi.advanceTimersByTime(CORRECT_DELAY_MS * 2));
+      expect(screen.queryByText(vowelOnCarrier(SECOND.vowel))).toBeNull();
+
+      fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
+      act(() => vi.advanceTimersByTime(CORRECT_DELAY_MS));
+      expect(screen.getByText(vowelOnCarrier(SECOND.vowel))).toBeDefined();
+    });
+  });
 });

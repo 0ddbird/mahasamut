@@ -5,12 +5,14 @@ import { HelpPanels } from '../../components/HelpPanels/HelpPanels';
 import { ThaiDisplay } from '../../components/ThaiDisplay/ThaiDisplay';
 import { CONSONANTS_PANEL } from '../../help/panels';
 import { Verdict } from '../../components/Verdict/Verdict';
+import { ReportFlag } from '../../report/ReportFlag';
 import type { Rng } from '../../thai/generator';
 import type { ConsonantClass } from '../../thai/types';
 import { GAME, GAME_NAMES } from '../shared/games';
 import { CONSONANT_CLASS_OPTIONS } from '../shared/options';
 import { QuestionBar } from '../shared/QuestionBar';
 import { consonantClassEntry } from '../shared/recap';
+import type { RecapResult } from '../shared/recap';
 import { DEFAULT_SETTINGS } from '../shared/settings';
 import type { GameSettings } from '../shared/settings';
 import { Summary } from '../shared/Summary';
@@ -46,14 +48,16 @@ export function ConsonantClassPage({
   const [chosen, setChosen] = useState<ConsonantClass | undefined>(undefined);
 
   const consonant = currentCard(deck);
+  // The recap line of the question, which a report names it by as well.
+  const entryOf = (result: RecapResult) =>
+    consonantClassEntry(consonant.char, consonant.consonantClass, chosen ?? null, result);
   const game = useSoloGame(
     settings,
     () => {
       setDeck((current) => nextCard(current, rng));
       setChosen(undefined);
     },
-    (result) =>
-      consonantClassEntry(consonant.char, consonant.consonantClass, chosen ?? null, result),
+    entryOf,
   );
 
   const expected = consonant.consonantClass;
@@ -111,6 +115,7 @@ export function ConsonantClassPage({
             Validate
           </Button>
         )}
+        <ReportFlag question={entryOf('right')} onOpenChange={game.setPaused} />
       </main>
     </HelpPanels>
   );

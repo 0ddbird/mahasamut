@@ -1,0 +1,30 @@
+// Fixed at the bottom right, under the help drawer (10), the bar (20) and the
+// report window (30). A 2.5rem round button: it leaves 56px of the edge of a
+// 360px phone, and the pages keep room under their content so that Validate
+// and Next can always scroll clear of it.
+.flag {
+  position: fixed;
+  right: var(--space-m);
+  bottom: var(--space-m);
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  // Quiet until it is looked for; still readable (the muted text colour is checked at AA).
+  color: var(--color-text-muted);
+  background: var(--color-surface-raised);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-text);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent-light);
+    outline-offset: 2px;
+  }
+}
