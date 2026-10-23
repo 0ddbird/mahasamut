@@ -1,5 +1,14 @@
-import { describe, expect, it, vi } from 'vitest';
-import { siteSourceMaps, type SentryPluginFactory, type SourceMapsEnv } from './sentry-sourcemaps';
+import { mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  deleteSourceMaps,
+  siteSourceMaps,
+  sourceMapsCleanup,
+  type SentryPluginFactory,
+  type SourceMapsEnv,
+} from './sentry-sourcemaps';
 
 // A made-up token and project: nothing here ever reaches Sentry, the plugin factory is a stand-in.
 const ENV: SourceMapsEnv = {
@@ -44,7 +53,8 @@ describe('siteSourceMaps', () => {
     const config = await siteSourceMaps(ENV, true, load);
 
     expect(config.sourcemap).toBe('hidden');
-    expect(config.plugins).toEqual([[plugin]]);
+    // Sentry's plugin first, our cleanup after it.
+    expect(config.plugins).toEqual([[plugin], expect.objectContaining({ enforce: 'post' })]);
   });
 
   it('configures the plugin from the environment, with no telemetry', async () => {
@@ -59,8 +69,62 @@ describe('siteSourceMaps', () => {
       project: 'some-project',
       url: 'https://de.sentry.io/',
       telemetry: false,
+      errorHandler: expect.any(Function),
       release: { name: 'abc1234', setCommits: false },
       sourcemaps: { filesToDeleteAfterUpload: ['./dist/**/*.map'] },
     });
+  });
+});
+
+describe('a failed upload', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('only warns, so that the build and the deploy go on', async () => {
+    const { factory, load } = fakeFactory();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    await siteSourceMaps(ENV, true, load);
+    const { errorHandler } = (
+      factory.mock.calls[0] as unknown as [{ errorHandler: (e: Error) => void }]
+    )[0];
+
+    expect(() => errorHandler(new Error('Sentry is down'))).not.toThrow();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('Sentry is down'));
+  });
+
+  it('still leaves no map in the output folder', async () => {
+    // The fake Sentry plugin fails its upload and deletes nothing: our own step is the only one left.
+    const dir = await mkdtemp(join(tmpdir(), 'mahasamut-cleanup-'));
+    try {
+      await mkdir(join(dir, 'assets'));
+      await writeFile(join(dir, 'index.html'), '<html></html>');
+      await writeFile(join(dir, 'assets', 'index-abc.js'), 'console.log(1);');
+      await writeFile(join(dir, 'assets', 'index-abc.js.map'), '{}');
+      await writeFile(join(dir, 'assets', 'esm-def.js.map'), '{}');
+
+      const { plugins } = await siteSourceMaps(ENV, true, fakeFactory().load);
+      const cleanup = plugins.at(-1) as ReturnType<typeof sourceMapsCleanup>;
+      // The hooks are called the way Vite does: the config is resolved, then the bundle closes.
+      (cleanup.configResolved as (config: unknown) => void)({
+        root: dir,
+        build: { outDir: dir },
+      });
+      await (cleanup.closeBundle as { handler: () => Promise<void> }).handler();
+
+      expect(await readdir(dir, { recursive: true })).toEqual(
+        expect.arrayContaining(['index.html', join('assets', 'index-abc.js')]),
+      );
+      expect((await readdir(dir, { recursive: true })).filter((f) => f.endsWith('.map'))).toEqual(
+        [],
+      );
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('deletes nothing, and does not fail, when the folder does not exist', async () => {
+    await expect(
+      deleteSourceMaps(join(tmpdir(), 'mahasamut-no-such-folder')),
+    ).resolves.toBeUndefined();
   });
 });
