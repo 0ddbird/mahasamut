@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { initMonitoring, REPORT_TUNNEL, siteDsn } from './sentry';
+import { initMonitoring, REPORT_TUNNEL, reportsEnabled, siteDsn } from './sentry';
 
 type Integration = ReturnType<typeof Sentry.getDefaultIntegrations>[number];
 
@@ -44,6 +44,36 @@ describe('siteDsn', () => {
     vi.stubEnv('VITE_SENTRY_DSN', '');
 
     expect(siteDsn()).toBeUndefined();
+  });
+});
+
+describe('reportsEnabled', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('is on in a production build with a DSN', () => {
+    vi.stubEnv('MODE', 'production');
+    vi.stubEnv('VITE_SENTRY_DSN', DSN);
+
+    expect(reportsEnabled()).toBe(true);
+  });
+
+  it('is off in a production build without a DSN, which would lose every report', () => {
+    vi.stubEnv('MODE', 'production');
+    vi.stubEnv('VITE_SENTRY_DSN', '');
+
+    expect(reportsEnabled()).toBe(false);
+  });
+
+  it('is on in development and in the tests, whatever the DSN, so the window can be tried out', () => {
+    for (const mode of ['development', 'test']) {
+      vi.stubEnv('MODE', mode);
+      vi.stubEnv('VITE_SENTRY_DSN', '');
+      expect(reportsEnabled()).toBe(true);
+      vi.stubEnv('VITE_SENTRY_DSN', DSN);
+      expect(reportsEnabled()).toBe(true);
+    }
   });
 });
 

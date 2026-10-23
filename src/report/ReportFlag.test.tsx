@@ -29,6 +29,17 @@ describe('ReportFlag', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  it('is not rendered in a production build without a DSN, which would lose the reports', () => {
+    vi.stubEnv('MODE', 'production');
+    vi.stubEnv('VITE_SENTRY_DSN', '');
+    try {
+      const { view } = renderFlag();
+      expect(view.container.innerHTML).toBe('');
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it('opens the report window on the question, and says so', async () => {
     const { onOpenChange } = renderFlag();
     await userEvent.click(flag());

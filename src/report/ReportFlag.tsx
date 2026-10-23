@@ -1,5 +1,6 @@
 import { Flag } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { reportsEnabled } from '../monitoring/sentry';
 import { ReportDialog } from './ReportDialog';
 import type { ReportInput, ReportOutcome, ReportedQuestion } from './report';
 import styles from './ReportFlag.module.scss';
@@ -47,6 +48,9 @@ export function ReportFlag({ question, onOpenChange, send }: ReportFlagProps) {
     setOpen(false);
     button.current?.focus();
   };
+
+  // Hooks first, then out: the flag is only there where a report has somewhere to go.
+  if (!reportsEnabled()) return null;
 
   return (
     <>

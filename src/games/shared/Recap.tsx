@@ -2,6 +2,7 @@ import { Flag, Volume2 } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import { playSound } from '../../audio/playSound';
 import type { PlaySound } from '../../audio/playSound';
+import { reportsEnabled } from '../../monitoring/sentry';
 import { ReportDialog } from '../../report/ReportDialog';
 import type { ReportInput, ReportMode, ReportOutcome } from '../../report/report';
 import { GAME } from './games';
@@ -119,6 +120,8 @@ export function Recap({ entries, play = playSound, mode, send }: RecapProps) {
   const [reporting, setReporting] = useState<number | null>(null);
   const [reported, setReported] = useState<ReadonlySet<number>>(new Set());
   const reportButtons = useRef(new Map<number, HTMLButtonElement>());
+  // A build with nowhere to send reports does not offer them.
+  const canReport = reportsEnabled();
   if (entries.length === 0) return null;
 
   return (
@@ -150,22 +153,24 @@ export function Recap({ entries, play = playSound, mode, send }: RecapProps) {
                 )}
                 {/* Reported is aria-disabled, not disabled: a disabled button
                     cannot take the focus back when the window closes. */}
-                <button
-                  ref={(node) => {
-                    if (node) reportButtons.current.set(index, node);
-                    else reportButtons.current.delete(index);
-                  }}
-                  type="button"
-                  className={styles.action}
-                  aria-label={
-                    isReported ? `Reported: ${entry.text}` : `Report the question ${entry.text}`
-                  }
-                  aria-disabled={isReported || undefined}
-                  onClick={isReported ? undefined : () => setReporting(index)}
-                >
-                  <Flag size={16} aria-hidden="true" />
-                  {isReported ? 'Reported' : 'Report'}
-                </button>
+                {canReport && (
+                  <button
+                    ref={(node) => {
+                      if (node) reportButtons.current.set(index, node);
+                      else reportButtons.current.delete(index);
+                    }}
+                    type="button"
+                    className={styles.action}
+                    aria-label={
+                      isReported ? `Reported: ${entry.text}` : `Report the question ${entry.text}`
+                    }
+                    aria-disabled={isReported || undefined}
+                    onClick={isReported ? undefined : () => setReporting(index)}
+                  >
+                    <Flag size={16} aria-hidden="true" />
+                    {isReported ? 'Reported' : 'Report'}
+                  </button>
+                )}
               </div>
             </li>
           );

@@ -41,6 +41,16 @@ export function siteDsn(): string | undefined {
 }
 
 /**
+ * Whether question reports can be made. A production build without a DSN has
+ * nowhere to send them, so it offers no way to make one rather than thank the
+ * player for a report that is lost. The dev server and the tests keep the window
+ * working: the report is logged there.
+ */
+export function reportsEnabled(): boolean {
+  return import.meta.env.MODE !== 'production' || siteDsn() !== undefined;
+}
+
+/**
  * Starts reporting the site's JavaScript errors, and returns whether it will.
  *
  * Only a production build with a DSN reports: tests and the dev server stay

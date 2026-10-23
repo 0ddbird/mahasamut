@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GAME, GAME_NAMES } from '../games/shared/games';
 import { REPORT_TUNNEL } from '../monitoring/sentry';
 import {
@@ -213,6 +213,31 @@ describe('sendReport', () => {
     expect(fetch).not.toHaveBeenCalled();
     expect(log).toHaveBeenCalledOnce();
     expect(log).toHaveBeenCalledWith(reportEvent(input(), NOW, EVENT_ID));
+  });
+
+  describe('in a production build without a DSN', () => {
+    beforeEach(() => {
+      vi.stubEnv('MODE', 'production');
+      vi.stubEnv('VITE_SENTRY_DSN', '');
+    });
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    it('says failed instead of pretending, and sends and logs nothing', async () => {
+      const { fetch, log } = deps(new Response(null, { status: 200 }));
+
+      const outcome = await sendReport(input(), {
+        fetch,
+        log,
+        now: () => NOW,
+        eventId: () => EVENT_ID,
+      });
+
+      expect(outcome).toBe('failed');
+      expect(fetch).not.toHaveBeenCalled();
+      expect(log).not.toHaveBeenCalled();
+    });
   });
 
   it('posts the envelope to the tunnel', async () => {

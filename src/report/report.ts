@@ -8,7 +8,7 @@
 import { GAME, GAME_NAMES } from '../games/shared/games';
 import type { GameId } from '../games/shared/games';
 import type { RecapEntry } from '../games/shared/recap';
-import { REPORT_TUNNEL, siteDsn } from '../monitoring/sentry';
+import { REPORT_TUNNEL, reportsEnabled, siteDsn } from '../monitoring/sentry';
 
 export type ReportReason = 'sound' | 'expected' | 'other';
 export type ReportWhere = 'question' | 'recap';
@@ -156,9 +156,11 @@ interface SendDeps {
 
 /**
  * Sends a report through the tunnel and says what became of it. Without a DSN
- * (development, tests) nothing is sent: the event is logged, and counts as sent
- * so that the form can be tried out; if even the log fails, nothing was recorded
- * and it is `failed`. It never rejects: any error on the way is `failed`.
+ * in development or tests nothing is sent: the event is logged, and counts as
+ * sent so that the form can be tried out; if even the log fails, nothing was
+ * recorded and it is `failed`. A production build without a DSN has nowhere to
+ * send it: it is `failed` too, not a pretended success. It never rejects: any
+ * error on the way is `failed`.
  */
 export async function sendReport(input: ReportInput, deps: SendDeps = {}): Promise<ReportOutcome> {
   const {
@@ -175,6 +177,7 @@ export async function sendReport(input: ReportInput, deps: SendDeps = {}): Promi
     const sentAt = now();
     const event = reportEvent(input, sentAt, eventId(), release);
     if (!dsn) {
+      if (!reportsEnabled()) return 'failed';
       log(event);
       return 'sent';
     }

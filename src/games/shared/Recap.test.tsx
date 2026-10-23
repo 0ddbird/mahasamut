@@ -21,6 +21,19 @@ describe('Recap', () => {
     expect(container.innerHTML).toBe('');
   });
 
+  it('offers no Report button in a production build without a DSN, which would lose the reports', () => {
+    vi.stubEnv('MODE', 'production');
+    vi.stubEnv('VITE_SENTRY_DSN', '');
+    try {
+      render(<Recap entries={[RIGHT, WRONG]} mode="solo" />);
+      expect(screen.queryByRole('button', { name: /^Report/ })).toBeNull();
+      // The rest of the line is untouched.
+      expect(screen.getAllByRole('button', { name: /^Listen to/ })).toHaveLength(1);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it('lists the questions in the order played, under "Your answers"', () => {
     render(<Recap entries={[RIGHT, WRONG, TIME_UP]} mode="solo" />);
     const region = screen.getByRole('region', { name: 'Your answers' });

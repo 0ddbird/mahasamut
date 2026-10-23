@@ -177,6 +177,17 @@ describe('VowelPage', () => {
       expect(flag()).toBeNull();
     });
 
+    it('hides the flag in a production build without a DSN, which would lose the reports', () => {
+      vi.stubEnv('MODE', 'production');
+      vi.stubEnv('VITE_SENTRY_DSN', '');
+      try {
+        renderPage();
+        expect(flag()).toBeNull();
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
     it('opens the window on the vowel shown, with the reasons of the game', async () => {
       renderPage();
       await userEvent.click(flag()!);
