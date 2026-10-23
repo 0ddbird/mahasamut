@@ -24,7 +24,7 @@ afterEach(() => {
 describe('App', () => {
   it('shows the site home page at /', () => {
     renderAt('/');
-    expect(screen.getByRole('heading', { level: 1, name: 'Mahasamut' })).toBeDefined();
+    expect(screen.getByRole('heading', { level: 1, name: /^Mahasamut/ })).toBeDefined();
   });
 
   it("titles each page in the browser tab, the game's name first", async () => {
@@ -110,7 +110,7 @@ describe('App', () => {
     expect(screen.getByRole('heading', { name: 'Page not found' })).toBeDefined();
 
     await userEvent.click(screen.getByRole('link', { name: 'Back to home' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Mahasamut' })).toBeDefined();
+    expect(screen.getByRole('heading', { level: 1, name: /^Mahasamut/ })).toBeDefined();
   });
 
   it('shows the bar on game pages and the not found page, not on the home page', () => {

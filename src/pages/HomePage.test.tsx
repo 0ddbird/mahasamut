@@ -22,10 +22,19 @@ const renderHome = () =>
   );
 
 describe('HomePage', () => {
-  it('shows the logo as the page title, then the tagline', () => {
+  it('titles the page with the masthead, read as the name in Latin letters and in Thai', () => {
     renderHome();
-    expect(screen.getByRole('heading', { level: 1, name: 'Mahasamut' })).toBeDefined();
-    expect(screen.getByText('Games to read Thai script')).toBeDefined();
+    const title = screen.getByRole('heading', { level: 1 });
+    expect(title.textContent).toBe('Mahasamut (มหาสมุด), the great notebook');
+    expect(within(title).getByText('มหาสมุด').getAttribute('lang')).toBe('th');
+    expect(title.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('heads the solo games with the tagline', () => {
+    renderHome();
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Games to read Thai script' }),
+    ).toBeDefined();
   });
 
   it.each(GAME_IDS)('shows a tile for %s: its sample in Thai, its name, its goal', (game) => {

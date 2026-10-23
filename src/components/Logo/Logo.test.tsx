@@ -4,7 +4,7 @@ import { Logo } from './Logo';
 
 describe('Logo', () => {
   it('reads as the site name, Mahasamut', () => {
-    const { container } = render(<Logo size="large" />);
+    const { container } = render(<Logo />);
     expect(container.textContent).toBe('Mahasamut');
   });
 });

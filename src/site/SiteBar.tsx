@@ -59,7 +59,7 @@ export function SiteBar() {
   return (
     <header className={styles.bar} data-menu-open={menuOpen || undefined}>
       <Link to="/" className={styles.home} onClick={leaveFor('/')}>
-        <Logo size="small" />
+        <Logo />
       </Link>
       {endGame !== null ? (
         <button type="button" className={styles.end} onClick={endGame}>
