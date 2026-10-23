@@ -3,6 +3,11 @@ import { GAME } from '../games/shared/games';
 import { gameMetricLabel, normalizeRoute, parseClientEvent, TRACKED_ROUTES } from './events';
 
 describe('normalizeRoute', () => {
+  it('counts the privacy page under its own name', () => {
+    expect(normalizeRoute('/privacy')).toBe('/privacy');
+    expect(normalizeRoute('/privacy/')).toBe('/privacy');
+  });
+
   it('maps known routes to themselves', () => {
     for (const route of TRACKED_ROUTES) {
       if (route === '/other') continue;

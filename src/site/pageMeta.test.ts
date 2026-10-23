@@ -47,6 +47,14 @@ describe('pageMeta', () => {
     expect(contact.description).not.toBe(pageMeta('/').description);
   });
 
+  it('gives the privacy page its own title, description and address', () => {
+    const privacy = pageMeta('/privacy');
+    expect(privacy.title).toBe('Privacy and legal notice — Mahasamut');
+    expect(privacy.canonical).toBe(`${SITE_URL}/privacy`);
+    expect(privacy.description.length).toBeGreaterThan(50);
+    expect(privacy.description).not.toBe(pageMeta('/').description);
+  });
+
   it('keeps an unknown page out of search engines', () => {
     expect(pageMeta('/nowhere')).toEqual({
       title: 'Page not found — Mahasamut',
@@ -101,7 +109,7 @@ describe('robots.txt and sitemap.xml', () => {
     expect(robots).toContain(`Sitemap: ${SITE_URL}/sitemap.xml`);
   });
 
-  it('lists the home page, every game, the about page and the contact page, and nothing else', () => {
+  it('lists the home page, every game, the about, contact and privacy pages, and nothing else', () => {
     const locs = [...read('../../public/sitemap.xml').matchAll(/<loc>([^<]+)<\/loc>/g)].map(
       ([, loc]) => loc,
     );
@@ -110,6 +118,7 @@ describe('robots.txt and sitemap.xml', () => {
       ...GAME_IDS.map((game) => `${SITE_URL}${GAME_PATHS[game]}`),
       `${SITE_URL}/about`,
       `${SITE_URL}/contact`,
+      `${SITE_URL}/privacy`,
     ]);
   });
 });

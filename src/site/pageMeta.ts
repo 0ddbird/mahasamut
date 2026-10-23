@@ -37,6 +37,13 @@ const CONTACT: PageMeta = {
   canonical: `${SITE_URL}/contact`,
 };
 
+const PRIVACY: PageMeta = {
+  title: 'Privacy and legal notice — Mahasamut',
+  description:
+    'Who publishes and hosts Mahasamut, and what its games to read Thai script keep about you: no account, no cookies, and no more than the few words of a message or a report.',
+  canonical: `${SITE_URL}/privacy`,
+};
+
 /** What each game is about, in a sentence or two. */
 const GAME_DESCRIPTIONS: Record<GameId, string> = {
   [GAME.ConsonantClass]:
@@ -63,6 +70,7 @@ export function pageMeta(pathname: string): PageMeta {
   if (path === '/') return HOME;
   if (path === '/about') return ABOUT;
   if (path === '/contact') return CONTACT;
+  if (path === '/privacy') return PRIVACY;
   const game = GAME_IDS.find((id) => path === GAME_PATHS[id] || path === `${GAME_PATHS[id]}/play`);
   if (game !== undefined) return gameMeta(game);
   return { title: 'Page not found — Mahasamut', description: HOME.description, canonical: null };
