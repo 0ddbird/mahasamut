@@ -2,6 +2,7 @@
  * Entry point for the unified Mahasamut server:
  * - POST /api/contact: contact email delivery
  * - POST /api/event: client usage events
+ * - POST /api/report: tunnel to Sentry for the site's errors and question reports
  * - GET /metrics: Prometheus metrics endpoint
  * - /socket.io/*: multiplayer rooms
  *
@@ -28,6 +29,7 @@ const { httpServer } = createUnifiedServer({
   origin: config.origin,
   contactTo: config.to,
   contactTransport: config.transport,
+  siteDsn: config.siteDsn,
   log,
 });
 

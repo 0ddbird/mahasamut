@@ -5,6 +5,8 @@
  * Node loads this file as it is, by stripping its types: no enums, no
  * namespaces, no parameter properties.
  */
+import { parseDsn } from '../report/envelope.ts';
+import type { ParsedDsn } from '../report/envelope.ts';
 import { consoleTransport, resendTransport } from './transports.ts';
 import type { Transport } from './transports.ts';
 
@@ -22,6 +24,8 @@ export interface Config {
   to: string;
   /** Resend, or the console while developing without its key. */
   transport: Transport;
+  /** The DSN of the site's Sentry project, for the report tunnel; `null` turns the tunnel off. */
+  siteDsn: ParsedDsn | null;
 }
 
 /**
@@ -29,7 +33,9 @@ export interface Config {
  * `CONTACT_TO` or `RESEND_API_KEY` throws an error that names the missing
  * variables and never a value. Elsewhere, when the key is missing, the
  * transport prints the mail it is given to `log`, so that a real key is never
- * needed, and the console transport never runs in production.
+ * needed, and the console transport never runs in production. The tunnel's
+ * `SENTRY_SITE_DSN` is optional, but when it is set it must be a DSN: the error
+ * names the variable and never its value.
  */
 export function readConfig(env: NodeJS.ProcessEnv, log: (line: string) => void): Config {
   const production = env.NODE_ENV === 'production';
@@ -45,10 +51,14 @@ export function readConfig(env: NodeJS.ProcessEnv, log: (line: string) => void):
   const port = env.CONTACT_PORT ? Number(env.CONTACT_PORT) : DEFAULT_PORT;
   if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('Invalid CONTACT_PORT');
 
+  const siteDsn = env.SENTRY_SITE_DSN ? parseDsn(env.SENTRY_SITE_DSN) : null;
+  if (env.SENTRY_SITE_DSN && !siteDsn) throw new Error('Invalid SENTRY_SITE_DSN');
+
   return {
     port,
     origin: env.CONTACT_ORIGIN || (production ? PRODUCTION_ORIGIN : DEVELOPMENT_ORIGIN),
     to: to || DEVELOPMENT_OWNER,
     transport: resendKey ? resendTransport(resendKey) : consoleTransport(log),
+    siteDsn,
   };
 }

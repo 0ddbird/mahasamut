@@ -86,6 +86,31 @@ describe('readConfig', () => {
     expect(readConfig({}, () => {}).origin).toBe('http://localhost:5173');
   });
 
+  it('reads the DSN of the site for the report tunnel, which is off without it', () => {
+    const env = { SENTRY_SITE_DSN: 'https://public@o1.ingest.de.sentry.io/42' };
+
+    expect(readConfig(env, () => {}).siteDsn).toEqual({
+      host: 'o1.ingest.de.sentry.io',
+      projectId: '42',
+      publicKey: 'public',
+    });
+    expect(readConfig({}, () => {}).siteDsn).toBeNull();
+    expect(readConfig({ SENTRY_SITE_DSN: '' }, () => {}).siteDsn).toBeNull();
+  });
+
+  it('does not need the DSN of the site in production', () => {
+    const env = { NODE_ENV: 'production', CONTACT_TO: 'owner@example.com', RESEND_API_KEY: 'k' };
+
+    expect(readConfig(env, () => {}).siteDsn).toBeNull();
+  });
+
+  it('refuses a DSN that is not one, naming the variable only', () => {
+    const env = { SENTRY_SITE_DSN: 'secret-looking-text' };
+
+    expect(() => readConfig(env, () => {})).toThrow('Invalid SENTRY_SITE_DSN');
+    expect(() => readConfig(env, () => {})).not.toThrow(/secret-looking-text/);
+  });
+
   it('refuses a port that is not one, naming the variable only', () => {
     expect(() => readConfig({ CONTACT_PORT: 'not-a-port' }, () => {})).toThrow(
       'Invalid CONTACT_PORT',
