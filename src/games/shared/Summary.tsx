@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { playSound } from '../../audio/playSound';
 import type { PlaySound } from '../../audio/playSound';
 import { Button } from '../../components/Button/Button';
+import type { ReportInput, ReportOutcome } from '../../report/report';
 import { Recap } from './Recap';
 import type { RecapEntry } from './recap';
 import { resultSentence, resultTitle, streakSentence } from './resultText';
@@ -21,6 +22,8 @@ interface SummaryProps {
   onPlayAgain: () => void;
   /** Plays the sound of a question in the recap; replaced in tests. */
   play?: PlaySound;
+  /** Sends a report from the recap; only tests give their own. */
+  send?: (input: ReportInput) => Promise<ReportOutcome>;
 }
 
 /**
@@ -34,6 +37,7 @@ export function Summary({
   withAnswerMode,
   onPlayAgain,
   play = playSound,
+  send,
 }: SummaryProps) {
   const sentence = resultSentence(score);
   const streak = streakSentence(score);
@@ -53,7 +57,7 @@ export function Summary({
       {sentence !== null && <p className={styles.score}>{sentence}</p>}
       {streak !== null && <p>{streak}</p>}
       <p className={styles.settings}>{describeSettings(settings, withAnswerMode)}</p>
-      <Recap entries={recap} play={play} />
+      <Recap entries={recap} play={play} mode="solo" send={send} />
       <Button onClick={onPlayAgain}>Play again</Button>
     </section>
   );

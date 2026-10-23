@@ -5,6 +5,7 @@ import { playSound } from '../../audio/playSound';
 import type { PlaySound } from '../../audio/playSound';
 import { GAME_NAMES } from '../../games/shared/games';
 import { Recap } from '../../games/shared/Recap';
+import type { ReportInput, ReportOutcome } from '../../report/report';
 import { wordSoundUrl } from '../../thai/words/sounds';
 import type { RoomView } from '../protocol';
 import { roundEntry } from '../recap';
@@ -17,6 +18,8 @@ interface FinalScreenProps {
   onReturnToLobby?: () => void;
   play?: PlaySound;
   soundOf?: (text: string) => string | null;
+  /** Sends a report from the recap; only tests give their own. */
+  send?: (input: ReportInput) => Promise<ReportOutcome>;
 }
 
 /** Classic podium step order: 2nd on the left, 1st in the center, 3rd on the right. */
@@ -33,6 +36,7 @@ export function FinalScreen({
   onReturnToLobby,
   play = playSound,
   soundOf = wordSoundUrl,
+  send,
 }: FinalScreenProps) {
   const podiumHeadingId = useId();
   const fullHeadingId = useId();
@@ -83,7 +87,12 @@ export function FinalScreen({
         </h2>
         <Ranking entries={phase.ranking} />
       </section>
-      <Recap entries={phase.recap.map((round) => roundEntry(round, soundOf))} play={play} />
+      <Recap
+        entries={phase.recap.map((round) => roundEntry(round, soundOf))}
+        play={play}
+        mode="multi"
+        send={send}
+      />
       {view.you.isHost && <Button onClick={() => onReturnToLobby?.()}>Back to lobby</Button>}
       <Link to="/" className={styles.homeLink}>
         Back to the home page

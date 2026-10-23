@@ -69,11 +69,22 @@
   font-family: var(--font-ipa);
 }
 
-// Pushes the Listen button to the end of the line.
-.listen {
-  display: inline-flex;
+// Pushes the buttons to the end of the line; on a narrow screen they wrap
+// together under the answer.
+.actions {
+  display: flex;
+  gap: var(--space-s);
   margin-inline-start: auto;
+}
+
+// Listen (an icon) and Report (an icon and a word) are small, to fit side by
+// side on a 360px line.
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
   padding: var(--space-xs) var(--space-s);
+  font-size: 0.875rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   color: var(--color-accent-light);
@@ -88,6 +99,13 @@
   &:focus-visible {
     outline: 2px solid var(--color-accent-light);
     outline-offset: 2px;
+  }
+
+  // A reported line: nothing more to do, but still there to take the focus.
+  &[aria-disabled='true'] {
+    border-color: transparent;
+    color: var(--color-text-muted);
+    cursor: default;
   }
 }
 

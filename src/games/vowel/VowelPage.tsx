@@ -9,6 +9,7 @@ import { ListenButton } from '../../components/ListenButton/ListenButton';
 import { ThaiDisplay } from '../../components/ThaiDisplay/ThaiDisplay';
 import { Verdict } from '../../components/Verdict/Verdict';
 import { VOWELS_PANEL } from '../../help/panels';
+import { ReportFlag } from '../../report/ReportFlag';
 import type { Rng } from '../../thai/generator';
 import { VOWELS } from '../../thai/vowels';
 import type { Vowel } from '../../thai/vowels';
@@ -18,6 +19,7 @@ import type { Deck } from '../shared/deck';
 import { GAME, GAME_NAMES } from '../shared/games';
 import { QuestionBar } from '../shared/QuestionBar';
 import { vowelEntry } from '../shared/recap';
+import type { RecapResult } from '../shared/recap';
 import { DEFAULT_SETTINGS } from '../shared/settings';
 import type { GameSettings } from '../shared/settings';
 import { Summary } from '../shared/Summary';
@@ -73,13 +75,16 @@ export function VowelPage({
 
   // The game always calls the latest callback, so `question` is the one shown.
   const vowel = currentCard(question.deck);
+  // The recap line of the question, which a report names it by as well.
+  const entryOf = (result: RecapResult) =>
+    vowelEntry(vowel.id, vowelOnCarrier(vowel), chosen ?? null, result);
   const game = useSoloGame(
     settings,
     () => {
       setQuestion(questionAt(nextCard(question.deck, rng), rng));
       setChosen(undefined);
     },
-    (result) => vowelEntry(vowel.id, vowelOnCarrier(vowel), chosen ?? null, result),
+    entryOf,
   );
 
   const expected = VOWEL_IPA[vowel.id];
@@ -146,6 +151,7 @@ export function VowelPage({
             Validate
           </Button>
         )}
+        <ReportFlag question={entryOf('right')} onOpenChange={game.setPaused} />
       </main>
     </HelpPanels>
   );

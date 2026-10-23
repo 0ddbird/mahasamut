@@ -41,6 +41,8 @@ export interface ContactHandlerDeps {
   send: (mail: Mail) => Promise<DeliverResult>;
   /** Receives one line per decision, never the content, the addresses or the IP. */
   log: (line: string) => void;
+  /** Told when `send` fails, with only the codes of its attempts. */
+  onSendFailed?: (codes: readonly string[]) => void;
   metrics?: {
     recordContactOutcome(
       outcome: 'sent' | 'fake_ok' | 'rate_limited' | 'invalid' | 'error',
@@ -86,7 +88,7 @@ function refused(status: number): ContactResponse {
 export function createContactHandler(
   deps: ContactHandlerDeps,
 ): (request: ContactRequest) => Promise<ContactResponse> {
-  const { origin, to, limits, send, log, metrics } = deps;
+  const { origin, to, limits, send, log, metrics, onSendFailed } = deps;
 
   return async (request) => {
     if (request.method !== 'POST') return refused(405);
@@ -127,6 +129,7 @@ export function createContactHandler(
       reservation.cancel();
       log(`contact: failed (${result.codes.join(', ')})`);
       metrics?.recordContactOutcome('error');
+      onSendFailed?.(result.codes);
       return { status: 502, reply: { result: 'failed' } };
     }
 

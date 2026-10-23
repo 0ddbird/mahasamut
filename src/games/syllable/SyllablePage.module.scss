@@ -5,5 +5,6 @@
   align-items: center;
   max-width: 40rem;
   margin: 0 auto;
-  padding: var(--space-m);
+  // Room under the content for the report flag (fixed at the bottom right), so that the last button scrolls clear of it.
+  padding: var(--space-m) var(--space-m) calc(var(--space-m) + 3.5rem);
 }

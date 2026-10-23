@@ -7,6 +7,7 @@ import { ListenButton } from '../../components/ListenButton/ListenButton';
 import { ThaiDisplay } from '../../components/ThaiDisplay/ThaiDisplay';
 import { CONSONANTS_PANEL, TONES_PANEL, VOWELS_PANEL } from '../../help/panels';
 import { Verdict } from '../../components/Verdict/Verdict';
+import { ReportFlag } from '../../report/ReportFlag';
 import { generateSyllable } from '../../thai/generator';
 import type { Rng } from '../../thai/generator';
 import type { CategoryGroup } from '../../thai/generator/syllables';
@@ -16,6 +17,7 @@ import { wordSoundUrl } from '../../thai/words/sounds';
 import { GAME, GAME_NAMES } from '../shared/games';
 import { QuestionBar } from '../shared/QuestionBar';
 import { syllableEntry } from '../shared/recap';
+import type { RecapResult } from '../shared/recap';
 import { DEFAULT_SETTINGS } from '../shared/settings';
 import type { GameSettings } from '../shared/settings';
 import { Summary } from '../shared/Summary';
@@ -68,15 +70,17 @@ export function SyllablePage({
   const mode = settings.answerMode;
 
   const sound = soundOf(syllable.text);
+  // The recap line of the question, which a report names it by as well.
+  // All the homographs of a word have the same tone.
+  const entryOf = (result: RecapResult) =>
+    syllableEntry(syllable.text, syllable.analyses[0].tone, answers.tone ?? null, result, sound);
   const game = useSoloGame(
     settings,
     () => {
       setSyllable(generateSyllable(rng, groups));
       setAnswers(NO_ANSWERS);
     },
-    // All the homographs of a word have the same tone.
-    (result) =>
-      syllableEntry(syllable.text, syllable.analyses[0].tone, answers.tone ?? null, result, sound),
+    entryOf,
   );
 
   const check = () => checkAnswers(answers, syllable.analyses, syllable.parts.mark, mode);
@@ -141,6 +145,7 @@ export function SyllablePage({
             Validate
           </Button>
         )}
+        <ReportFlag question={entryOf('right')} onOpenChange={game.setPaused} />
       </main>
     </HelpPanels>
   );

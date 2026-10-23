@@ -43,6 +43,8 @@ export interface AttachRoomsMetrics {
 export interface AttachRoomsOptions {
   now?: () => number;
   metrics?: AttachRoomsMetrics;
+  /** Told of an error a handler caught, with the event it was handling; the player still gets an answer. */
+  onError?: (error: unknown, event: string) => void;
 }
 
 export function attachRooms(
@@ -52,6 +54,7 @@ export function attachRooms(
 ): { sweep(): void; close(): void } {
   const now = typeof optionsOrNow === 'function' ? optionsOrNow : (optionsOrNow.now ?? Date.now);
   const metrics = typeof optionsOrNow === 'function' ? undefined : optionsOrNow.metrics;
+  const onError = typeof optionsOrNow === 'function' ? undefined : optionsOrNow.onError;
   const timers = new Map<string, ReturnType<typeof setTimeout>>();
 
   function clearRoomTimer(roomId: string): void {
@@ -145,7 +148,8 @@ export function attachRooms(
         metrics?.recordRoomCreated(settings.password !== null, now());
         attachSocket(socket, created.room, created.token);
         ack({ ok: true, roomId: created.room.id, token: created.token });
-      } catch {
+      } catch (error) {
+        onError?.(error, 'room:create');
         ack({ ok: false, error: 'invalid-settings' });
       }
     });
@@ -165,7 +169,8 @@ export function attachRooms(
           hasPassword: room.settings.password !== null,
           status: room.status,
         });
-      } catch {
+      } catch (error) {
+        onError?.(error, 'room:info');
         ack({ ok: false, error: 'not-found' });
       }
     });
@@ -204,7 +209,8 @@ export function attachRooms(
         }
         attachSocket(socket, room, joined.token);
         ack({ ok: true, token: joined.token });
-      } catch {
+      } catch (error) {
+        onError?.(error, 'room:join');
         ack({ ok: false, error: 'not-found' });
       }
     });
@@ -228,7 +234,8 @@ export function attachRooms(
         }
         attachSocket(socket, room, req.token);
         ack({ ok: true });
-      } catch {
+      } catch (error) {
+        onError?.(error, 'room:resume');
         ack({ ok: false, error: 'not-found' });
       }
     });
@@ -247,7 +254,8 @@ export function attachRooms(
           broadcastRoom(room);
         }
         ack(outcome);
-      } catch {
+      } catch (error) {
+        onError?.(error, 'room:avatar');
         ack({ ok: false, error: 'not-in-room' });
       }
     });
@@ -266,7 +274,8 @@ export function attachRooms(
           broadcastRoom(room);
         }
         ack(outcome);
-      } catch {
+      } catch (error) {
+        onError?.(error, 'room:settings');
         ack({ ok: false, error: 'not-in-room' });
       }
     });
@@ -287,7 +296,8 @@ export function attachRooms(
           broadcastRoom(room);
         }
         ack(outcome);
-      } catch {
+      } catch (error) {
+        onError?.(error, 'game:start');
         ack({ ok: false, error: 'not-in-room' });
       }
     });
@@ -311,7 +321,8 @@ export function attachRooms(
           broadcastRoom(room);
         }
         ack(outcome);
-      } catch {
+      } catch (error) {
+        onError?.(error, 'game:answer');
         ack({ ok: false, error: 'not-in-room' });
       }
     });
@@ -335,7 +346,8 @@ export function attachRooms(
           broadcastRoom(room);
         }
         ack(outcome);
-      } catch {
+      } catch (error) {
+        onError?.(error, 'game:next');
         ack({ ok: false, error: 'not-in-room' });
       }
     });
@@ -356,7 +368,8 @@ export function attachRooms(
           broadcastRoom(room);
         }
         ack(outcome);
-      } catch {
+      } catch (error) {
+        onError?.(error, 'game:lobby');
         ack({ ok: false, error: 'not-in-room' });
       }
     });

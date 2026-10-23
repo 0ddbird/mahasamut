@@ -2,6 +2,7 @@
  * Creates the unified HTTP + Socket.IO server:
  * - POST /api/contact: contact email submission via Resend/console
  * - POST /api/event: anonymous client usage metrics
+ * - POST /api/report: the tunnel that forwards the site's Sentry envelopes
  * - GET /metrics: Prometheus exposition endpoint (local loopback only)
  * - /socket.io/*: multiplayer rooms and gameplay
  */
@@ -16,12 +17,18 @@ import type { Transport } from './contact/transports';
 import { MAX_MESSAGE_BYTES, SWEEP_INTERVAL_MS } from './limits';
 import { createEventHandler, MAX_EVENT_BODY_BYTES } from './metrics/eventHandler';
 import { MetricsStore } from './metrics/store';
+import { noopMonitoring } from './monitoring';
+import type { ServerMonitoring } from './monitoring';
 import { RoomRegistry } from './registry';
+import { createBudgets } from './report/budgets';
+import type { ParsedDsn } from './report/envelope';
+import { createReportTunnel, MAX_REPORT_BODY_BYTES } from './report/tunnel';
 import { attachRooms } from './socket';
 import type { RoomServer } from './socket';
 
 export const MAX_CONTACT_BODY_BYTES = 16 * 1024;
 const ATTEMPT_MS = 3000;
+const SENTRY_TIMEOUT_MS = 5000;
 
 export interface UnifiedServerOptions {
   now?: () => number;
@@ -31,6 +38,12 @@ export interface UnifiedServerOptions {
   store?: MetricsStore;
   log?: (line: string) => void;
   registry?: RoomRegistry;
+  /** The DSN of the site's Sentry project. Without it the report tunnel answers 404. */
+  siteDsn?: ParsedDsn | null;
+  /** What the report tunnel reaches Sentry with. Tests pass a stand-in. */
+  fetch?: typeof fetch;
+  /** Where the server's own errors and failed contact sends are reported. Off by default. */
+  monitoring?: ServerMonitoring;
 }
 
 function clientIp(req: IncomingMessage): string {
@@ -72,6 +85,7 @@ export function createUnifiedServer(options: UnifiedServerOptions = {}): {
   const now = options.now ?? Date.now;
   const store = options.store ?? new MetricsStore();
   const registry = options.registry ?? new RoomRegistry();
+  const monitoring = options.monitoring ?? noopMonitoring;
 
   const origin =
     options.origin ??
@@ -93,12 +107,33 @@ export function createUnifiedServer(options: UnifiedServerOptions = {}): {
       }),
     log,
     metrics: store,
+    onSendFailed: (codes) => monitoring.contactSendFailed(codes, contactTransport.name),
   });
 
   const eventHandler = createEventHandler({
     store,
     origin,
     now,
+  });
+
+  const sentryFetch = options.fetch ?? fetch;
+  const reportTunnel = createReportTunnel({
+    siteDsn: options.siteDsn ?? null,
+    origin,
+    budgets: createBudgets(now),
+    // Only the content type is set: nothing of the visitor's request is passed on.
+    forward: async (url, body) => {
+      const response = await sentryFetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-sentry-envelope' },
+        body,
+        signal: AbortSignal.timeout(SENTRY_TIMEOUT_MS),
+      });
+      // The answer is of no use, and an unread body would hold the connection.
+      await response.body?.cancel();
+      return response.status;
+    },
+    log,
   });
 
   const httpServer = http.createServer(
@@ -145,8 +180,9 @@ export function createUnifiedServer(options: UnifiedServerOptions = {}): {
             'Cache-Control': 'no-store',
           });
           res.end(JSON.stringify(answer.reply));
-        } catch {
+        } catch (error) {
           log('contact: error');
+          monitoring.captureError(error, { handler: 'contact' });
           store.recordContactOutcome('error');
           if (!res.headersSent) {
             res.writeHead(500, {
@@ -185,7 +221,45 @@ export function createUnifiedServer(options: UnifiedServerOptions = {}): {
           });
           res.writeHead(answer.status, { 'Cache-Control': 'no-store' });
           res.end();
-        } catch {
+        } catch (error) {
+          monitoring.captureError(error, { handler: 'event' });
+          if (!res.headersSent) {
+            res.writeHead(500, { 'Cache-Control': 'no-store' });
+            res.end();
+          }
+        }
+        return;
+      }
+
+      if (pathname === '/api/report') {
+        if (Number(req.headers['content-length']) > MAX_REPORT_BODY_BYTES) {
+          res.setHeader('Connection', 'close');
+          res.writeHead(413, { 'Cache-Control': 'no-store' });
+          res.end();
+          req.resume();
+          return;
+        }
+
+        const body = await readBody(req, MAX_REPORT_BODY_BYTES);
+        if (body === null) {
+          res.setHeader('Connection', 'close');
+          res.writeHead(413, { 'Cache-Control': 'no-store' });
+          res.end();
+          return;
+        }
+
+        try {
+          const answer = await reportTunnel({
+            method: req.method ?? '',
+            origin: req.headers.origin,
+            ip: clientIp(req),
+            body,
+          });
+          res.writeHead(answer.status, { 'Cache-Control': 'no-store' });
+          res.end();
+        } catch (error) {
+          log('report: error');
+          monitoring.captureError(error, { handler: 'report' });
           if (!res.headersSent) {
             res.writeHead(500, { 'Cache-Control': 'no-store' });
             res.end();
@@ -215,7 +289,8 @@ export function createUnifiedServer(options: UnifiedServerOptions = {}): {
             'Cache-Control': 'no-store',
           });
           res.end(text);
-        } catch {
+        } catch (error) {
+          monitoring.captureError(error, { handler: 'metrics' });
           if (!res.headersSent) {
             res.writeHead(500, {
               'Content-Type': 'text/plain; charset=utf-8',
@@ -236,7 +311,11 @@ export function createUnifiedServer(options: UnifiedServerOptions = {}): {
     maxHttpBufferSize: MAX_MESSAGE_BYTES,
   });
 
-  const rooms = attachRooms(io, registry, { now, metrics: store });
+  const rooms = attachRooms(io, registry, {
+    now,
+    metrics: store,
+    onError: (error, event) => monitoring.captureError(error, { handler: event }),
+  });
   const sweepTimer = setInterval(() => rooms.sweep(), SWEEP_INTERVAL_MS);
 
   async function close(): Promise<void> {

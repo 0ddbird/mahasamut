@@ -13,6 +13,7 @@ export const TRACKED_ROUTES = [
   '/room',
   '/about',
   '/contact',
+  '/privacy',
   '/other',
 ] as const;
 

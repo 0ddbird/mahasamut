@@ -77,10 +77,11 @@ describe('ConsonantClassPage', () => {
 
   it('offers Validate, and no Next, before the answer is checked', () => {
     render(<ConsonantClassPage rng={seededRng(SEED)} />);
-    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual([
-      'End',
-      'Validate',
-    ]);
+    expect(
+      screen
+        .getAllByRole('button')
+        .map((button) => button.getAttribute('aria-label') ?? button.textContent),
+    ).toEqual(['End', 'Validate', 'Report a problem with this question']);
   });
 
   it('can only validate once a class is chosen', async () => {
@@ -318,6 +319,57 @@ describe('ConsonantClassPage', () => {
     it('offers no help panel outside learning mode', () => {
       render(<ConsonantClassPage rng={seededRng(SEED)} />);
       expect(screen.queryByRole('button', { name: 'Consonants' })).toBeNull();
+    });
+  });
+
+  describe('reporting a question', () => {
+    const flag = () =>
+      screen.queryByRole('button', { name: 'Report a problem with this question' });
+
+    it('offers the flag before and after the answer, and not on the results', async () => {
+      render(
+        <ConsonantClassPage
+          rng={seededRng(SEED)}
+          settings={{ ...DEFAULT_SETTINGS, questionCount: 1 }}
+        />,
+      );
+      expect(flag()).not.toBeNull();
+
+      await choose(WRONG_CLASS);
+      await userEvent.click(validateButton());
+      expect(flag()).not.toBeNull();
+
+      await userEvent.click(screen.getByRole('button', { name: 'See results' }));
+      expect(flag()).toBeNull();
+    });
+
+    it('opens the window on the consonant shown, with the reasons of the game', async () => {
+      render(<ConsonantClassPage rng={seededRng(SEED)} />);
+      await userEvent.click(flag()!);
+
+      const dialog = within(screen.getByRole('dialog', { name: 'Report a problem' }));
+      expect(dialog.getByText(FIRST.char)).toBeDefined();
+      expect(dialog.getAllByRole('checkbox').map((box) => box.parentElement?.textContent)).toEqual([
+        'The expected class is wrong',
+        'Other',
+      ]);
+    });
+
+    it('stops the clock while the window is open, and starts it again once closed', () => {
+      vi.useFakeTimers();
+      render(
+        <ConsonantClassPage
+          rng={seededRng(SEED)}
+          settings={{ ...DEFAULT_SETTINGS, secondsPerQuestion: 10 }}
+        />,
+      );
+      fireEvent.click(flag()!);
+      wait(60_000);
+      expect(screen.queryByRole('status')).toBeNull();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+      wait(10_000);
+      expect(screen.getByRole('status').textContent).toBe("Time's up!");
     });
   });
 });
