@@ -37,6 +37,12 @@ export function AboutPage() {
           from the Thai National Corpus of Chulalongkorn University.
         </li>
         <li>The sounds are recorded with a Google Cloud voice, and chosen by ear.</li>
+        <li>
+          The title of the home page is drawn in{' '}
+          <a href="https://fonts.google.com/specimen/Sriracha">Sriracha</a>, by Cadson Demak, and{' '}
+          <a href="https://www.dafont.com/avenircondensedhand.font">Avenir Condensed Hand</a>, by
+          Jon Grafton.
+        </li>
       </ul>
 
       <p>
