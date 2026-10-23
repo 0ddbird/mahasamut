@@ -187,6 +187,19 @@ describe('ReportDialog', () => {
     expect((await screen.findByRole('status')).textContent).toBe('Thanks!');
   });
 
+  it('describes Close by the thanks, since the focus moves there before a screen reader can announce them', async () => {
+    renderDialog();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Other' }));
+    await userEvent.click(sendButton());
+
+    const close = await screen.findByRole('button', { name: 'Close' });
+    const describedBy = close.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    const thanks = document.getElementById(describedBy!);
+    expect(thanks?.textContent).toBe('Thanks!');
+    expect(thanks?.getAttribute('role')).toBe('status');
+  });
+
   it('forgets the failure message when the player tries again', async () => {
     const send = vi.fn().mockResolvedValueOnce('failed').mockResolvedValueOnce('sent');
     renderDialog({ send });

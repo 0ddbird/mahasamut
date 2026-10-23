@@ -53,6 +53,7 @@ export function ReportDialog({
 }: ReportDialogProps) {
   const titleId = useId();
   const commentId = useId();
+  const thanksId = useId();
   const dialog = useRef<HTMLDivElement>(null);
   const firstReason = useRef<HTMLInputElement>(null);
   const form = useRef<HTMLFormElement>(null);
@@ -166,11 +167,19 @@ export function ReportDialog({
 
         {phase === 'sent' ? (
           <>
-            <p role="status" className={styles.thanks}>
+            {/* The status is mounted with its text and the focus moves to Close at once, so a
+                screen reader may not announce it: Close is described by it as well. */}
+            <p id={thanksId} role="status" className={styles.thanks}>
               Thanks!
             </p>
             <div className={styles.buttons}>
-              <button ref={closeButton} type="button" className={styles.close} onClick={onClose}>
+              <button
+                ref={closeButton}
+                type="button"
+                className={styles.close}
+                aria-describedby={thanksId}
+                onClick={onClose}
+              >
                 Close
               </button>
             </div>

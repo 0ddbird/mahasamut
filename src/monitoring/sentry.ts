@@ -59,10 +59,7 @@ export function reportsEnabled(): boolean {
  * user, cookies, query strings or referrer, no sessions, no client reports, no
  * tracing, no Replay). The SDK is loaded and started in the background.
  */
-export function initMonitoring(
-  env: MonitoringEnv,
-  load: LoadSdk = () => import('./sdk'),
-): boolean {
+export function initMonitoring(env: MonitoringEnv, load: LoadSdk = () => import('./sdk')): boolean {
   if (!env.dsn || env.mode !== 'production') return false;
 
   const dsn = env.dsn;
