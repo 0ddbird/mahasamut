@@ -263,6 +263,81 @@ describe('useSoloGame', () => {
     });
   });
 
+  describe('pause', () => {
+    it('stops the clock while paused', () => {
+      const { game } = renderGame(TIMED);
+      wait(5000);
+      const frozen = game().remainingMs;
+      act(() => game().setPaused(true));
+      expect(game().paused).toBe(true);
+
+      wait(60_000);
+      expect(game().phase).toBe('answering');
+      expect(game().remainingMs).toBe(frozen);
+
+      act(() => game().setPaused(false));
+      wait(9000);
+      expect(game().phase).toBe('answering');
+
+      wait(1000);
+      expect(game().phase).toBe('checked');
+      expect(game().timedOut).toBe(true);
+    });
+
+    it('never times out while paused', () => {
+      const { game } = renderGame(TIMED);
+      wait(14_999);
+      act(() => game().setPaused(true));
+
+      wait(60_000);
+      expect(game().timedOut).toBe(false);
+      expect(game().phase).toBe('answering');
+      expect(game().score.played).toBe(0);
+    });
+
+    it('waits to move on after a right answer while paused', () => {
+      const { game } = renderGame();
+      act(() => game().check(true));
+      act(() => game().setPaused(true));
+
+      wait(CORRECT_DELAY_MS * 5);
+      expect(game().questionNumber).toBe(1);
+
+      act(() => game().setPaused(false));
+      wait(CORRECT_DELAY_MS);
+      expect(game().questionNumber).toBe(2);
+    });
+
+    it('is no longer paused on the next question', () => {
+      const { game } = renderGame();
+      act(() => game().check(false));
+      act(() => game().setPaused(true));
+      act(() => game().next());
+
+      expect(game().paused).toBe(false);
+    });
+
+    it('is no longer paused after Play again', () => {
+      const { game } = renderGame();
+      act(() => game().setPaused(true));
+      act(() => game().end());
+      act(() => game().restart());
+
+      expect(game().paused).toBe(false);
+    });
+
+    it('does not change the score or the recap', () => {
+      const { game } = renderGame(TIMED);
+      wait(5000);
+      act(() => game().setPaused(true));
+      wait(60_000);
+      act(() => game().setPaused(false));
+
+      expect(game().score).toEqual(EMPTY_SCORE);
+      expect(game().recap).toEqual([]);
+    });
+  });
+
   it('leaves no timer behind when unmounted', () => {
     const { unmount } = renderGame(TIMED);
     unmount();

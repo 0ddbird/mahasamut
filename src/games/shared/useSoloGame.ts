@@ -44,6 +44,14 @@ export interface SoloGame {
   end: () => void;
   /** Plays again with the same settings, from an empty score. */
   restart: () => void;
+  /** The clock and the automatic move to the next question are on hold. */
+  paused: boolean;
+  /**
+   * Holds or resumes the clock and the automatic move to the next question,
+   * while the player does something else, such as reporting a problem. The
+   * time left is kept, and a right answer waits again for a full delay.
+   */
+  setPaused: (paused: boolean) => void;
 }
 
 /**
@@ -69,6 +77,11 @@ export function useSoloGame(
   const [correct, setCorrect] = useState(false);
   // Changes with every question, so that its timer starts afresh.
   const [questionKey, setQuestionKey] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  // The time left, kept apart from `remainingMs` so that a timer started after
+  // a pause can pick up from it without depending on it.
+  const leftMs = useRef(timeLimitMs);
 
   // Set at once, not on the next render: a click and the end of the time can
   // come in the same tick, and only the first may count.
@@ -107,6 +120,8 @@ export function useSoloGame(
     setCorrect(false);
     setTimedOut(false);
     setRemainingMs(timeLimitMs);
+    leftMs.current = timeLimitMs;
+    setPaused(false);
     setQuestionKey((key) => key + 1);
     setPhase('answering');
   };
@@ -118,15 +133,17 @@ export function useSoloGame(
   });
 
   useEffect(() => {
-    if (phase !== 'answering' || timeLimitMs === null) return;
-    const deadline = Date.now() + timeLimitMs;
+    if (phase !== 'answering' || timeLimitMs === null || paused) return;
+    // Starts from the time left, which is the whole time except after a pause.
+    const deadline = Date.now() + (leftMs.current ?? timeLimitMs);
     const timer = setInterval(() => {
       const left = Math.max(0, deadline - Date.now());
+      leftMs.current = left;
       setRemainingMs(left);
       if (left === 0) finishQuestionRef.current(false, true);
     }, TICK_MS);
     return () => clearInterval(timer);
-  }, [phase, questionKey, timeLimitMs]);
+  }, [phase, questionKey, timeLimitMs, paused]);
 
   const next = () => {
     if (phase !== 'checked') return;
@@ -138,7 +155,7 @@ export function useSoloGame(
     startQuestion();
   };
 
-  useNextWhenCorrect(phase === 'checked' && correct, next);
+  useNextWhenCorrect(phase === 'checked' && correct && !paused, next);
 
   // The game is not saved: once a question counts, leaving it would lose the
   // score, until the results show.
@@ -173,5 +190,7 @@ export function useSoloGame(
     next,
     end,
     restart,
+    paused,
+    setPaused,
   };
 }
