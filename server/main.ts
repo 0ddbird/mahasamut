@@ -17,7 +17,8 @@ import { createServerMonitoring } from './monitoring';
 const HOST = '127.0.0.1';
 const log = (line: string) => console.log(line);
 
-// First, so that an error while starting is reported too.
+// First, so that the errors raised from here on, the server's start included, are reported.
+// A configuration error below is only printed: the service exits without a report.
 const monitoring = createServerMonitoring(process.env, undefined, { log });
 if (monitoring.enabled) log('mahasamut: reporting errors to Sentry');
 

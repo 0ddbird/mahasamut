@@ -34,8 +34,9 @@ export interface Config {
  * variables and never a value. Elsewhere, when the key is missing, the
  * transport prints the mail it is given to `log`, so that a real key is never
  * needed, and the console transport never runs in production. The tunnel's
- * `SENTRY_SITE_DSN` is optional, but when it is set it must be a DSN: the error
- * names the variable and never its value.
+ * `SENTRY_SITE_DSN` is optional, and a wrong one is not worth stopping the
+ * backend for (contact, multiplayer): `log` gets a fixed line that names the
+ * variable and never its value, and the tunnel is off, as when it is unset.
  */
 export function readConfig(env: NodeJS.ProcessEnv, log: (line: string) => void): Config {
   const production = env.NODE_ENV === 'production';
@@ -52,7 +53,9 @@ export function readConfig(env: NodeJS.ProcessEnv, log: (line: string) => void):
   if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('Invalid CONTACT_PORT');
 
   const siteDsn = env.SENTRY_SITE_DSN ? parseDsn(env.SENTRY_SITE_DSN) : null;
-  if (env.SENTRY_SITE_DSN && !siteDsn) throw new Error('Invalid SENTRY_SITE_DSN');
+  if (env.SENTRY_SITE_DSN && !siteDsn) {
+    log('mahasamut: SENTRY_SITE_DSN is not a valid DSN, the report tunnel is off');
+  }
 
   return {
     port,

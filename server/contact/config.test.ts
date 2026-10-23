@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { readConfig } from './config.ts';
 import type { Mail } from './mail.ts';
 
@@ -104,11 +104,26 @@ describe('readConfig', () => {
     expect(readConfig(env, () => {}).siteDsn).toBeNull();
   });
 
-  it('refuses a DSN that is not one, naming the variable only', () => {
+  it('turns the tunnel off, and does not stop the backend, for a DSN that is not one', () => {
     const env = { SENTRY_SITE_DSN: 'secret-looking-text' };
+    const log = vi.fn();
 
-    expect(() => readConfig(env, () => {})).toThrow('Invalid SENTRY_SITE_DSN');
-    expect(() => readConfig(env, () => {})).not.toThrow(/secret-looking-text/);
+    const config = readConfig(env, log);
+
+    expect(config.siteDsn).toBeNull();
+    // A fixed line that names the variable only, never its value.
+    expect(log).toHaveBeenCalledOnce();
+    expect(log).toHaveBeenCalledWith(expect.stringContaining('SENTRY_SITE_DSN'));
+    expect(log.mock.calls[0][0]).not.toContain('secret-looking-text');
+  });
+
+  it('says nothing about the tunnel when the DSN is valid or not set', () => {
+    const log = vi.fn();
+
+    readConfig({ SENTRY_SITE_DSN: 'https://public@o1.ingest.de.sentry.io/42' }, log);
+    readConfig({}, log);
+
+    expect(log).not.toHaveBeenCalled();
   });
 
   it('refuses a port that is not one, naming the variable only', () => {
