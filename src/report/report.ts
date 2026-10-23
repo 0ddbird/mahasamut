@@ -59,6 +59,17 @@ export const REASON_LABELS: { [G in GameId]: Record<(typeof REASONS)[G][number],
   },
 };
 
+/**
+ * The label of a reason, for a game and a reason known only as `GameId` and
+ * `ReportReason`. It throws for a reason the game does not offer: such a label
+ * would only show a wrong text on the form.
+ */
+export function reasonLabel(game: GameId, reason: ReportReason): string {
+  const label = (REASON_LABELS[game] as Partial<Record<ReportReason, string>>)[reason];
+  if (label === undefined) throw new Error(`No "${reason}" reason for the game "${game}"`);
+  return label;
+}
+
 export const MAX_COMMENT_LENGTH = 1000;
 
 /**
@@ -74,7 +85,8 @@ export function reportEvent(
 ): Record<string, unknown> {
   const { question, reasons, comment, where, mode } = input;
   const reasonTags = Object.fromEntries(reasons.map((reason) => [`reason.${reason}`, 'yes']));
-  const text = comment.slice(0, MAX_COMMENT_LENGTH);
+  // A comment of spaces is no comment; the cut comes after the trim so that padding does not eat into the limit.
+  const text = comment.trim().slice(0, MAX_COMMENT_LENGTH);
 
   return {
     event_id: eventId,
@@ -115,6 +127,22 @@ export function reportEnvelope(event: Record<string, unknown>, dsn: string, now:
   ].join('\n');
 }
 
+/**
+ * A Sentry event id: 32 lowercase hex characters. It does not use
+ * `crypto.randomUUID`, which is missing in insecure contexts (plain HTTP) and in
+ * older browsers; `getRandomValues` is more widely there, and `Math.random` is
+ * enough for an id that only has to differ from the others.
+ */
+export function newEventId(): string {
+  const bytes = new Uint8Array(16);
+  if (globalThis.crypto?.getRandomValues) {
+    globalThis.crypto.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+  }
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
 interface SendDeps {
   /** The DSN to report to. Defaults to the build's. */
   dsn?: string;
@@ -129,7 +157,8 @@ interface SendDeps {
 /**
  * Sends a report through the tunnel and says what became of it. Without a DSN
  * (development, tests) nothing is sent: the event is logged, and counts as sent
- * so that the form can be tried out. A network error is `failed`, never thrown.
+ * so that the form can be tried out; if even the log fails, nothing was recorded
+ * and it is `failed`. It never rejects: any error on the way is `failed`.
  */
 export async function sendReport(input: ReportInput, deps: SendDeps = {}): Promise<ReportOutcome> {
   const {
@@ -137,18 +166,19 @@ export async function sendReport(input: ReportInput, deps: SendDeps = {}): Promi
     fetch: post = (...args) => fetch(...args),
     log = (data) => console.info('Report (not sent, no DSN):', data),
     now = () => new Date(),
-    eventId = () => crypto.randomUUID().replaceAll('-', ''),
+    eventId = newEventId,
     release = import.meta.env.VITE_SENTRY_RELEASE || undefined,
   } = deps;
 
-  const sentAt = now();
-  const event = reportEvent(input, sentAt, eventId(), release);
-  if (!dsn) {
-    log(event);
-    return 'sent';
-  }
-
+  // All of it is in the try: the form waits for an outcome, and a rejection would leave it without one.
   try {
+    const sentAt = now();
+    const event = reportEvent(input, sentAt, eventId(), release);
+    if (!dsn) {
+      log(event);
+      return 'sent';
+    }
+
     const response = await post(REPORT_TUNNEL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=UTF-8' },

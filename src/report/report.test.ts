@@ -3,8 +3,10 @@ import { GAME, GAME_NAMES } from '../games/shared/games';
 import { REPORT_TUNNEL } from '../monitoring/sentry';
 import {
   MAX_COMMENT_LENGTH,
+  newEventId,
   REASON_LABELS,
   REASONS,
+  reasonLabel,
   reportEnvelope,
   reportEvent,
   sendReport,
@@ -54,6 +56,36 @@ describe('REASONS', () => {
         other: 'Other',
       },
     });
+  });
+});
+
+describe('reasonLabel', () => {
+  it('labels a reason of any game', () => {
+    expect(reasonLabel(GAME.Syllable, 'expected')).toBe('The expected tone is wrong');
+    expect(reasonLabel(GAME.ConsonantClass, 'expected')).toBe('The expected class is wrong');
+    expect(reasonLabel(GAME.Vowel, 'other')).toBe('Other');
+  });
+
+  it('throws for a reason the game does not offer', () => {
+    expect(() => reasonLabel(GAME.ConsonantClass, 'sound')).toThrow(/"sound".*"consonantClass"/);
+  });
+});
+
+describe('newEventId', () => {
+  it('is 32 lowercase hex characters, and differs each time', () => {
+    const ids = [newEventId(), newEventId()];
+
+    for (const id of ids) expect(id).toMatch(/^[0-9a-f]{32}$/);
+    expect(ids[0]).not.toBe(ids[1]);
+  });
+
+  it('works where crypto is missing', () => {
+    vi.stubGlobal('crypto', undefined);
+    try {
+      expect(newEventId()).toMatch(/^[0-9a-f]{32}$/);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
 
@@ -128,6 +160,14 @@ describe('reportEvent', () => {
     expect(MAX_COMMENT_LENGTH).toBe(1000);
     expect((event.extra as { comment: string }).comment).toHaveLength(1000);
   });
+
+  it('treats a comment of spaces as empty, and trims before cutting', () => {
+    const blank = reportEvent(input({ comment: ' \n\t ' }), NOW, EVENT_ID);
+    const padded = reportEvent(input({ comment: `  ${'x'.repeat(1000)}  ` }), NOW, EVENT_ID);
+
+    expect(blank.extra).not.toHaveProperty('comment');
+    expect((padded.extra as { comment: string }).comment).toBe('x'.repeat(1000));
+  });
 });
 
 describe('reportEnvelope', () => {
@@ -198,5 +238,29 @@ describe('sendReport', () => {
       'failed',
     );
     expect(await sendReport(input(), deps(new TypeError('offline')).deps)).toBe('failed');
+  });
+
+  it('never rejects: a failure before the send is a failed report', async () => {
+    const { deps: all } = deps(new Response(null, { status: 200 }));
+    const broken = () => {
+      throw new Error('boom');
+    };
+
+    expect(await sendReport(input(), { ...all, eventId: broken })).toBe('failed');
+    expect(await sendReport(input(), { ...all, now: broken })).toBe('failed');
+    expect(await sendReport(input(), { ...all, fetch: broken })).toBe('failed');
+  });
+
+  it('says failed when it cannot even log, since nothing was recorded', async () => {
+    const { deps: all } = deps(new Response(null, { status: 200 }));
+    const outcome = await sendReport(input(), {
+      ...all,
+      dsn: undefined,
+      log: () => {
+        throw new Error('no console');
+      },
+    });
+
+    expect(outcome).toBe('failed');
   });
 });
