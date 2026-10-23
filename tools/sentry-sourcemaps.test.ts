@@ -74,6 +74,32 @@ describe('siteSourceMaps', () => {
       sourcemaps: { filesToDeleteAfterUpload: ['./dist/**/*.map'] },
     });
   });
+
+  describe('the release', () => {
+    const releaseOf = async (env: SourceMapsEnv) => {
+      const { factory, load } = fakeFactory();
+      await siteSourceMaps(env, true, load);
+      return (factory.mock.calls[0] as unknown as [{ release: { name?: string } }])[0].release.name;
+    };
+
+    it('falls back to the one the SDK reports when SENTRY_RELEASE is not set', async () => {
+      const env = { ...ENV, SENTRY_RELEASE: undefined, VITE_SENTRY_RELEASE: 'vite123' };
+
+      expect(await releaseOf(env)).toBe('vite123');
+      expect(await releaseOf({ ...env, SENTRY_RELEASE: '' })).toBe('vite123');
+    });
+
+    it('prefers SENTRY_RELEASE when both are set', async () => {
+      expect(await releaseOf({ ...ENV, VITE_SENTRY_RELEASE: 'vite123' })).toBe('abc1234');
+    });
+
+    it('is left to the plugin when neither is set, or both are empty', async () => {
+      expect(await releaseOf({ ...ENV, SENTRY_RELEASE: undefined })).toBeUndefined();
+      expect(
+        await releaseOf({ ...ENV, SENTRY_RELEASE: '', VITE_SENTRY_RELEASE: '' }),
+      ).toBeUndefined();
+    });
+  });
 });
 
 describe('a failed upload', () => {
@@ -126,5 +152,18 @@ describe('a failed upload', () => {
     await expect(
       deleteSourceMaps(join(tmpdir(), 'mahasamut-no-such-folder')),
     ).resolves.toBeUndefined();
+  });
+
+  it('fails when the folder cannot be read for another reason, so the build fails closed', async () => {
+    // A file where the folder should be: a maps folder that could not be cleaned must not pass for a clean one.
+    const dir = await mkdtemp(join(tmpdir(), 'mahasamut-cleanup-'));
+    try {
+      const file = join(dir, 'not-a-folder');
+      await writeFile(file, '');
+
+      await expect(deleteSourceMaps(file)).rejects.toMatchObject({ code: 'ENOTDIR' });
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
   });
 });

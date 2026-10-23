@@ -13,6 +13,8 @@ export interface SourceMapsEnv {
   SENTRY_URL?: string;
   /** The version of the site, which the SDK also reports (`VITE_SENTRY_RELEASE`). */
   SENTRY_RELEASE?: string;
+  /** What the SDK reads, used when `SENTRY_RELEASE` is not set, so that both name the same release. */
+  VITE_SENTRY_RELEASE?: string;
 }
 
 /** What the site build gets from the source maps, to merge into the Vite config. */
@@ -32,9 +34,18 @@ const SITE_OUT_DIR = 'dist';
 const loadSentryPlugin = async (): Promise<SentryPluginFactory> =>
   (await import('@sentry/vite-plugin')).sentryVitePlugin;
 
-/** Removes every `.map` file under `dir`. A missing folder is not an error: there is nothing to remove. */
+/**
+ * Removes every `.map` file under `dir`. A missing folder is not an error: there
+ * is nothing to remove. Any other failure is: maps that could not be cleaned must
+ * fail the build, not ship.
+ */
 export async function deleteSourceMaps(dir: string): Promise<void> {
-  const entries = await readdir(dir, { recursive: true, withFileTypes: true }).catch(() => []);
+  const entries = await readdir(dir, { recursive: true, withFileTypes: true }).catch(
+    (error: NodeJS.ErrnoException) => {
+      if (error.code === 'ENOENT') return [];
+      throw error;
+    },
+  );
   await Promise.all(
     entries
       .filter((entry) => entry.isFile() && entry.name.endsWith('.map'))
@@ -99,8 +110,12 @@ export async function siteSourceMaps(
         errorHandler: (error) =>
           console.warn(`Source maps were not uploaded to Sentry: ${error.message}`),
         // Same string as the SDK's `release` (VITE_SENTRY_RELEASE), so that an event finds its release.
-        // No commit association: it needs a repository integration and a git checkout on the VPS.
-        release: { name: env.SENTRY_RELEASE, setCommits: false },
+        // An empty variable counts as unset. No commit association: it needs a repository
+        // integration and a git checkout on the VPS.
+        release: {
+          name: env.SENTRY_RELEASE || env.VITE_SENTRY_RELEASE || undefined,
+          setCommits: false,
+        },
         // Every map of the build is uploaded, the lazy-loaded Sentry chunk's included.
         sourcemaps: { filesToDeleteAfterUpload: [`./${SITE_OUT_DIR}/**/*.map`] },
       }),
