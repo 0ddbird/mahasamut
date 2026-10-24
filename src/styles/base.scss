@@ -32,6 +32,17 @@ h1 {
   font-weight: var(--font-display-weight);
 }
 
+// Read by screen readers, not shown: the name of a game on its question
+// screens, where the room it would take goes to the question.
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 a {
   color: var(--color-accent-light);
 }

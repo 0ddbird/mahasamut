@@ -95,7 +95,7 @@ export function QuestionScreen({ view, onAnswer, play = playSound }: QuestionScr
 
   return (
     <main className={styles.page}>
-      <h1>{GAME_NAMES[view.game]}</h1>
+      <h1 className="visually-hidden">{GAME_NAMES[view.game]}</h1>
       <QuestionBar
         questionNumber={phase.index + 1}
         questionCount={view.settings.questionCount}

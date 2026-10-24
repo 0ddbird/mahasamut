@@ -64,6 +64,8 @@ export function ConsonantClassPage({
   const checked = game.phase === 'checked';
 
   const title = <h1>{GAME_NAMES[GAME.ConsonantClass]}</h1>;
+  // On the question, read but not shown: its room goes to the game.
+  const hiddenTitle = <h1 className="visually-hidden">{GAME_NAMES[GAME.ConsonantClass]}</h1>;
 
   if (game.phase === 'finished') {
     return (
@@ -84,7 +86,7 @@ export function ConsonantClassPage({
   return (
     <HelpPanels panels={settings.learningMode ? HELP_PANELS : []} resetKey={game.questionNumber}>
       <main className={styles.page}>
-        {title}
+        {hiddenTitle}
         <QuestionBar
           questionNumber={game.questionNumber}
           questionCount={settings.questionCount}
