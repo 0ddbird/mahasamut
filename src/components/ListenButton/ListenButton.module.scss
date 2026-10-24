@@ -19,4 +19,10 @@
     outline: 2px solid var(--color-accent-light);
     outline-offset: 2px;
   }
+
+  // On a phone the Thai text keeps less room under it: no longer drawn up into
+  // it, so that it stays clear of the vowels below the consonants.
+  @media (max-width: 39.99rem) {
+    margin: 0 0 var(--space-s);
+  }
 }

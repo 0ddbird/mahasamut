@@ -38,6 +38,23 @@
   gap: var(--space-s);
 }
 
+// On a phone, the choices wrap onto a second line: centred, with their title,
+// rather than leaving a ragged gap on the right.
+@media (max-width: 39.99rem) {
+  .row {
+    text-align: center;
+  }
+
+  // A legend is placed by its margins, not by the text alignment of its fieldset.
+  .title {
+    margin-inline: auto;
+  }
+
+  .options {
+    justify-content: center;
+  }
+}
+
 // The radio button itself is hidden: its label is what looks like a button.
 // It stays in the page (not display: none), so the keyboard and screen readers
 // still reach it.
@@ -55,6 +72,12 @@
   border: 2px solid var(--color-border);
   border-radius: var(--radius);
   cursor: pointer;
+
+  // On a phone, lower, so that the answers fit without scrolling; still 40px
+  // high, easy to tap.
+  @media (max-width: 39.99rem) {
+    padding-block: calc(var(--space-xs) * 1.5);
+  }
 }
 
 .input:checked + .label {

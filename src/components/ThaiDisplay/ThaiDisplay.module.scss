@@ -5,4 +5,11 @@
   // leave them room so they are not cut off.
   line-height: 1.6;
   text-align: center;
+
+  // On a phone, closer to what is around it, so that the answers fit without
+  // scrolling; the marks above and below still have room.
+  @media (max-width: 39.99rem) {
+    margin: var(--space-xs) 0;
+    line-height: 1.45;
+  }
 }

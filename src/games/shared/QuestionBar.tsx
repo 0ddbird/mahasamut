@@ -14,8 +14,9 @@ interface QuestionBarProps {
 
 /**
  * Above the question, during a game: where the player is on the left, the
- * clock on the right when the game is timed. The score waits for the results;
- * End is in the site's bar.
+ * clock on the right when the game is timed; without a clock, where the player
+ * is stands alone, centred. The score waits for the results; End is in the
+ * site's bar.
  */
 export function QuestionBar({
   questionNumber,
@@ -23,8 +24,9 @@ export function QuestionBar({
   remainingMs,
   secondsPerQuestion,
 }: QuestionBarProps) {
+  const timed = remainingMs !== null && secondsPerQuestion !== null;
   return (
-    <div className={styles.bar}>
+    <div className={styles.bar} data-clockless={!timed || undefined}>
       <div className={styles.question}>
         <span className={styles.label}>Question</span>
         <span className={styles.value}>
@@ -32,9 +34,7 @@ export function QuestionBar({
         </span>
       </div>
       <div className={styles.time}>
-        {remainingMs !== null && secondsPerQuestion !== null && (
-          <Countdown remainingMs={remainingMs} totalMs={secondsPerQuestion * 1000} />
-        )}
+        {timed && <Countdown remainingMs={remainingMs} totalMs={secondsPerQuestion * 1000} />}
       </div>
     </div>
   );

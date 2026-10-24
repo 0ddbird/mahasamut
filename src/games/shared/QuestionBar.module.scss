@@ -1,4 +1,5 @@
 // As wide as the page: the question on the left, the clock on the right.
+// Without a clock, the question alone, centred.
 .bar {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -6,12 +7,24 @@
   width: 100%;
   max-width: 28rem;
   margin-bottom: var(--space-m);
+
+  &[data-clockless] {
+    grid-template-columns: 1fr;
+  }
 }
 
 .question {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+
+  .bar[data-clockless] & {
+    align-items: center;
+  }
+}
+
+.bar[data-clockless] .time {
+  display: none;
 }
 
 .label {
@@ -26,6 +39,11 @@
   font-size: 1.5rem;
   font-weight: var(--font-display-weight);
   font-variant-numeric: tabular-nums;
+
+  // On a phone, the room goes to the question and its answers.
+  @media (max-width: 39.99rem) {
+    font-size: 1.25rem;
+  }
 }
 
 .time {

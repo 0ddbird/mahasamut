@@ -47,6 +47,22 @@ describe('QuestionBar', () => {
     expect(screen.queryByRole('timer')).toBeNull();
   });
 
+  it('centres the question number when there is no clock', () => {
+    const { container, rerender } = renderBar({ remainingMs: 12_000, secondsPerQuestion: 15 });
+    const bar = container.firstElementChild!;
+    expect(bar.hasAttribute('data-clockless')).toBe(false);
+
+    rerender(
+      <QuestionBar
+        questionNumber={3}
+        questionCount={10}
+        remainingMs={null}
+        secondsPerQuestion={null}
+      />,
+    );
+    expect(bar.hasAttribute('data-clockless')).toBe(true);
+  });
+
   // The site's bar offers End during a game, in place of the games.
   it('leaves End to the bar at the top of the page', () => {
     renderBar();
