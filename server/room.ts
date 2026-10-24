@@ -52,6 +52,8 @@ type InternalPhase =
       openedAt: number;
       deadline: number;
       submissions: Map<string, SubmittedAnswer>;
+      /** Complete answers not sent yet, by token: they count once the time is up. */
+      drafts: Map<string, GameAnswer>;
     }
   | {
       kind: 'results';
@@ -334,6 +336,28 @@ export class Room {
     return { ok: true };
   }
 
+  /**
+   * The answer the player has filled in but not sent yet: kept while it is
+   * complete, dropped as soon as it is not (`raw` incomplete, or null). If the
+   * time runs out before they send it, it counts as sent at the last moment.
+   */
+  draft(token: string, raw: unknown, now: number): Outcome<ActionError> {
+    const player = this.byToken.get(token);
+    if (!player) return { ok: false, error: 'not-in-room' };
+    if (this.phase.kind !== 'question') return { ok: false, error: 'wrong-phase' };
+    if (now >= this.phase.deadline) return { ok: false, error: 'too-late' };
+    if (this.phase.submissions.has(token)) return { ok: false, error: 'already-answered' };
+    const parsed =
+      raw === null ? null : SERVER_GAMES[this.settings.game].parseAnswer(raw, this.settings);
+    if (parsed) {
+      this.phase.drafts.set(token, parsed);
+    } else {
+      this.phase.drafts.delete(token);
+    }
+    this.activityAt = now;
+    return { ok: true };
+  }
+
   expire(now: number): boolean {
     if (this.phase.kind !== 'question') return false;
     if (now < this.phase.deadline) return false;
@@ -409,6 +433,7 @@ export class Room {
       openedAt: now,
       deadline: now + this.settings.secondsPerQuestion * 1000,
       submissions: new Map(),
+      drafts: new Map(),
     };
   }
 
@@ -424,13 +449,16 @@ export class Room {
 
   private closeQuestion(): void {
     if (this.phase.kind !== 'question') return;
-    const { index, openedAt, submissions } = this.phase;
+    const { index, openedAt, deadline, submissions, drafts } = this.phase;
     const question = this.questions[index];
     const totalMs = this.settings.secondsPerQuestion * 1000;
     const results = new Map<string, RoundResultView>();
 
     for (const player of this.players) {
-      const sub = submissions.get(player.token);
+      const draft = drafts.get(player.token);
+      const sub =
+        submissions.get(player.token) ??
+        (draft ? { answer: draft, receivedAt: deadline } : undefined);
       if (!sub) {
         results.set(player.token, { answer: null, correct: false, points: 0 });
         continue;

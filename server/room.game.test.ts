@@ -289,6 +289,53 @@ describe('Room (during a game)', () => {
     expect(phase.kind === 'question' && phase.answered).toEqual(['Anna']);
   });
 
+  describe('answers filled in but not sent', () => {
+    function resultOf(room: Room, token: string, now: number) {
+      const phase = room.viewFor(token, now).phase;
+      if (phase.kind !== 'results') throw new Error('expected the results');
+      return phase.you;
+    }
+
+    it('counts a complete answer at the deadline, as sent at the last moment', () => {
+      const { room, host, anna } = startedRoom();
+      const { right, wrong } = answersFor(0);
+      room.answer(host, right, 3_500);
+      expect(room.draft(anna, wrong, 4_000)).toEqual({ ok: true });
+      expect(room.draft(anna, right, 5_000)).toEqual({ ok: true });
+
+      const phase = room.viewFor(host, 5_000).phase;
+      expect(phase.kind === 'question' && phase.answered).toEqual(['Host']);
+      room.expire(16_000);
+      expect(resultOf(room, anna, 16_000)).toEqual({ answer: right, correct: true, points: 50 });
+    });
+
+    it('drops it once it is no longer complete', () => {
+      const { room, host, anna } = startedRoom();
+      const { right } = answersFor(0);
+      room.draft(host, right, 2_000);
+      room.draft(host, { game: 'syllable', answers: {} }, 3_000);
+      room.draft(anna, right, 2_000);
+      room.draft(anna, null, 3_000);
+
+      room.expire(16_000);
+      const nothing = { answer: null, correct: false, points: 0 };
+      expect(resultOf(room, host, 16_000)).toEqual(nothing);
+      expect(resultOf(room, anna, 16_000)).toEqual(nothing);
+    });
+
+    it('keeps the answer sent over a later one, and takes none after the deadline', () => {
+      const { room, host, anna } = startedRoom();
+      const { right, wrong } = answersFor(0);
+      room.answer(host, wrong, 2_000);
+      expect(room.draft(host, right, 3_000)).toEqual({ ok: false, error: 'already-answered' });
+      expect(room.draft(anna, right, 16_000)).toEqual({ ok: false, error: 'too-late' });
+
+      room.expire(16_000);
+      expect(resultOf(room, host, 16_000).answer).toEqual(wrong);
+      expect(resultOf(room, anna, 16_000).answer).toBeNull();
+    });
+  });
+
   describe('leaving', () => {
     it('keeps the seat and the points of a player who leaves, and lets them come back', () => {
       const { room, host, anna } = startedRoom();

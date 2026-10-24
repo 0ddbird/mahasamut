@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { playSound } from '../../audio/playSound';
 import type { PlaySound } from '../../audio/playSound';
 import { Button } from '../../components/Button/Button';
@@ -6,11 +6,12 @@ import { Countdown } from '../../components/Countdown/Countdown';
 import { ThaiDisplay } from '../../components/ThaiDisplay/ThaiDisplay';
 import { GAME_NAMES } from '../../games/shared/games';
 import { QuestionNumber } from '../../games/shared/QuestionBar';
+import type { AnswerMode } from '../../games/shared/settings';
 import { isComplete } from '../../games/syllable/check';
 import type { PlayerAnswers } from '../../games/syllable/check';
 import { TONE_MARK } from '../../thai/types';
 import type { ConsonantClass } from '../../thai/types';
-import type { ActionError, GameAnswer, RoomView } from '../protocol';
+import type { ActionError, GameAnswer, QuestionView, RoomView } from '../protocol';
 import { ConsonantClassPanel } from './panels/ConsonantClassPanel';
 import { SyllablePanel } from './panels/SyllablePanel';
 import { VowelPanel } from './panels/VowelPanel';
@@ -19,9 +20,38 @@ import styles from './QuestionScreen.module.scss';
 
 const TICK_MS = 250;
 
+/** The answer as the player has filled it in, or null while it is not complete. */
+function filledAnswer(
+  game: QuestionView['game'] | null,
+  syllableAnswers: PlayerAnswers,
+  chosenClass: ConsonantClass | undefined,
+  chosenSound: string | undefined,
+  answerMode: AnswerMode,
+): GameAnswer | null {
+  if (game === 'syllable') {
+    return isComplete(syllableAnswers, answerMode)
+      ? { game: 'syllable', answers: syllableAnswers }
+      : null;
+  }
+  if (game === 'consonantClass') {
+    return chosenClass === undefined
+      ? null
+      : { game: 'consonantClass', consonantClass: chosenClass };
+  }
+  if (game === 'vowel') {
+    return chosenSound === undefined ? null : { game: 'vowel', sound: chosenSound };
+  }
+  return null;
+}
+
 interface QuestionScreenProps {
   view: RoomView;
   onAnswer: (answer: GameAnswer) => Promise<ActionError | null>;
+  /**
+   * Told of the answer filled in but not sent, each time it changes: null
+   * while it is not complete. The server counts it if the time runs out.
+   */
+  onDraft?: (answer: GameAnswer | null) => void;
   /** The player became host during the game. */
   promoted?: boolean;
   play?: PlaySound;
@@ -31,11 +61,13 @@ interface QuestionScreenProps {
  * The screen of an open question in a multiplayer room: shows where the
  * series is and the shared countdown, the Thai text, the game's answer panel, and
  * locks the player's answer once sent; beside it, the players and who has
- * answered.
+ * answered. An answer complete but not sent when the time runs out still
+ * counts: the server is told of it as it is filled in.
  */
 export function QuestionScreen({
   view,
   onAnswer,
+  onDraft,
   promoted = false,
   play = playSound,
 }: QuestionScreenProps) {
@@ -64,10 +96,29 @@ export function QuestionScreen({
     return () => clearInterval(timer);
   }, [initialRemainingMs]);
 
-  if (phase.kind !== 'question') return null;
-
-  const sentAnswer = phase.yourAnswer;
+  const filled = filledAnswer(
+    phase.kind === 'question' ? phase.question.game : null,
+    syllableAnswers,
+    chosenClass,
+    chosenSound,
+    view.settings.answerMode,
+  );
+  const sentAnswer = phase.kind === 'question' ? phase.yourAnswer : null;
   const locked = sentLocally || sentAnswer !== null;
+
+  // Sent when the question opens (nothing filled in yet), then on each change
+  // until the answer is sent: what the server holds is what the player sees.
+  const latestOnDraft = useRef(onDraft);
+  useEffect(() => {
+    latestOnDraft.current = onDraft;
+  });
+  const filledKey = JSON.stringify(filled);
+  useEffect(() => {
+    if (locked) return;
+    latestOnDraft.current?.(JSON.parse(filledKey) as GameAnswer | null);
+  }, [filledKey, locked]);
+
+  if (phase.kind !== 'question') return null;
 
   const effectiveSyllableAnswers =
     sentAnswer?.game === 'syllable' ? sentAnswer.answers : syllableAnswers;
@@ -75,27 +126,10 @@ export function QuestionScreen({
     sentAnswer?.game === 'consonantClass' ? sentAnswer.consonantClass : chosenClass;
   const effectiveSound = sentAnswer?.game === 'vowel' ? sentAnswer.sound : chosenSound;
 
-  const complete =
-    phase.question.game === 'syllable'
-      ? isComplete(effectiveSyllableAnswers, view.settings.answerMode)
-      : phase.question.game === 'consonantClass'
-        ? effectiveClass !== undefined
-        : effectiveSound !== undefined;
-
   const validate = async () => {
-    if (!complete || locked) return;
-    let payload: GameAnswer;
-    if (phase.question.game === 'syllable') {
-      payload = { game: 'syllable', answers: effectiveSyllableAnswers };
-    } else if (phase.question.game === 'consonantClass') {
-      if (effectiveClass === undefined) return;
-      payload = { game: 'consonantClass', consonantClass: effectiveClass };
-    } else {
-      if (effectiveSound === undefined) return;
-      payload = { game: 'vowel', sound: effectiveSound };
-    }
+    if (filled === null || locked) return;
     setSentLocally(true);
-    const err = await onAnswer(payload);
+    const err = await onAnswer(filled);
     if (err === 'too-late') {
       setTooLate(true);
     } else if (err !== null) {
@@ -155,7 +189,7 @@ export function QuestionScreen({
         ) : locked ? (
           <p className={styles.status}>Answer sent.</p>
         ) : (
-          <Button disabled={!complete} onClick={() => void validate()}>
+          <Button disabled={filled === null} onClick={() => void validate()}>
             Validate
           </Button>
         )}

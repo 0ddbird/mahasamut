@@ -331,6 +331,18 @@ export function attachRooms(
       }
     });
 
+    socket.on('game:draft', (answer) => {
+      try {
+        const { roomId, token } = socket.data;
+        const room = roomId ? registry.get(roomId) : undefined;
+        if (room && token) {
+          room.draft(token, answer, now());
+        }
+      } catch (error) {
+        onError?.(error, 'game:draft');
+      }
+    });
+
     socket.on('game:next', (ack) => {
       if (typeof ack !== 'function') return;
       try {

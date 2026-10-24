@@ -94,6 +94,29 @@ describe('QuestionScreen', () => {
     expect(screen.getByText('Answer sent.')).toBeDefined();
   });
 
+  it('tells the server of the answer filled in, until it is sent', async () => {
+    const drafts: (GameAnswer | null)[] = [];
+    render(
+      <QuestionScreen
+        view={makeQuestionView()}
+        onAnswer={async () => null}
+        onDraft={(answer) => drafts.push(answer)}
+      />,
+    );
+    expect(drafts).toEqual([null]);
+
+    await userEvent.click(screen.getByRole('radio', { name: 'Mid' }));
+    await userEvent.click(screen.getByRole('radio', { name: 'Low' }));
+    expect(drafts).toEqual([
+      null,
+      { game: 'syllable', answers: { toneMark: 'none', tone: 'mid' } },
+      { game: 'syllable', answers: { toneMark: 'none', tone: 'low' } },
+    ]);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Validate' }));
+    expect(drafts).toHaveLength(3);
+  });
+
   it('shows an answer already sent after a reload', () => {
     const view = makeQuestionView({
       phase: {

@@ -144,6 +144,8 @@ export interface ClientToServerEvents {
   'room:leave': () => void;
   'game:start': (ack: (res: Ack<ActionError>) => void) => void;
   'game:answer': (answer: unknown, ack: (res: Ack<ActionError>) => void) => void;
+  /** The answer filled in but not sent, while it is complete; null once it is not. */
+  'game:draft': (answer: unknown) => void;
   'game:next': (ack: (res: Ack<ActionError>) => void) => void;
   'game:lobby': (ack: (res: Ack<ActionError>) => void) => void;
   'game:end': (ack: (res: Ack<ActionError>) => void) => void;

@@ -184,6 +184,7 @@ function ConnectedRoomPage({ roomId, socket }: { roomId: string; socket: RoomSoc
           key={session.view.phase.index}
           view={session.view}
           onAnswer={actions.answer}
+          onDraft={actions.draft}
           promoted={promoted}
         />
         {endDialog}

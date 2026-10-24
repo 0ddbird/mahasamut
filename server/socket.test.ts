@@ -207,6 +207,36 @@ describe('Socket.IO room server', () => {
     expect((await results).phase.kind).toBe('results');
   });
 
+  it('counts an answer filled in but not sent once the time is up', async () => {
+    const host = await connectClient();
+    const created = await host.emitWithAck('room:create', { settings: SETTINGS, pseudo: 'Host' });
+    if (!created.ok) throw new Error('expected room creation');
+    const guest = await connectClient();
+    await guest.emitWithAck('room:join', {
+      roomId: created.roomId,
+      pseudo: 'Anna',
+      password: null,
+    });
+    const started = waitForEvent<RoomView>(guest, 'room:state');
+    await host.emitWithAck('game:start');
+    const { phase } = await started;
+    if (phase.kind !== 'question') throw new Error('expected a question');
+
+    const draft = { game: 'syllable', answers: { tone: 'mid' } };
+    guest.emit('game:draft', draft);
+    // 20 ms before the deadline, so that the host's answer sets the timer for those 20 ms.
+    now += phase.remainingMs - 20;
+    const afterAnswer = waitForEvent<RoomView>(guest, 'room:state');
+    await host.emitWithAck('game:answer', { game: 'syllable', answers: { tone: 'low' } });
+    await afterAnswer;
+
+    const results = waitForEvent<RoomView>(guest, 'room:state');
+    now += 20;
+    const view = await results;
+    if (view.phase.kind !== 'results') throw new Error('expected the results');
+    expect(view.phase.you.answer).toEqual(draft);
+  });
+
   it('lets a player come back with their token', async () => {
     const host = await connectClient();
     const created = await host.emitWithAck('room:create', { settings: SETTINGS, pseudo: 'Host' });
