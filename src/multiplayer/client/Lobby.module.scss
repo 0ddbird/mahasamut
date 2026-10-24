@@ -139,7 +139,7 @@ $tiles-row: 36rem;
 .gameName {
   font-family: var(--font-display);
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: var(--font-display-weight);
   color: var(--color-accent-light);
   text-transform: uppercase;
 }
@@ -187,7 +187,7 @@ $tiles-row: 36rem;
   color: var(--color-accent-light);
   font-family: var(--font-display);
   font-size: 0.875rem;
-  font-weight: 700;
+  font-weight: var(--font-display-weight);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -238,6 +238,7 @@ $tiles-row: 36rem;
 .codeValue {
   color: var(--color-accent-light);
   font-family: var(--font-display);
+  font-weight: var(--font-display-weight);
   letter-spacing: 0.08em;
 }
 
@@ -312,6 +313,7 @@ $tiles-row: 36rem;
   margin: 0 0 var(--space-xs);
   color: var(--color-accent-light);
   font-family: var(--font-display);
+  font-weight: var(--font-display-weight);
   font-size: 1rem;
   text-transform: uppercase;
 }

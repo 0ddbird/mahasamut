@@ -30,11 +30,9 @@ describe('HomePage', () => {
     expect(title.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('heads the solo games with the tagline', () => {
+  it('shows the tagline under the masthead', () => {
     renderHome();
-    expect(
-      screen.getByRole('heading', { level: 2, name: 'Games to read Thai script' }),
-    ).toBeDefined();
+    expect(screen.getByText('Games to read Thai script')).toBeDefined();
   });
 
   it.each(GAME_IDS)('shows a tile for %s: its sample in Thai, its name, its goal', (game) => {

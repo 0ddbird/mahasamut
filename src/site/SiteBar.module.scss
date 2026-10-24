@@ -1,7 +1,8 @@
 // Below this width, the games fold into a menu.
 $wide: 40rem;
 
-// Scrolls with the page: a phone has little height to spare for the game.
+// Scrolls with the page: a phone has little height to spare for the game. No
+// background and no border: only its links show, on the page's own sky.
 // Behind the help panels, which hang from the top of the window over it; only
 // with its menu open does it come above them (z-index 10), menu and shade too.
 .bar {
@@ -15,8 +16,6 @@ $wide: 40rem;
   justify-content: space-between;
   gap: var(--space-m);
   padding: var(--space-s) var(--space-m);
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface);
 }
 
 .home {

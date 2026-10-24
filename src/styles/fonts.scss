@@ -1,9 +1,13 @@
 // Font families, loaded in fonts.ts: one Thai style without loops, one with
-// them, and a rounded one for the Latin text of titles.
+// them, and a light one for the Latin text of titles.
 :root {
   --font-loopless: 'Noto Sans Thai', sans-serif;
   --font-looped: 'Sarabun', sans-serif;
-  --font-display: 'Fredoka', sans-serif;
+  --font-display: 'Lexend', sans-serif;
+  // The only weight loaded for it: every title is light.
+  --font-display-weight: 300;
+  // The site's name in Thai, handwritten as on the home page's masthead.
+  --font-brand: 'Sriracha', var(--font-looped);
   // For IPA, whose letters Sarabun has not.
   --font-ipa: 'Noto Sans', sans-serif;
 }

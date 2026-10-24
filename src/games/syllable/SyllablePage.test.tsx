@@ -149,7 +149,7 @@ describe('SyllablePage', () => {
     const words = new Set<string>(pool);
     const asked: string[] = [];
     for (let question = 0; question < 50; question++) {
-      asked.push(document.querySelector('[lang="th"]')?.textContent ?? '');
+      asked.push(document.querySelector('p[lang="th"]')?.textContent ?? '');
       act(() => vi.advanceTimersByTime(1000));
       fireEvent.click(nextButton());
     }
@@ -161,7 +161,7 @@ describe('SyllablePage', () => {
     const groups = wordGroups().slice(0, 1);
     const only = new Set(groups[0]?.syllables.map((s) => s.text));
     render(<SyllablePage rng={seededRng(7)} groups={groups} />);
-    expect(only.has(document.querySelector('[lang="th"]')?.textContent ?? '')).toBe(true);
+    expect(only.has(document.querySelector('p[lang="th"]')?.textContent ?? '')).toBe(true);
   });
 
   it('starts with no tone mark chosen, and nothing else', () => {

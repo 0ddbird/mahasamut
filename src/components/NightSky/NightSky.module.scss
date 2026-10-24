@@ -1,0 +1,341 @@
+// Under it, the lanterns sit by the title; from it, all four stand in the
+// margins along the page, which are wide enough for them. Between the two, a
+// page of text has margins wide enough for two.
+$by-masthead: 40rem;
+$beside-text: 60rem;
+$in-margins: 80rem;
+
+// Holds the page over the sky, and its lanterns, which stand in the margins:
+// what of them overflows the window is cut, rather than scrolled to.
+.scene {
+  position: relative;
+  overflow-x: clip;
+}
+
+// The sky stays put while the page scrolls over it: a landscape crop around the
+// horizon, the whole picture on a portrait screen. AVIF keeps the grain of the
+// watercolour; WebP is for the browsers without it. Dark blue until it loads.
+.sky {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background-color: #08111c;
+  background-image: image-set(
+    url('../../assets/home/sky-landscape.avif') type('image/avif'),
+    url('../../assets/home/sky-landscape.webp') type('image/webp')
+  );
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  pointer-events: none;
+
+  @media (orientation: portrait) {
+    background-image: image-set(
+      url('../../assets/home/sky-portrait.avif') type('image/avif'),
+      url('../../assets/home/sky-portrait.webp') type('image/webp')
+    );
+  }
+
+  // A 4K version for the screens wider than the other one in device pixels
+  // (2560): it would be stretched there, and blurred. The others never load it.
+  @media (orientation: landscape) and (min-width: 2600px),
+    (orientation: landscape) and (min-width: 1730px) and (min-resolution: 1.5dppx),
+    (orientation: landscape) and (min-width: 1300px) and (min-resolution: 2dppx) {
+    background-image: image-set(
+      url('../../assets/home/sky-landscape-4k.avif') type('image/avif'),
+      url('../../assets/home/sky-landscape-4k.webp') type('image/webp')
+    );
+  }
+}
+
+// The wind carries a spark away, mostly sideways, on a slight arc; it fades in
+// and out at both ends of its flight, so that it never jumps back into sight.
+.spark {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  animation: blow var(--drift) linear var(--delay) infinite;
+
+  // Its glow twinkles, and its shape changes as it does.
+  > span {
+    display: block;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 40%, var(--core), var(--color) 65%);
+    box-shadow: 0 0 calc(var(--size) * 1.6) var(--glow);
+    animation: twinkle var(--twinkle) ease-in-out var(--delay) infinite;
+  }
+}
+
+.gold {
+  --core: #ffe2a0;
+  --color: #f5a33a;
+  --glow: rgb(245 163 58 / 60%);
+}
+
+.pale {
+  --core: #fff6d8;
+  --color: #ffd98a;
+  --glow: rgb(255 217 138 / 50%);
+}
+
+.white {
+  --core: #ffffff;
+  --color: #e8eef7;
+  --glow: rgb(232 238 247 / 45%);
+}
+
+@keyframes blow {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+
+  15%,
+  85% {
+    opacity: 1;
+  }
+
+  50% {
+    transform: translate(calc(var(--dx) * 0.5), calc(var(--dy) * 0.5 - 0.5rem));
+  }
+
+  100% {
+    transform: translate(var(--dx), var(--dy));
+    opacity: 0;
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    border-radius: 50%;
+    opacity: 0.9;
+  }
+
+  25% {
+    transform: scale(1.25, 0.8) rotate(25deg);
+    border-radius: 60% 40% 55% 45%;
+    opacity: 0.5;
+  }
+
+  50% {
+    transform: scale(0.85, 1.15) rotate(-15deg);
+    border-radius: 45% 55% 40% 60%;
+    opacity: 1;
+  }
+
+  75% {
+    transform: scale(1.1, 0.95) rotate(10deg);
+    border-radius: 55% 45% 60% 40%;
+    opacity: 0.7;
+  }
+}
+
+// The lanterns scroll with the page, by the content they stand next to.
+.lanterns {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+// Where a lantern stands, with its sparks around it; the lantern sways in it.
+.slot {
+  position: absolute;
+}
+
+.lantern {
+  position: relative;
+  animation: sway var(--sway) ease-in-out var(--delay) infinite;
+
+  img {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  // The light of its flame on the sky around it, pale and soft, breathing slowly.
+  &::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 62%;
+    width: 150%;
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      rgb(255 236 200 / 22%),
+      rgb(255 224 170 / 7%) 40%,
+      transparent 66%
+    );
+    animation: breathe 5s ease-in-out var(--delay) infinite alternate;
+  }
+}
+
+// On the home page. On a phone, two small ones by the masthead, off the edges
+// of the screen: one high on the left, one a little lower on the right.
+.home {
+  .small {
+    top: 0.75rem;
+    left: 1rem;
+    width: 2.4rem;
+  }
+
+  .medium {
+    top: 2.75rem;
+    right: 1rem;
+    width: 2.3rem;
+  }
+
+  .large,
+  .medium2 {
+    display: none;
+  }
+
+  // The masthead is 30rem wide at most: the right one stands close to its
+  // end, the left one lower and farther out.
+  @media (min-width: $by-masthead) {
+    .small {
+      top: 4.5rem;
+      left: max(0.5rem, calc(50% - 15rem - 5.5rem));
+      width: 3.75rem;
+    }
+
+    .medium {
+      top: 1.5rem;
+      left: min(calc(100% - 5.5rem), calc(50% + 14rem));
+      right: auto;
+      width: 5rem;
+    }
+  }
+
+  // Scattered along the margins at uneven heights; the farther ones are
+  // smaller and a little blurred.
+  @media (min-width: $in-margins) {
+    .large {
+      display: block;
+      top: 24rem;
+      left: max(1rem, calc(50% - 30rem - 11.5rem));
+      width: clamp(7rem, 9vw, 9.5rem);
+    }
+
+    .small {
+      top: 9rem;
+      left: max(2.5rem, calc(50% - 30rem - 5.5rem));
+      width: 3.75rem;
+      filter: blur(0.6px);
+      opacity: 0.85;
+    }
+
+    .medium {
+      top: 1.75rem;
+      left: calc(50% + 15rem + 0.5rem);
+      width: 5.5rem;
+    }
+
+    .medium2 {
+      display: block;
+      top: 34rem;
+      right: max(2rem, calc(50% - 30rem - 8.5rem));
+      width: 5rem;
+      filter: blur(0.4px);
+    }
+  }
+}
+
+// On a page of text, a column 36rem wide whose title is short: one lantern by
+// the end of the title, then more in the margins as they widen.
+.page {
+  .small,
+  .large,
+  .medium2 {
+    display: none;
+  }
+
+  .medium {
+    top: 0.75rem;
+    right: 1rem;
+    width: 2.3rem;
+  }
+
+  @media (min-width: $by-masthead) {
+    .medium {
+      top: 1rem;
+      right: max(1rem, calc(50% - 18rem - 6rem));
+      width: 4.5rem;
+    }
+  }
+
+  @media (min-width: $beside-text) {
+    .small {
+      display: block;
+      top: 9rem;
+      left: calc(50% - 18rem - 6.5rem);
+      width: 3.75rem;
+      filter: blur(0.6px);
+      opacity: 0.85;
+    }
+
+    .medium {
+      top: 1.5rem;
+      right: calc(50% - 18rem - 8rem);
+      width: 5rem;
+    }
+  }
+
+  @media (min-width: $in-margins) {
+    .large {
+      display: block;
+      top: 16rem;
+      left: calc(50% - 18rem - 14rem);
+      width: clamp(7rem, 9vw, 9.5rem);
+    }
+
+    .medium2 {
+      display: block;
+      top: 26rem;
+      right: calc(50% - 18rem - 9rem);
+      width: 5rem;
+      filter: blur(0.4px);
+    }
+  }
+}
+
+@keyframes sway {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2.5deg);
+  }
+
+  50% {
+    transform: translateY(-0.8rem) rotate(2.5deg);
+  }
+}
+
+@keyframes breathe {
+  from {
+    opacity: 0.6;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+// Still for those who ask for less motion: the sparks where they start, the
+// lanterns upright, their light steady.
+@media (prefers-reduced-motion: reduce) {
+  .spark,
+  .spark > span,
+  .lantern,
+  .lantern::before {
+    animation: none;
+  }
+}

@@ -1,10 +1,17 @@
 import styles from './Logo.module.scss';
 
 /**
- * The site's name in the navigation bar, standing in for a logo until there
- * is one (the home page has its masthead instead). Its text reads "Mahasamut";
- * the capitals come from the style.
+ * The site's name in the navigation bar: มหาสมุด, handwritten like the home
+ * page's masthead. Screen readers read "Mahasamut" instead, so that the link
+ * home keeps that name.
  */
 export function Logo() {
-  return <span className={styles.logo}>Mahasamut</span>;
+  return (
+    <span className={styles.logo}>
+      <span lang="th" aria-hidden="true">
+        มหาสมุด
+      </span>
+      <span className={styles.name}>Mahasamut</span>
+    </span>
+  );
 }

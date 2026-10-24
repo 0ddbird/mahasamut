@@ -9,15 +9,14 @@ $one-row: 40rem;
 }
 
 .title {
-  margin: var(--space-m) 0 var(--space-l);
+  margin: var(--space-m) 0;
 }
 
-// The heading of the solo games, as quiet as a caption.
+// Under the masthead, as quiet as a caption.
 .tagline {
-  margin: 0 0 var(--space-m);
+  margin: 0 0 var(--space-l);
   color: var(--color-text-muted);
   font-size: 0.875rem;
-  font-weight: 400;
   letter-spacing: 0.15em;
   text-transform: uppercase;
 }
@@ -57,7 +56,7 @@ $one-row: 40rem;
   color: var(--color-accent-light);
   font-family: var(--font-display);
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: var(--font-display-weight);
   text-transform: uppercase;
 }
 
@@ -149,7 +148,7 @@ $one-row: 40rem;
 .name {
   font-family: var(--font-display);
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: var(--font-display-weight);
   color: var(--color-accent-light);
   text-transform: uppercase;
 }
@@ -168,7 +167,7 @@ $one-row: 40rem;
   background: var(--color-accent);
   box-shadow: 0 3px 0 var(--color-glow);
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: var(--font-display-weight);
   text-transform: uppercase;
 }
 

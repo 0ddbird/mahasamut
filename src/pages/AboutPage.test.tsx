@@ -16,7 +16,7 @@ const page = () => within(screen.getByRole('main'));
 describe('AboutPage', () => {
   it('is served at /about, under the bar', () => {
     renderAbout();
-    expect(screen.getByRole('heading', { level: 1, name: 'About Mahasamut' })).toBeDefined();
+    expect(screen.getByRole('heading', { level: 1, name: 'About มหาสมุด' })).toBeDefined();
     expect(screen.getByRole('banner')).toBeDefined();
   });
 

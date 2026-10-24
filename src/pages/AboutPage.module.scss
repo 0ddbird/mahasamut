@@ -8,10 +8,16 @@
   h2 {
     margin: var(--space-l) 0 var(--space-s);
     font-family: var(--font-display);
+    font-weight: var(--font-display-weight);
     font-size: 1.25rem;
   }
 
   a {
     color: var(--color-accent-light);
   }
+}
+
+// The site's name, handwritten as on the masthead and in the bar.
+.name {
+  font-family: var(--font-brand);
 }
