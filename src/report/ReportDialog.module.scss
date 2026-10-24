@@ -121,6 +121,9 @@
   border-radius: var(--radius);
   color: var(--color-text);
   background: none;
+  font-family: var(--font-display);
+  font-weight: var(--font-display-weight);
+  text-transform: uppercase;
   cursor: pointer;
 
   &:focus-visible {
@@ -136,6 +139,9 @@
   border-radius: var(--radius);
   color: var(--color-accent-text);
   background: var(--color-accent);
+  font-family: var(--font-display);
+  font-weight: var(--font-display-weight);
+  text-transform: uppercase;
   cursor: pointer;
 
   &:focus-visible {

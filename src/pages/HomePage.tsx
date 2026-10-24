@@ -81,7 +81,7 @@ export function HomePage() {
               <span className={styles.name}>{GAME_NAMES[game]}</span>
               <span className={styles.goal}>{GAME_GOALS[game]}</span>
               <span className={styles.play} aria-hidden="true">
-                ▶ Play
+                Play
               </span>
             </Link>
           </li>

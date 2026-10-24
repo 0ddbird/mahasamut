@@ -45,6 +45,9 @@
 .cancel {
   padding: var(--space-s) var(--space-l);
   border-radius: var(--radius);
+  font-family: var(--font-display);
+  font-weight: var(--font-display-weight);
+  text-transform: uppercase;
   cursor: pointer;
 
   &:focus-visible {
