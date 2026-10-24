@@ -63,7 +63,7 @@ describe('SiteFooter', () => {
     await userEvent.click(footer().getByRole('link', { name: 'About' }));
     expect(screen.getByRole('alertdialog', { name: 'Leave the game?' })).toBeDefined();
     await userEvent.click(screen.getByRole('button', { name: 'Leave' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'About Mahasamut' })).toBeDefined();
+    expect(screen.getByRole('heading', { level: 1, name: 'About มหาสมุด' })).toBeDefined();
   });
 
   it('asks before leaving a game for the contact page, like the logo', async () => {

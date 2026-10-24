@@ -22,6 +22,7 @@
   margin: 0 0 var(--space-m);
   color: var(--color-accent-light);
   font-family: var(--font-display);
+  font-weight: var(--font-display-weight);
   font-size: 1rem;
   text-transform: uppercase;
 }
@@ -79,7 +80,7 @@
   border-radius: var(--radius) var(--radius) 0 0;
   font-family: var(--font-display);
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: var(--font-display-weight);
 
   &[data-rank='1'] {
     height: 5.5rem;

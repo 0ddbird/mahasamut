@@ -8,6 +8,7 @@
   h2 {
     margin: calc(var(--space-l) * 1.5) 0 0;
     font-family: var(--font-display);
+    font-weight: var(--font-display-weight);
     font-size: 1.25rem;
   }
 
@@ -23,6 +24,7 @@
   h3 {
     margin: 0 0 var(--space-xs);
     font-family: var(--font-display);
+    font-weight: var(--font-display-weight);
     font-size: 1rem;
   }
 

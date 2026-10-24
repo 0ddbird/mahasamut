@@ -12,7 +12,12 @@ import styles from './AboutPage.module.scss';
 export function AboutPage() {
   return (
     <main className={styles.page}>
-      <h1>About Mahasamut</h1>
+      <h1>
+        About{' '}
+        <span lang="th" className={styles.name}>
+          มหาสมุด
+        </span>
+      </h1>
       <p>
         A great notebook for an ocean of letters: <span lang="th">มหา</span> <i>maha</i> means
         “great” and <span lang="th">สมุด</span> <i>samut</i> “notebook”. Said aloud, the name sounds
@@ -40,8 +45,9 @@ export function AboutPage() {
         <li>
           The title of the home page is drawn in{' '}
           <a href="https://fonts.google.com/specimen/Sriracha">Sriracha</a>, by Cadson Demak, and{' '}
-          <a href="https://www.dafont.com/avenircondensedhand.font">Avenir Condensed Hand</a>, by
-          Jon Grafton.
+          <a href="https://www.dafont.com/cardenio-modern.font">Cardenio Modern</a>, by Nils Cordes,
+          under the <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>{' '}
+          licence.
         </li>
       </ul>
 

@@ -18,7 +18,7 @@
   padding: 0;
   font-family: var(--font-display);
   font-size: 1.125rem;
-  font-weight: 500;
+  font-weight: var(--font-display-weight);
 
   & + * {
     clear: both;
