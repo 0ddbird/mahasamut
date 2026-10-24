@@ -357,6 +357,23 @@ export class Room {
     return { ok: true };
   }
 
+  /**
+   * The host ends the game before its last question: everyone goes to the
+   * podium. A question still open is dropped, since it would count only for
+   * those who already answered it.
+   */
+  end(token: string, now: number): Outcome<ActionError> {
+    const player = this.byToken.get(token);
+    if (!player) return { ok: false, error: 'not-in-room' };
+    if (!player.isHost) return { ok: false, error: 'not-host' };
+    if (this.phase.kind !== 'question' && this.phase.kind !== 'results') {
+      return { ok: false, error: 'wrong-phase' };
+    }
+    this.phase = { kind: 'finished' };
+    this.activityAt = now;
+    return { ok: true };
+  }
+
   viewFor(token: string, now: number): RoomView {
     const you = this.byToken.get(token) ?? this.players[0];
     const host = this.players.find((p) => p.isHost) ?? this.players[0];
@@ -473,9 +490,12 @@ export class Room {
     };
   }
 
-  /** One entry per question of the game, with only this player's own result. */
+  /**
+   * One entry per question played, with only this player's own result: all of
+   * them, unless the host ended the game early.
+   */
   private recapFor(token: string): RecapRoundView[] {
-    return this.questions.map((q, index) => {
+    return this.questions.slice(0, this.roundResults.length).map((q, index) => {
       const own = this.roundResults[index]?.get(token);
       return {
         question: q.view,

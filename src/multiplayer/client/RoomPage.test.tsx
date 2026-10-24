@@ -163,5 +163,30 @@ describe('RoomPage', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Leave' }));
       expect(screen.getByText(/Another player will take over as host/)).toBeDefined();
     });
+
+    it('lets the host end the game for everyone, once confirmed', async () => {
+      const fake = inGame(QUESTION_VIEW);
+
+      await userEvent.click(screen.getByRole('button', { name: 'End the game' }));
+      const dialog = screen.getByRole('alertdialog', { name: 'End the game for everyone?' });
+      expect(within(dialog).getByText(/The question in progress will not count/)).toBeDefined();
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Keep playing' }));
+      expect(fake.emitted.some((e) => e.event === 'game:end')).toBe(false);
+
+      await userEvent.click(screen.getByRole('button', { name: 'End the game' }));
+      await userEvent.click(
+        within(screen.getByRole('alertdialog')).getByRole('button', { name: 'End the game' }),
+      );
+      expect(fake.emitted.some((e) => e.event === 'game:end')).toBe(true);
+      expect(screen.queryByRole('alertdialog')).toBeNull();
+    });
+
+    it('offers End the game to the host only, and not in the lobby', () => {
+      const fake = inGame(ANNA_QUESTION_VIEW);
+      expect(screen.queryByRole('button', { name: 'End the game' })).toBeNull();
+      act(() => fake.push('room:state', LOBBY_VIEW));
+      expect(screen.queryByRole('button', { name: 'End the game' })).toBeNull();
+      expect(screen.getByRole('button', { name: 'Leave' })).toBeDefined();
+    });
   });
 });

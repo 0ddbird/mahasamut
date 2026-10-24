@@ -1,5 +1,12 @@
+import { useRef, useState } from 'react';
 import { Link, useParams } from 'react-router';
-import { useAskToLeave, useGameEndInBar, useLeaveGuard } from '../../site/leaveGuard';
+import { ConfirmDialog } from '../../components/ConfirmDialog/ConfirmDialog';
+import {
+  useAskToLeave,
+  useGameActionInBar,
+  useGameEndInBar,
+  useLeaveGuard,
+} from '../../site/leaveGuard';
 import type { LeavePrompt } from '../../site/leaveGuard';
 import { normalizeRoomId } from '../roomId';
 import { FinalScreen } from './FinalScreen';
@@ -43,7 +50,8 @@ interface RoomPageProps {
  * The page at `/room/:roomId`: validates the ID, connects to the room, and
  * shows the join form, the lobby, the current question, the round results, or
  * the final podium. While in an active room, `Leave` takes the place of the
- * games in the top bar, and asks first.
+ * games in the top bar, and asks first; during the game, the host also has
+ * `End the game` there, which sends everyone to the podium.
  */
 export function RoomPage({ socket = getRoomSocket() }: RoomPageProps) {
   const { roomId: rawId } = useParams<{ roomId: string }>();
@@ -88,6 +96,41 @@ function ConnectedRoomPage({ roomId, socket }: { roomId: string; socket: RoomSoc
     'Leave',
   );
 
+  const [ending, setEnding] = useState(false);
+  if (ending && !(inGame && isHost)) {
+    setEnding(false);
+  }
+  const focusOnStay = useRef<HTMLElement | null>(null);
+  useGameActionInBar(
+    inGame && isHost,
+    () => {
+      focusOnStay.current =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      setEnding(true);
+    },
+    'End the game',
+  );
+  const endDialog = ending && (
+    <ConfirmDialog
+      title="End the game for everyone?"
+      message={
+        phaseKind === 'question'
+          ? 'Everyone goes to the podium now. The question in progress will not count.'
+          : 'Everyone goes to the podium now.'
+      }
+      confirmLabel="End the game"
+      cancelLabel="Keep playing"
+      onConfirm={() => {
+        setEnding(false);
+        actions.end();
+      }}
+      onCancel={() => {
+        setEnding(false);
+        focusOnStay.current?.focus();
+      }}
+    />
+  );
+
   if (session.status === 'connecting') {
     return (
       <main className={styles.page}>
@@ -123,15 +166,23 @@ function ConnectedRoomPage({ roomId, socket }: { roomId: string; socket: RoomSoc
   }
   if (session.view.phase.kind === 'question') {
     return (
-      <QuestionScreen
-        key={session.view.phase.index}
-        view={session.view}
-        onAnswer={actions.answer}
-      />
+      <>
+        <QuestionScreen
+          key={session.view.phase.index}
+          view={session.view}
+          onAnswer={actions.answer}
+        />
+        {endDialog}
+      </>
     );
   }
   if (session.view.phase.kind === 'results') {
-    return <ResultsScreen view={session.view} onNext={actions.next} />;
+    return (
+      <>
+        <ResultsScreen view={session.view} onNext={actions.next} />
+        {endDialog}
+      </>
+    );
   }
 
   return <FinalScreen view={session.view} onReturnToLobby={actions.returnToLobby} />;

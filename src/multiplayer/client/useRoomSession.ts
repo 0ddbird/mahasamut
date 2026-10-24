@@ -1,9 +1,9 @@
 /**
  * Manages the browser's session in a room: resuming with a saved token on
  * connection, asking for the room info before joining, receiving `room:state`
- * updates, and exposing the room actions (`join`, `start`, `answer`, `next`).
- * Leaving the page leaves the room: in the lobby for good; once the game has
- * started, the token kept in the tab brings the player back to their seat.
+ * updates, and exposing the room actions (`join`, `start`, `answer`, `next`,
+ * `end`). Leaving the page leaves the room: in the lobby for good; once the game
+ * has started, the token kept in the tab brings the player back to their seat.
  */
 import { useEffect, useState } from 'react';
 import type { GameId } from '../../games/shared/games';
@@ -27,6 +27,7 @@ export interface RoomActions {
   answer(answer: GameAnswer): Promise<ActionError | null>;
   next(): void;
   returnToLobby(): void;
+  end(): void;
 }
 
 const pendingDisconnects = new Map<RoomSocket, ReturnType<typeof setTimeout>>();
@@ -148,6 +149,9 @@ export function useRoomSession(socket: RoomSocket, roomId: string): [RoomSession
     },
     returnToLobby() {
       socket.emit('game:lobby', () => {});
+    },
+    end() {
+      socket.emit('game:end', () => {});
     },
   };
 

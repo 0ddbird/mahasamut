@@ -4,7 +4,7 @@ import type { FocusEvent, KeyboardEvent, MouseEvent } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
 import { Logo } from '../components/Logo/Logo';
 import { GAME_IDS, GAME_NAMES, GAME_PATHS } from '../games/shared/games';
-import { useGameEnd, useGameEndLabel, useLeaveLink } from './leaveGuard';
+import { useGameAction, useGameEnd, useGameEndLabel, useLeaveLink } from './leaveGuard';
 import styles from './SiteBar.module.scss';
 
 /**
@@ -14,13 +14,15 @@ import styles from './SiteBar.module.scss';
  *
  * While a game is in progress, End takes the place of the games, on the right:
  * the player is in the game, not choosing one. Its score would be lost: the
- * logo asks the player to confirm before leaving.
+ * logo asks the player to confirm before leaving. A page may put a second
+ * button before End (End the game, for the host of a room).
  */
 export function SiteBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const listId = useId();
   const endGame = useGameEnd();
   const endLabel = useGameEndLabel();
+  const gameAction = useGameAction();
   const leaveLink = useLeaveLink();
   const menuButton = useRef<HTMLButtonElement>(null);
 
@@ -62,9 +64,16 @@ export function SiteBar() {
         <Logo />
       </Link>
       {endGame !== null ? (
-        <button type="button" className={styles.end} onClick={endGame}>
-          {endLabel}
-        </button>
+        <div className={styles.ends}>
+          {gameAction !== null && (
+            <button type="button" className={styles.end} onClick={gameAction.run}>
+              {gameAction.label}
+            </button>
+          )}
+          <button type="button" className={styles.end} onClick={endGame}>
+            {endLabel}
+          </button>
+        </div>
       ) : (
         <nav aria-label="Games" onKeyDown={closeOnEscape} onBlur={closeOnFocusOut}>
           <button

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { ConfirmDialog } from '../components/ConfirmDialog/ConfirmDialog';
 import { DEFAULT_LEAVE_PROMPT, LeaveGuardContext } from './leaveGuard';
-import type { LeavePrompt } from './leaveGuard';
+import type { GameAction, LeavePrompt } from './leaveGuard';
 
 /**
  * Holds whether leaving the page is guarded and how to end its game, for the
@@ -14,6 +14,7 @@ export function LeaveGuardProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const [guarded, setGuarded] = useState(false);
   const [leavePrompt, setLeavePrompt] = useState<LeavePrompt>(DEFAULT_LEAVE_PROMPT);
+  const [gameAction, setGameAction] = useState<GameAction | null>(null);
   const [endGame, setEndGameState] = useState<(() => void) | null>(null);
   const [endLabel, setEndLabel] = useState('End');
   // A function given to a state setter would be called as an updater: wrap it.
@@ -50,6 +51,8 @@ export function LeaveGuardProvider({ children }: { children: ReactNode }) {
         setEndGame,
         endLabel,
         setEndLabel,
+        gameAction,
+        setGameAction,
         askToLeave,
       }}
     >

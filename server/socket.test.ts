@@ -150,6 +150,37 @@ describe('Socket.IO room server', () => {
     expect(guestView.phase.kind).toBe('results');
   });
 
+  it('lets a host who left come back as a player, and the new host end the game', async () => {
+    const host = await connectClient();
+    const created = await host.emitWithAck('room:create', { settings: SETTINGS, pseudo: 'Host' });
+    if (!created.ok) throw new Error('expected room creation');
+    const guest = await connectClient();
+    await guest.emitWithAck('room:join', {
+      roomId: created.roomId,
+      pseudo: 'Anna',
+      password: null,
+    });
+    const started = waitForEvent<RoomView>(guest, 'room:state');
+    await host.emitWithAck('game:start');
+    await started;
+
+    const afterLeave = waitForEvent<RoomView>(guest, 'room:state');
+    host.emit('room:leave');
+    expect((await afterLeave).you.isHost).toBe(true);
+
+    const back = await connectClient();
+    const resumed = await back.emitWithAck('room:resume', {
+      roomId: created.roomId,
+      token: created.token,
+    });
+    expect(resumed).toEqual({ ok: true });
+    expect(await back.emitWithAck('game:end')).toEqual({ ok: false, error: 'not-host' });
+
+    const finished = waitForEvent<RoomView>(back, 'room:state');
+    expect(await guest.emitWithAck('game:end')).toEqual({ ok: true });
+    expect((await finished).phase.kind).toBe('finished');
+  });
+
   it('closes the question at the deadline, even when the timer fires a little early', async () => {
     const host = await connectClient();
     const created = await host.emitWithAck('room:create', { settings: SETTINGS, pseudo: 'Host' });

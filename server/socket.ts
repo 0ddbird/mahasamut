@@ -356,6 +356,28 @@ export function attachRooms(
       }
     });
 
+    socket.on('game:end', (ack) => {
+      if (typeof ack !== 'function') return;
+      try {
+        const { roomId, token } = socket.data;
+        const room = roomId ? registry.get(roomId) : undefined;
+        if (!room || !token) {
+          ack({ ok: false, error: 'not-in-room' });
+          return;
+        }
+        const outcome = room.end(token, now());
+        if (outcome.ok) {
+          metrics?.recordMultiGameFinished(room.settings.game, now());
+          syncRoomTimer(room);
+          broadcastRoom(room);
+        }
+        ack(outcome);
+      } catch (error) {
+        onError?.(error, 'game:end');
+        ack({ ok: false, error: 'not-in-room' });
+      }
+    });
+
     socket.on('game:lobby', (ack) => {
       if (typeof ack !== 'function') return;
       try {

@@ -5,7 +5,9 @@
  *   saved. The page says so with useLeaveGuard; the bar asks useIsLeaveGuarded
  *   before it leaves, and asks the player first if so;
  * - how to end that game: the page hands it over with useGameEndInBar, and the
- *   bar shows End in place of the games while it has one (useGameEnd).
+ *   bar shows End in place of the games while it has one (useGameEnd). A page
+ *   may add a second button beside it with useGameActionInBar (End the game,
+ *   for the host of a room).
  *
  * A link of the bar or of the footer leaves through useLeaveLink, which asks
  * first during a game. The state, and the dialog that asks, live in
@@ -26,6 +28,12 @@ export const DEFAULT_LEAVE_PROMPT: LeavePrompt = {
   message: 'Your score will be lost.',
 };
 
+/** A button of the bar beside End, while a game is in progress. */
+export interface GameAction {
+  label: string;
+  run: () => void;
+}
+
 interface LeaveGuard {
   guarded: boolean;
   setGuarded: (guarded: boolean) => void;
@@ -37,6 +45,8 @@ interface LeaveGuard {
   /** The label of the end button in the bar ('End' in solo, 'Leave' in a room). */
   endLabel: string;
   setEndLabel: (label: string) => void;
+  gameAction: GameAction | null;
+  setGameAction: (action: GameAction | null) => void;
   /** Asks the player before going to `to`; `focusOnStay` gets the focus back if they stay. */
   askToLeave: (to: string, focusOnStay: HTMLElement | null) => void;
 }
@@ -50,6 +60,8 @@ export const LeaveGuardContext = createContext<LeaveGuard>({
   setEndGame: () => {},
   endLabel: 'End',
   setEndLabel: () => {},
+  gameAction: null,
+  setGameAction: () => {},
   askToLeave: () => {},
 });
 
@@ -98,6 +110,28 @@ export function useGameEndInBar(active: boolean, end: () => void, label = 'End')
       setEndLabel('End');
     };
   }, [active, label, setEndGame, setEndLabel]);
+}
+
+/**
+ * Hands the bar a second button, `label`, beside End while `active` is true.
+ * The bar always calls the latest `run`.
+ */
+export function useGameActionInBar(active: boolean, run: () => void, label: string): void {
+  const { setGameAction } = useContext(LeaveGuardContext);
+  const latestRun = useRef(run);
+  useEffect(() => {
+    latestRun.current = run;
+  });
+  useEffect(() => {
+    if (!active) return;
+    setGameAction({ label, run: () => latestRun.current() });
+    return () => setGameAction(null);
+  }, [active, label, setGameAction]);
+}
+
+/** The second button of the bar during a game, or `null`. */
+export function useGameAction(): GameAction | null {
+  return useContext(LeaveGuardContext).gameAction;
 }
 
 /** How to end the game on the page, or `null` when none is in progress. */

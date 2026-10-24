@@ -146,6 +146,7 @@ export interface ClientToServerEvents {
   'game:answer': (answer: unknown, ack: (res: Ack<ActionError>) => void) => void;
   'game:next': (ack: (res: Ack<ActionError>) => void) => void;
   'game:lobby': (ack: (res: Ack<ActionError>) => void) => void;
+  'game:end': (ack: (res: Ack<ActionError>) => void) => void;
 }
 
 export interface ServerToClientEvents {

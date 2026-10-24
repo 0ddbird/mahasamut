@@ -347,4 +347,48 @@ describe('Room (during a game)', () => {
       expect(room.hasPlayer(joined.token)).toBe(false);
     });
   });
+
+  describe('ending early', () => {
+    it('lets only the host end the game, during a question or its results', () => {
+      const { room, host, anna } = startedRoom();
+      expect(room.end(anna, 2_000)).toEqual({ ok: false, error: 'not-host' });
+      expect(room.end(host, 2_000)).toEqual({ ok: true });
+      expect(room.viewFor(anna, 2_000).phase.kind).toBe('finished');
+      expect(room.end(host, 3_000)).toEqual({ ok: false, error: 'wrong-phase' });
+
+      room.returnToLobby(host, 4_000);
+      expect(room.end(host, 5_000)).toEqual({ ok: false, error: 'wrong-phase' });
+    });
+
+    it('drops the open question, and recaps only the questions played', () => {
+      const { room, host, anna } = startedRoom();
+      const q0 = answersFor(0);
+      room.answer(host, q0.right, 3_500); // +92
+      room.answer(anna, q0.wrong, 4_000);
+      room.next(host, 5_000);
+      room.answer(host, answersFor(1).right, 6_000);
+
+      expect(room.end(host, 7_000)).toEqual({ ok: true });
+      expect(room.deadline).toBeNull();
+      const phase = room.viewFor(host, 7_000).phase;
+      if (phase.kind !== 'finished') throw new Error('expected the finished phase');
+      expect(phase.ranking[0]).toEqual(expect.objectContaining({ pseudo: 'Host', score: 92 }));
+      expect(phase.recap.map((round) => round.answer)).toEqual([q0.right]);
+    });
+
+    it('ends from the results of a question, counting it', () => {
+      const { room, host, anna } = startedRoom();
+      room.answer(host, answersFor(0).right, 3_500);
+      room.answer(anna, answersFor(0).wrong, 4_000);
+
+      expect(room.end(host, 5_000)).toEqual({ ok: true });
+      const phase = room.viewFor(anna, 5_000).phase;
+      if (phase.kind !== 'finished') throw new Error('expected the finished phase');
+      expect(phase.recap).toHaveLength(1);
+      expect(phase.ranking.map((entry) => [entry.pseudo, entry.isHost])).toEqual([
+        ['Host', true],
+        ['Anna', false],
+      ]);
+    });
+  });
 });
