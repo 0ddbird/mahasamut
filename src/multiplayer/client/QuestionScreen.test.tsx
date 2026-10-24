@@ -204,4 +204,13 @@ describe('QuestionScreen', () => {
     expect(bob.getAttribute('data-away')).toBe('true');
     expect(bob.textContent).toBe('Bob(away)');
   });
+
+  it('tells a player who became host during the game', () => {
+    const { rerender } = render(
+      <QuestionScreen view={makeQuestionView()} onAnswer={async () => null} />,
+    );
+    expect(screen.queryByText('You are now the host.')).toBeNull();
+    rerender(<QuestionScreen view={makeQuestionView()} onAnswer={async () => null} promoted />);
+    expect(screen.getByRole('status').textContent).toBe('You are now the host.');
+  });
 });

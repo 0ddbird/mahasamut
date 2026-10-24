@@ -128,12 +128,13 @@ describe('ResultsScreen', () => {
         view={{
           ...BASE_RESULTS_VIEW,
           you: { pseudo: 'Anna', avatar: 'tiger', isHost: false },
+          host: { pseudo: 'Somchai', connected: true },
         }}
         onNext={onNext}
       />,
     );
     expect(screen.queryByRole('button', { name: 'Next' })).toBeNull();
-    expect(screen.getByText('Waiting for the host…')).toBeDefined();
+    expect(screen.getByText('Waiting for Somchai…')).toBeDefined();
   });
 
   it('tells the players when the game is paused because the host is away', () => {
@@ -142,11 +143,27 @@ describe('ResultsScreen', () => {
         view={{
           ...BASE_RESULTS_VIEW,
           you: { pseudo: 'Anna', avatar: 'tiger', isHost: false },
-          host: { pseudo: 'Host', connected: false },
+          host: { pseudo: 'Somchai', connected: false },
         }}
         onNext={() => {}}
       />,
     );
-    expect(screen.getByText('The host is away. The game is paused.')).toBeDefined();
+    expect(screen.getByText('Somchai is away. The game is paused.')).toBeDefined();
+  });
+
+  it('tells a player who became host that the game waits for them', () => {
+    render(<ResultsScreen view={BASE_RESULTS_VIEW} onNext={() => {}} promoted />);
+    expect(
+      screen
+        .getByText('You are now the host: the game goes on when you say so.')
+        .getAttribute('role'),
+    ).toBe('status');
+  });
+
+  it('offers Next above the ranking, where Validate was', () => {
+    render(<ResultsScreen view={BASE_RESULTS_VIEW} onNext={() => {}} />);
+    const next = screen.getByRole('button', { name: 'Next' });
+    const ranking = screen.getByRole('region', { name: 'Ranking' });
+    expect(next.compareDocumentPosition(ranking) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });

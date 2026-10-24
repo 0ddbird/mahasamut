@@ -18,6 +18,8 @@ import styles from './ResultsScreen.module.scss';
 interface ResultsScreenProps {
   view: RoomView;
   onNext: () => void;
+  /** The player became host during the game. */
+  promoted?: boolean;
   play?: PlaySound;
   soundOf?: (text: string) => string | null;
 }
@@ -25,11 +27,12 @@ interface ResultsScreenProps {
 /**
  * The results screen after a question closes: shows the Thai text, the Listen
  * button (for Vowel sounds and Find the tone), the points won, the player's
- * own correction, the updated ranking, and the host's Next button.
+ * own correction, the host's Next button, and the updated ranking.
  */
 export function ResultsScreen({
   view,
   onNext,
+  promoted = false,
   play = playSound,
   soundOf = wordSoundUrl,
 }: ResultsScreenProps) {
@@ -97,17 +100,23 @@ export function ResultsScreen({
           />
         )}
       </div>
+      {/* Where Validate was, above the ranking: the host need not scroll past a long class. */}
+      {promoted && (
+        <p role="status" className={styles.promoted}>
+          You are now the host: the game goes on when you say so.
+        </p>
+      )}
+      {view.you.isHost ? (
+        <Button onClick={onNext}>{phase.isLast ? 'See the podium' : 'Next'}</Button>
+      ) : view.host.connected ? (
+        <p className={styles.waiting}>{`Waiting for ${view.host.pseudo}…`}</p>
+      ) : (
+        <p className={styles.waiting}>{`${view.host.pseudo} is away. The game is paused.`}</p>
+      )}
       <section className={styles.rankingSection} aria-label="Ranking">
         <h2 className={styles.heading}>Ranking</h2>
         <Ranking entries={phase.ranking} />
       </section>
-      {view.you.isHost ? (
-        <Button onClick={onNext}>{phase.isLast ? 'See the podium' : 'Next'}</Button>
-      ) : view.host.connected ? (
-        <p className={styles.waiting}>Waiting for the host…</p>
-      ) : (
-        <p className={styles.waiting}>The host is away. The game is paused.</p>
-      )}
     </main>
   );
 }

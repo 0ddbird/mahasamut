@@ -188,5 +188,24 @@ describe('RoomPage', () => {
       expect(screen.queryByRole('button', { name: 'End the game' })).toBeNull();
       expect(screen.getByRole('button', { name: 'Leave' })).toBeDefined();
     });
+
+    it('tells a player who becomes host during the game', () => {
+      const fake = inGame(ANNA_QUESTION_VIEW);
+      expect(screen.queryByText('You are now the host.')).toBeNull();
+
+      act(() =>
+        fake.push('room:state', {
+          ...ANNA_QUESTION_VIEW,
+          you: { ...ANNA_QUESTION_VIEW.you, isHost: true },
+        }),
+      );
+      expect(screen.getByText('You are now the host.')).toBeDefined();
+      expect(screen.getByRole('button', { name: 'End the game' })).toBeDefined();
+    });
+
+    it('does not call a host back from a reload a new host', () => {
+      inGame(QUESTION_VIEW);
+      expect(screen.queryByText('You are now the host.')).toBeNull();
+    });
   });
 });

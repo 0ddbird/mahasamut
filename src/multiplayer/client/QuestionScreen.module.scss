@@ -65,6 +65,12 @@ $wide: 64rem;
   align-self: start;
 }
 
+.promoted {
+  margin: 0;
+  color: var(--color-accent-light);
+  font-weight: 700;
+}
+
 .panel {
   width: 100%;
 }

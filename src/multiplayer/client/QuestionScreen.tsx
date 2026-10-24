@@ -22,6 +22,8 @@ const TICK_MS = 250;
 interface QuestionScreenProps {
   view: RoomView;
   onAnswer: (answer: GameAnswer) => Promise<ActionError | null>;
+  /** The player became host during the game. */
+  promoted?: boolean;
   play?: PlaySound;
 }
 
@@ -31,7 +33,12 @@ interface QuestionScreenProps {
  * locks the player's answer once sent; beside it, the players and who has
  * answered.
  */
-export function QuestionScreen({ view, onAnswer, play = playSound }: QuestionScreenProps) {
+export function QuestionScreen({
+  view,
+  onAnswer,
+  promoted = false,
+  play = playSound,
+}: QuestionScreenProps) {
   const { phase } = view;
   const initialRemainingMs = phase.kind === 'question' ? phase.remainingMs : 0;
 
@@ -109,6 +116,11 @@ export function QuestionScreen({ view, onAnswer, play = playSound }: QuestionScr
         <Countdown remainingMs={leftMs} totalMs={view.settings.secondsPerQuestion * 1000} />
       </div>
       <div className={styles.game}>
+        {promoted && (
+          <p role="status" className={styles.promoted}>
+            You are now the host.
+          </p>
+        )}
         <ThaiDisplay text={phase.question.text} />
         <div className={styles.panel}>
           {phase.question.game === 'syllable' && (

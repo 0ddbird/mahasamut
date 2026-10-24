@@ -81,6 +81,19 @@ function ConnectedRoomPage({ roomId, socket }: { roomId: string; socket: RoomSoc
   const inGame = phaseKind === 'question' || phaseKind === 'results';
   const isHost = view?.you.isHost ?? false;
 
+  // A player who becomes host during the game is told so until it ends. Not
+  // a host back from a reload: before the first view, the role is unknown (null).
+  const [lastIsHost, setLastIsHost] = useState<boolean | null>(null);
+  const [promoted, setPromoted] = useState(false);
+  const knownIsHost = view === null ? null : isHost;
+  if (knownIsHost !== lastIsHost) {
+    setLastIsHost(knownIsHost);
+    setPromoted(knownIsHost === true && lastIsHost === false && inGame);
+  }
+  if (promoted && !inGame) {
+    setPromoted(false);
+  }
+
   useLeaveGuard(
     inActiveRoom,
     !inGame ? LOBBY_LEAVE_PROMPT : isHost ? HOST_LEAVE_PROMPT : GAME_LEAVE_PROMPT,
@@ -171,6 +184,7 @@ function ConnectedRoomPage({ roomId, socket }: { roomId: string; socket: RoomSoc
           key={session.view.phase.index}
           view={session.view}
           onAnswer={actions.answer}
+          promoted={promoted}
         />
         {endDialog}
       </>
@@ -179,7 +193,7 @@ function ConnectedRoomPage({ roomId, socket }: { roomId: string; socket: RoomSoc
   if (session.view.phase.kind === 'results') {
     return (
       <>
-        <ResultsScreen view={session.view} onNext={actions.next} />
+        <ResultsScreen view={session.view} onNext={actions.next} promoted={promoted} />
         {endDialog}
       </>
     );

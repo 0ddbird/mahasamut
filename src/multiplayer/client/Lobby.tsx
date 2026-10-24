@@ -257,9 +257,9 @@ export function Lobby({ view, onStart, onChangeAvatar, onUpdateSettings }: Lobby
                 Start
               </Button>
             ) : view.host.connected ? (
-              <p className={styles.waiting}>Waiting for the host to start…</p>
+              <p className={styles.waiting}>{`Waiting for ${view.host.pseudo} to start…`}</p>
             ) : (
-              <p className={styles.waiting}>The host is away.</p>
+              <p className={styles.waiting}>{`${view.host.pseudo} is away.`}</p>
             )}
           </div>
         </div>

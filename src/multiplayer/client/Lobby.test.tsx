@@ -90,12 +90,13 @@ describe('Lobby', () => {
         view={{
           ...BASE_VIEW,
           you: { pseudo: 'Anna', avatar: 'tiger', isHost: false },
+          host: { pseudo: 'Somchai', connected: true },
         }}
         onStart={onStart}
       />,
     );
     expect(screen.queryByRole('button', { name: 'Start' })).toBeNull();
-    expect(screen.getByText('Waiting for the host to start…')).toBeDefined();
+    expect(screen.getByText('Waiting for Somchai to start…')).toBeDefined();
   });
 
   it('lets a player cycle through Thai avatars', async () => {
@@ -122,11 +123,11 @@ describe('Lobby', () => {
         view={{
           ...BASE_VIEW,
           you: { pseudo: 'Anna', avatar: 'tiger', isHost: false },
-          host: { pseudo: 'Host', connected: false },
+          host: { pseudo: 'Somchai', connected: false },
         }}
         onStart={() => {}}
       />,
     );
-    expect(screen.getByText('The host is away.')).toBeDefined();
+    expect(screen.getByText('Somchai is away.')).toBeDefined();
   });
 });
