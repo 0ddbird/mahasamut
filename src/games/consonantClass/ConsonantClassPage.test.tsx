@@ -202,6 +202,21 @@ describe('ConsonantClassPage', () => {
       expect(nextButton()).toBeDefined();
     });
 
+    it('corrects the class chosen but not validated once time is up', () => {
+      vi.useFakeTimers();
+      render(
+        <ConsonantClassPage
+          rng={seededRng(SEED)}
+          settings={withSettings({ secondsPerQuestion: 10 })}
+        />,
+      );
+      fireEvent.click(row().getByRole('radio', { name: className(WRONG_CLASS) }));
+
+      letTimeRunOut();
+      expect(screen.getByRole('status').textContent).toBe('Not quite');
+      expect(nextButton()).toBeDefined();
+    });
+
     it('takes a series from the deck, up to its results', () => {
       const series = cardsShown(SEED, 5);
       vi.useFakeTimers();

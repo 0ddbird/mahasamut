@@ -58,6 +58,7 @@ export function ConsonantClassPage({
       setChosen(undefined);
     },
     entryOf,
+    () => (chosen === undefined ? null : chosen === consonant.consonantClass),
   );
 
   const expected = consonant.consonantClass;

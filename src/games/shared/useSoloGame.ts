@@ -7,6 +7,8 @@
  * on by itself after a right answer, waits for Next after a wrong one, and
  * asks the game for a new question (`onNewQuestion`) when one starts. It also
  * keeps the list of the questions played, built with the game's `entryOf`.
+ * When the time runs out on an answer complete but not validated, it checks
+ * that answer (`answerAtTimeUp`) rather than counting the time up.
  */
 import { useEffect, useRef, useState } from 'react';
 import { useGameEndInBar, useLeaveGuard } from '../../site/leaveGuard';
@@ -59,11 +61,14 @@ export interface SoloGame {
  *   game draws it and clears the answers.
  * @param entryOf builds the line of the question being counted, from its
  *   result and the answers the game holds at that moment.
+ * @param answerAtTimeUp whether the answer the player has filled in is right,
+ *   or null while it is not complete; asked when the time runs out.
  */
 export function useSoloGame(
   settings: GameSettings,
   onNewQuestion: () => void,
   entryOf: (result: RecapResult) => RecapEntry,
+  answerAtTimeUp: () => boolean | null = () => null,
 ): SoloGame {
   const timeLimitMs =
     settings.secondsPerQuestion === null ? null : settings.secondsPerQuestion * 1000;
@@ -97,6 +102,12 @@ export function useSoloGame(
   const entryOfRef = useRef(entryOf);
   useEffect(() => {
     entryOfRef.current = entryOf;
+  });
+
+  // The latest `answerAtTimeUp`, which reads the answers shown when the time runs out.
+  const answerAtTimeUpRef = useRef(answerAtTimeUp);
+  useEffect(() => {
+    answerAtTimeUpRef.current = answerAtTimeUp;
   });
 
   const isLast = settings.questionCount !== null && questionNumber >= settings.questionCount;
@@ -140,7 +151,11 @@ export function useSoloGame(
       const left = Math.max(0, deadline - Date.now());
       leftMs.current = left;
       setRemainingMs(left);
-      if (left === 0) finishQuestionRef.current(false, true);
+      if (left === 0) {
+        // A complete answer is checked as if validated at the last moment.
+        const right = answerAtTimeUpRef.current();
+        finishQuestionRef.current(right ?? false, right === null);
+      }
     }, TICK_MS);
     return () => clearInterval(timer);
   }, [phase, questionKey, timeLimitMs, paused]);

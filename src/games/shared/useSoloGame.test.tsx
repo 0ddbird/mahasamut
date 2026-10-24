@@ -93,6 +93,31 @@ describe('useSoloGame', () => {
     expect(game().timedOut).toBe(true);
   });
 
+  it('checks a complete answer when the time runs out, rather than counting the time up', () => {
+    const answer = { right: null as boolean | null };
+    const { result } = renderHook(() =>
+      useSoloGame(
+        TIMED,
+        () => {},
+        (r) => consonantClassEntry('ก', 'mid', null, r),
+        () => answer.right,
+      ),
+    );
+
+    answer.right = false;
+    wait(15_000);
+    expect(result.current.timedOut).toBe(false);
+    expect(result.current.correct).toBe(false);
+    expect(result.current.recap.map((entry) => entry.result)).toEqual(['wrong']);
+
+    act(() => result.current.next());
+    answer.right = true;
+    wait(15_000);
+    expect(result.current.timedOut).toBe(false);
+    expect(result.current.correct).toBe(true);
+    expect(result.current.score).toMatchObject({ played: 2, right: 1 });
+  });
+
   it('does not time the reading of the correction', () => {
     const { game } = renderGame(TIMED);
     act(() => game().check(false));

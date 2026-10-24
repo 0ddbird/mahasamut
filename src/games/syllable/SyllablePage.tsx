@@ -74,6 +74,7 @@ export function SyllablePage({
   // All the homographs of a word have the same tone.
   const entryOf = (result: RecapResult) =>
     syllableEntry(syllable.text, syllable.analyses[0].tone, answers.tone ?? null, result, sound);
+  const check = () => checkAnswers(answers, syllable.analyses, syllable.parts.mark, mode);
   const game = useSoloGame(
     settings,
     () => {
@@ -81,9 +82,9 @@ export function SyllablePage({
       setAnswers(NO_ANSWERS);
     },
     entryOf,
+    () => (isComplete(answers, mode) ? check().correct : null),
   );
 
-  const check = () => checkAnswers(answers, syllable.analyses, syllable.parts.mark, mode);
   const checked = game.phase === 'checked';
   // Once checked, by Validate or by the end of the time, the rows show what the
   // player had chosen against the right answers.

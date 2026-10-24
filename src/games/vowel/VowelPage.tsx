@@ -85,6 +85,7 @@ export function VowelPage({
       setChosen(undefined);
     },
     entryOf,
+    () => (chosen === undefined ? null : chosen === VOWEL_IPA[vowel.id]),
   );
 
   const expected = VOWEL_IPA[vowel.id];
