@@ -1,6 +1,58 @@
 // From this width, the three tiles stand side by side, on one row.
 $one-row: 40rem;
 
+// How far the yellow light of a hovered block has risen from its bottom edge.
+// Registered so that it can be animated, which a plain custom property cannot.
+@property --lantern-light {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+// A see-through block on the sky that lights up when it is used ($on): a
+// yellow light fills it from the middle of its bottom edge, like the glow of a
+// lantern, while the sky behind it blurs and its border turns yellow.
+@mixin lantern-light($on) {
+  position: relative;
+  // Its light stays behind its content, and inside its rounded corners.
+  isolation: isolate;
+  overflow: hidden;
+  backdrop-filter: blur(0);
+  transition:
+    border-color 0.15s ease-out,
+    backdrop-filter 0.45s ease-out;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(
+      circle at 50% 100%,
+      rgb(247 211 107 / 30%),
+      rgb(247 211 107 / 10%) calc(var(--lantern-light) * 0.6),
+      transparent var(--lantern-light)
+    );
+    transition: --lantern-light 0.45s ease-out;
+  }
+
+  #{$on} {
+    border-color: var(--color-accent-light);
+    backdrop-filter: blur(6px);
+
+    &::before {
+      --lantern-light: 150%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &,
+    &::before {
+      transition: none;
+    }
+  }
+}
+
 .page {
   max-width: 60rem;
   margin: 0 auto;
@@ -29,6 +81,8 @@ $one-row: 40rem;
   border: 1px solid var(--color-border);
   border-radius: calc(var(--radius) * 1.5);
   background: var(--color-surface);
+  // Lit while the pointer is over it or a control in it has the focus.
+  @include lantern-light('&:hover, &:focus-within');
 
   @media (min-width: $one-row) {
     grid-template-columns: 1fr 1fr;
@@ -112,7 +166,7 @@ $one-row: 40rem;
   }
 }
 
-// A see-through card on the dark page, the whole of it a link.
+// A see-through card on the sky, the whole of it a link.
 .tile {
   display: flex;
   flex-direction: column;
@@ -125,12 +179,7 @@ $one-row: 40rem;
   color: var(--color-text);
   background: var(--color-surface);
   text-decoration: none;
-  transition: border-color 0.15s ease-out;
-
-  &:hover,
-  &:focus-visible {
-    border-color: var(--color-accent-light);
-  }
+  @include lantern-light('&:hover, &:focus-visible');
 
   &:focus-visible {
     outline: 2px solid var(--color-accent-light);
@@ -165,14 +214,7 @@ $one-row: 40rem;
   border-radius: var(--radius);
   color: var(--color-accent-text);
   background: var(--color-accent);
-  box-shadow: 0 3px 0 var(--color-glow);
   font-family: var(--font-display);
   font-weight: var(--font-display-weight);
   text-transform: uppercase;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tile {
-    transition: none;
-  }
 }

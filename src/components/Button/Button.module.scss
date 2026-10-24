@@ -1,9 +1,13 @@
+// In capitals, in the title font, like the Play of the home page's tiles.
 .button {
   padding: var(--space-s) var(--space-l);
   border: none;
   border-radius: var(--radius);
   color: var(--color-accent-text);
   background: var(--color-accent);
+  font-family: var(--font-display);
+  font-weight: var(--font-display-weight);
+  text-transform: uppercase;
   cursor: pointer;
 
   &:disabled {
