@@ -38,3 +38,7 @@ coverage
 
 # Takes of the word pool, recorded locally (npm run words:takes)
 data/words/takes/
+
+# Takes of vowels, recorded locally (npm run vowels:takes)
+data/vowels/takes/
+

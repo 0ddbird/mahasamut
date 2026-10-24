@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vowel Review - Mahasamut</title>
+    <link rel="stylesheet" href="review.css" />
+    <script type="module" src="review.js"></script>
+  </head>
+  <body>
+    <header class="top">
+      <div class="top-line">
+        <div class="title-group">
+          <h1>Vowel Review</h1>
+          <span class="subtitle muted">28 Thai vowels audio quality review</span>
+        </div>
+
+        <div class="stats-bar" id="stats-bar">
+          <span class="stat-pill" id="stat-total">Total: 28</span>
+          <span class="stat-pill stat-validated" id="stat-validated">Takes chosen: 0</span>
+          <span class="stat-pill stat-current" id="stat-current">Keeping current: 0</span>
+          <span class="stat-pill stat-none" id="stat-none">Need takes: 0</span>
+          <span class="stat-pill stat-todo" id="stat-todo">To review: 28</span>
+        </div>
+
+        <div class="actions">
+          <button type="button" id="btn-batch-generate" class="btn btn-secondary">
+            ⚡ Generate 3 takes for all
+          </button>
+          <button type="button" id="btn-publish-all" class="btn btn-primary">
+            🚀 Publish all selected to public/
+          </button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="filters">
+          <label>
+            <span>Filter:</span>
+            <select id="filter-status">
+              <option value="all">All (28)</option>
+              <option value="todo">To review</option>
+              <option value="take">Take selected</option>
+              <option value="current">Keeping current</option>
+              <option value="none">Needs more takes</option>
+              <option value="sara_koen">Sara koen only (4)</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="shortcuts-legend muted">
+          <span><kbd>Space</kbd> Play / Pause</span>
+          <span><kbd>C</kbd> Play Current sound</span>
+          <span><kbd>1</kbd>–<kbd>6</kbd> Play Take N</span>
+          <span><kbd>Shift</kbd>+<kbd>1</kbd>–<kbd>6</kbd> Select Take N</span>
+          <span><kbd>J</kbd>/<kbd>K</kbd> or <kbd>↓</kbd>/<kbd>↑</kbd> Navigate vowels</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="vowels-container" id="vowels-container">
+      <p class="muted loading">Loading vowels data...</p>
+    </main>
+
+    <div id="toast" class="toast hidden"></div>
+  </body>
+</html>
