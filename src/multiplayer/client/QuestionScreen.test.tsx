@@ -26,8 +26,7 @@ function makeQuestionView(overrides: Partial<RoomView> = {}): RoomView {
       question: { game: 'syllable', text: 'กา' },
       remainingMs: 15_000,
       yourAnswer: null,
-      answeredCount: 0,
-      connectedCount: 2,
+      answered: [],
     },
     ...overrides,
   };
@@ -84,8 +83,7 @@ describe('QuestionScreen', () => {
             question: { game: 'syllable', text: 'กา' },
             remainingMs: 12_000,
             yourAnswer: { game: 'syllable', answers: { toneMark: 'none', tone: 'mid' } },
-            answeredCount: 1,
-            connectedCount: 2,
+            answered: ['Host'],
           },
         })}
         onAnswer={async () => null}
@@ -93,7 +91,7 @@ describe('QuestionScreen', () => {
     );
 
     expect(screen.getAllByRole('radio').every((r) => r.matches(':disabled'))).toBe(true);
-    expect(screen.getByText('Answer sent. 1 / 2 answered.')).toBeDefined();
+    expect(screen.getByText('Answer sent.')).toBeDefined();
   });
 
   it('shows an answer already sent after a reload', () => {
@@ -104,8 +102,7 @@ describe('QuestionScreen', () => {
         question: { game: 'syllable', text: 'กา' },
         remainingMs: 10_000,
         yourAnswer: { game: 'syllable', answers: { tone: 'low' } },
-        answeredCount: 1,
-        connectedCount: 2,
+        answered: ['Host'],
       },
     });
     render(<QuestionScreen view={view} onAnswer={async () => null} />);
@@ -113,7 +110,7 @@ describe('QuestionScreen', () => {
     const lowRadio = screen.getByRole('radio', { name: 'Low' }) as HTMLInputElement;
     expect(lowRadio.checked).toBe(true);
     expect(lowRadio.matches(':disabled')).toBe(true);
-    expect(screen.getByText('Answer sent. 1 / 2 answered.')).toBeDefined();
+    expect(screen.getByText('Answer sent.')).toBeDefined();
   });
 
   it('says when the answer came too late', async () => {
@@ -141,8 +138,7 @@ describe('QuestionScreen', () => {
             question: { game: 'consonantClass', text: 'ข' },
             remainingMs: 15_000,
             yourAnswer: null,
-            answeredCount: 0,
-            connectedCount: 2,
+            answered: [],
           },
         })}
         onAnswer={async (a) => {
@@ -167,8 +163,7 @@ describe('QuestionScreen', () => {
             question: { game: 'vowel', text: 'อา', choices: ['a', 'aː', 'i', 'iː'] },
             remainingMs: 15_000,
             yourAnswer: null,
-            answeredCount: 0,
-            connectedCount: 2,
+            answered: [],
           },
         })}
         onAnswer={async (a) => {
@@ -185,5 +180,28 @@ describe('QuestionScreen', () => {
       { game: 'consonantClass', consonantClass: 'high' },
       { game: 'vowel', sound: 'aː' },
     ]);
+  });
+
+  it('lists the players with the host crown, ticks those who answered, and dims those away', () => {
+    const view = makeQuestionView({
+      players: [
+        { pseudo: 'Host', avatar: 'elephant', isHost: true, connected: true },
+        { pseudo: 'Anna', avatar: 'tiger', isHost: false, connected: true },
+        { pseudo: 'Bob', avatar: 'lotus', isHost: false, connected: false },
+      ],
+    });
+    if (view.phase.kind === 'question') view.phase.answered = ['Anna'];
+    render(<QuestionScreen view={view} onAnswer={async () => null} />);
+
+    const players = within(screen.getByRole('region', { name: 'Players' }));
+    expect(players.getByRole('heading').textContent).toBe('Players (3)');
+    const [host, anna, bob] = players.getAllByRole('listitem');
+    expect(host.textContent).toBe('Host (you)');
+    expect(within(host).getByRole('img', { name: 'Host' })).toBeDefined();
+    expect(within(host).queryByRole('img', { name: 'Answered' })).toBeNull();
+    expect(within(anna).getByRole('img', { name: 'Answered' })).toBeDefined();
+    expect(within(anna).queryByRole('img', { name: 'Host' })).toBeNull();
+    expect(bob.getAttribute('data-away')).toBe('true');
+    expect(bob.textContent).toBe('Bob(away)');
   });
 });

@@ -26,11 +26,11 @@ const FINISHED_VIEW: RoomView = {
   phase: {
     kind: 'finished',
     ranking: [
-      { rank: 1, pseudo: 'Anna', avatar: 'tiger', score: 200, isYou: false },
-      { rank: 2, pseudo: 'Host', avatar: 'elephant', score: 150, isYou: true },
-      { rank: 3, pseudo: 'Bob', avatar: 'monkey', score: 120, isYou: false },
-      { rank: 3, pseudo: 'Cara', avatar: 'lotus', score: 120, isYou: false },
-      { rank: 5, pseudo: 'Dan', avatar: 'coconut', score: 50, isYou: false },
+      { rank: 1, pseudo: 'Anna', avatar: 'tiger', score: 200, isHost: false, isYou: false },
+      { rank: 2, pseudo: 'Host', avatar: 'elephant', score: 150, isHost: false, isYou: true },
+      { rank: 3, pseudo: 'Bob', avatar: 'monkey', score: 120, isHost: false, isYou: false },
+      { rank: 3, pseudo: 'Cara', avatar: 'lotus', score: 120, isHost: false, isYou: false },
+      { rank: 5, pseudo: 'Dan', avatar: 'coconut', score: 50, isHost: false, isYou: false },
     ],
     recap: [],
   },
@@ -76,8 +76,22 @@ describe('FinalScreen', () => {
             phase: {
               kind: 'finished',
               ranking: [
-                { rank: 1, pseudo: 'Anna', avatar: 'tiger', score: 200, isYou: false },
-                { rank: 2, pseudo: 'Host', avatar: 'elephant', score: 150, isYou: true },
+                {
+                  rank: 1,
+                  pseudo: 'Anna',
+                  avatar: 'tiger',
+                  score: 200,
+                  isHost: false,
+                  isYou: false,
+                },
+                {
+                  rank: 2,
+                  pseudo: 'Host',
+                  avatar: 'elephant',
+                  score: 150,
+                  isHost: false,
+                  isYou: true,
+                },
               ],
               recap: [],
             },
@@ -101,7 +115,16 @@ describe('FinalScreen', () => {
             game: 'consonantClass',
             phase: {
               kind: 'finished',
-              ranking: [{ rank: 1, pseudo: 'Host', avatar: 'elephant', score: 100, isYou: true }],
+              ranking: [
+                {
+                  rank: 1,
+                  pseudo: 'Host',
+                  avatar: 'elephant',
+                  score: 100,
+                  isHost: false,
+                  isYou: true,
+                },
+              ],
               recap: [
                 {
                   question: { game: 'consonantClass', text: 'ก' },
@@ -142,7 +165,16 @@ describe('FinalScreen', () => {
             game: 'consonantClass',
             phase: {
               kind: 'finished',
-              ranking: [{ rank: 1, pseudo: 'Host', avatar: 'elephant', score: 100, isYou: true }],
+              ranking: [
+                {
+                  rank: 1,
+                  pseudo: 'Host',
+                  avatar: 'elephant',
+                  score: 100,
+                  isHost: false,
+                  isYou: true,
+                },
+              ],
               recap: [
                 {
                   question: { game: 'consonantClass', text: 'ก' },

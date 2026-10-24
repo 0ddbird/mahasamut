@@ -281,4 +281,11 @@ describe('Room (during a game)', () => {
       ]);
     }
   });
+
+  it('lists who has answered the open question', () => {
+    const { room, host, anna } = startedRoom();
+    room.answer(anna, answersFor(0).wrong, 2_000);
+    const phase = room.viewFor(host, 2_000).phase;
+    expect(phase.kind === 'question' && phase.answered).toEqual(['Anna']);
+  });
 });

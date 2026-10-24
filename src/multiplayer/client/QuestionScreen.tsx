@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { playSound } from '../../audio/playSound';
 import type { PlaySound } from '../../audio/playSound';
 import { Button } from '../../components/Button/Button';
+import { Countdown } from '../../components/Countdown/Countdown';
 import { ThaiDisplay } from '../../components/ThaiDisplay/ThaiDisplay';
 import { GAME_NAMES } from '../../games/shared/games';
-import { QuestionBar } from '../../games/shared/QuestionBar';
+import { QuestionNumber } from '../../games/shared/QuestionBar';
 import { isComplete } from '../../games/syllable/check';
 import type { PlayerAnswers } from '../../games/syllable/check';
 import { TONE_MARK } from '../../thai/types';
@@ -13,6 +14,7 @@ import type { ActionError, GameAnswer, RoomView } from '../protocol';
 import { ConsonantClassPanel } from './panels/ConsonantClassPanel';
 import { SyllablePanel } from './panels/SyllablePanel';
 import { VowelPanel } from './panels/VowelPanel';
+import { PlayersPanel } from './PlayersPanel';
 import styles from './QuestionScreen.module.scss';
 
 const TICK_MS = 250;
@@ -24,9 +26,10 @@ interface QuestionScreenProps {
 }
 
 /**
- * The screen of an open question in a multiplayer room: shows the shared
- * countdown in `QuestionBar`, the Thai text, the game's answer panel, and
- * locks the player's answer once sent.
+ * The screen of an open question in a multiplayer room: shows where the
+ * series is and the shared countdown, the Thai text, the game's answer panel, and
+ * locks the player's answer once sent; beside it, the players and who has
+ * answered.
  */
 export function QuestionScreen({ view, onAnswer, play = playSound }: QuestionScreenProps) {
   const { phase } = view;
@@ -96,48 +99,58 @@ export function QuestionScreen({ view, onAnswer, play = playSound }: QuestionScr
   return (
     <main className={styles.page}>
       <h1 className="visually-hidden">{GAME_NAMES[view.game]}</h1>
-      <QuestionBar
-        questionNumber={phase.index + 1}
-        questionCount={view.settings.questionCount}
-        remainingMs={leftMs}
-        secondsPerQuestion={view.settings.secondsPerQuestion}
-      />
-      <ThaiDisplay text={phase.question.text} />
-      <div className={styles.panel}>
-        {phase.question.game === 'syllable' && (
-          <SyllablePanel
-            answers={effectiveSyllableAnswers}
-            onChange={setSyllableAnswers}
-            answerMode={view.settings.answerMode}
-            locked={locked}
-          />
-        )}
-        {phase.question.game === 'consonantClass' && (
-          <ConsonantClassPanel chosen={effectiveClass} onChange={setChosenClass} locked={locked} />
-        )}
-        {phase.question.game === 'vowel' && (
-          <VowelPanel
-            choices={phase.question.choices}
-            chosen={effectiveSound}
-            onChange={setChosenSound}
-            locked={locked}
-            play={play}
-          />
+      <div className={styles.number}>
+        <QuestionNumber
+          questionNumber={phase.index + 1}
+          questionCount={view.settings.questionCount}
+        />
+      </div>
+      <div className={styles.clock}>
+        <Countdown remainingMs={leftMs} totalMs={view.settings.secondsPerQuestion * 1000} />
+      </div>
+      <div className={styles.game}>
+        <ThaiDisplay text={phase.question.text} />
+        <div className={styles.panel}>
+          {phase.question.game === 'syllable' && (
+            <SyllablePanel
+              answers={effectiveSyllableAnswers}
+              onChange={setSyllableAnswers}
+              answerMode={view.settings.answerMode}
+              locked={locked}
+            />
+          )}
+          {phase.question.game === 'consonantClass' && (
+            <ConsonantClassPanel
+              chosen={effectiveClass}
+              onChange={setChosenClass}
+              locked={locked}
+            />
+          )}
+          {phase.question.game === 'vowel' && (
+            <VowelPanel
+              choices={phase.question.choices}
+              chosen={effectiveSound}
+              onChange={setChosenSound}
+              locked={locked}
+              play={play}
+            />
+          )}
+        </div>
+        {tooLate ? (
+          <p role="alert" className={styles.tooLate}>
+            Too late!
+          </p>
+        ) : locked ? (
+          <p className={styles.status}>Answer sent.</p>
+        ) : (
+          <Button disabled={!complete} onClick={() => void validate()}>
+            Validate
+          </Button>
         )}
       </div>
-      {tooLate ? (
-        <p role="alert" className={styles.tooLate}>
-          Too late!
-        </p>
-      ) : locked ? (
-        <p className={styles.status}>
-          {`Answer sent. ${phase.answeredCount} / ${phase.connectedCount} answered.`}
-        </p>
-      ) : (
-        <Button disabled={!complete} onClick={() => void validate()}>
-          Validate
-        </Button>
-      )}
+      <div className={styles.side}>
+        <PlayersPanel players={view.players} answered={phase.answered} you={view.you.pseudo} />
+      </div>
     </main>
   );
 }

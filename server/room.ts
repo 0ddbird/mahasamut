@@ -346,12 +346,15 @@ export class Room {
       },
       you: { pseudo: you.pseudo, avatar: you.avatar, isHost: you.isHost },
       host: { pseudo: host.pseudo, connected: host.connections > 0 },
-      players: this.activePlayers().map((p) => ({
-        pseudo: p.pseudo,
-        avatar: p.avatar,
-        isHost: p.isHost,
-        connected: p.connections > 0,
-      })),
+      // The host first, so that a new host is seen at once.
+      players: this.activePlayers()
+        .toSorted((a, b) => Number(b.isHost) - Number(a.isHost))
+        .map((p) => ({
+          pseudo: p.pseudo,
+          avatar: p.avatar,
+          isHost: p.isHost,
+          connected: p.connections > 0,
+        })),
       phase: this.phaseViewFor(you.token, now),
     };
   }
@@ -405,6 +408,7 @@ export class Room {
     return rankPlayers(this.players).map((entry) => ({
       ...entry,
       avatar: byPseudo.get(entry.pseudo)!.avatar,
+      isHost: byPseudo.get(entry.pseudo)!.isHost,
       isYou: entry.pseudo === you?.pseudo,
     }));
   }
@@ -413,15 +417,15 @@ export class Room {
     if (this.phase.kind === 'lobby') return { kind: 'lobby' };
     if (this.phase.kind === 'question') {
       const q = this.questions[this.phase.index];
-      const submission = this.phase.submissions.get(token);
+      const submissions = this.phase.submissions;
+      const submission = submissions.get(token);
       return {
         kind: 'question',
         index: this.phase.index,
         question: q.view,
         remainingMs: Math.max(0, this.phase.deadline - now),
         yourAnswer: submission ? submission.answer : null,
-        answeredCount: this.phase.submissions.size,
-        connectedCount: this.players.filter((p) => p.connections > 0).length,
+        answered: this.players.filter((p) => submissions.has(p.token)).map((p) => p.pseudo),
       };
     }
     if (this.phase.kind === 'results') {

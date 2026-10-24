@@ -1,11 +1,68 @@
+// From this width, three columns: the question number, the question with its
+// clock, and the players. Below it, one: the players under the question.
+$wide: 64rem;
+
+// On a phone, the number and the clock share the top row, as in a solo game,
+// then the question, then the players. On a wide screen, the question in the
+// middle of the page, the number on its left and the players on its right, as
+// far from it on either side, the players from the height of the question on.
 .page {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    'number clock'
+    'game game'
+    'side side';
+  gap: var(--space-m);
+  align-items: center;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: var(--space-m);
+
+  @media (min-width: $wide) {
+    grid-template-columns: minmax(11rem, 1fr) minmax(0, 38rem) minmax(11rem, 1fr);
+    grid-template-areas:
+      'number clock .'
+      '. game side';
+    column-gap: var(--space-l);
+    max-width: 80rem;
+  }
+}
+
+.number {
+  grid-area: number;
+
+  @media (min-width: $wide) {
+    justify-self: end;
+  }
+}
+
+// At the right of the question, where the bar of a solo game puts it.
+.clock {
+  grid-area: clock;
+  justify-self: end;
+
+  @media (min-width: $wide) {
+    display: flex;
+    justify-content: flex-end;
+    justify-self: center;
+    width: min(100%, 28rem);
+  }
+}
+
+.game {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-m);
-  max-width: 40rem;
-  margin: 0 auto;
-  padding: var(--space-m);
+  grid-area: game;
+  align-self: start;
+  min-width: 0;
+}
+
+.side {
+  grid-area: side;
+  align-self: start;
 }
 
 .panel {

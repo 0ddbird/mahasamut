@@ -22,3 +22,8 @@
     font-weight: 700;
   }
 }
+
+.hostIcon {
+  flex-shrink: 0;
+  color: var(--color-accent-light);
+}

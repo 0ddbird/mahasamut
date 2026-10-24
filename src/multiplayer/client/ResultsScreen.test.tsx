@@ -42,8 +42,8 @@ const BASE_RESULTS_VIEW: RoomView = {
       points: 92,
     },
     ranking: [
-      { rank: 1, pseudo: 'Host', avatar: 'elephant', score: 92, isYou: true },
-      { rank: 2, pseudo: 'Anna', avatar: 'tiger', score: 0, isYou: false },
+      { rank: 1, pseudo: 'Host', avatar: 'elephant', score: 92, isHost: false, isYou: true },
+      { rank: 2, pseudo: 'Anna', avatar: 'tiger', score: 0, isHost: false, isYou: false },
     ],
     isLast: false,
   },

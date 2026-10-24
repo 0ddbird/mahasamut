@@ -27,15 +27,28 @@ export function QuestionBar({
   const timed = remainingMs !== null && secondsPerQuestion !== null;
   return (
     <div className={styles.bar} data-clockless={!timed || undefined}>
-      <div className={styles.question}>
-        <span className={styles.label}>Question</span>
-        <span className={styles.value}>
-          {questionCount === null ? questionNumber : `${questionNumber} / ${questionCount}`}
-        </span>
-      </div>
+      <QuestionNumber questionNumber={questionNumber} questionCount={questionCount} />
       <div className={styles.time}>
         {timed && <Countdown remainingMs={remainingMs} totalMs={secondsPerQuestion * 1000} />}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Where the player is in the series, on its own: for a page that lays it out
+ * apart from the clock (a room's question, on a wide screen).
+ */
+export function QuestionNumber({
+  questionNumber,
+  questionCount,
+}: Pick<QuestionBarProps, 'questionNumber' | 'questionCount'>) {
+  return (
+    <div className={styles.question}>
+      <span className={styles.label}>Question</span>
+      <span className={styles.value}>
+        {questionCount === null ? questionNumber : `${questionNumber} / ${questionCount}`}
+      </span>
     </div>
   );
 }

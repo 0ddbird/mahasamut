@@ -32,6 +32,7 @@ export interface RankingEntry {
   pseudo: string;
   avatar: AvatarId;
   score: number;
+  isHost: boolean;
   isYou: boolean;
 }
 
@@ -65,8 +66,8 @@ export type PhaseView =
       question: QuestionView;
       remainingMs: number;
       yourAnswer: GameAnswer | null;
-      answeredCount: number;
-      connectedCount: number;
+      /** The pseudos of the players who have answered this question. */
+      answered: string[];
     }
   | {
       kind: 'results';
