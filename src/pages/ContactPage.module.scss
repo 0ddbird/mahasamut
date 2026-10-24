@@ -26,7 +26,8 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   color: var(--color-text);
-  background: transparent;
+  // Dark, so that what is typed reads well over the sky; a little of it shows.
+  background: color-mix(in srgb, var(--color-background-deep) 85%, transparent);
   font: inherit;
 
   &[aria-invalid='true'] {
@@ -62,8 +63,9 @@ textarea.input {
   overflow: hidden;
 }
 
+// Small, but white: muted grey is lost on the sky.
 .privacy {
   margin-top: var(--space-m);
-  color: var(--color-text-muted);
+  color: var(--color-text);
   font-size: 0.875rem;
 }

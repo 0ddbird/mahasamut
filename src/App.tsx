@@ -4,6 +4,7 @@ import { PlayRoute } from './games/shared/PlayRoute';
 import { SetupPage } from './games/shared/SetupPage';
 import { CreateLobbyPage } from './multiplayer/client/CreateLobbyPage';
 import { RoomPage } from './multiplayer/client/RoomPage';
+import { NightSky } from './components/NightSky/NightSky';
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
 import { HomePage } from './pages/HomePage';
@@ -29,7 +30,14 @@ function App() {
     <LeaveGuardProvider>
       <PageHead />
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route
+          path="/"
+          element={
+            <NightSky layout="home">
+              <HomePage />
+            </NightSky>
+          }
+        />
         <Route element={<SiteLayout />}>
           {GAME_IDS.flatMap((game) => [
             <Route key={game} path={GAME_PATHS[game]} element={<SetupPage game={game} />} />,
@@ -41,8 +49,22 @@ function App() {
           ])}
           <Route path="/lobby" element={<CreateLobbyPage />} />
           <Route path="/room/:roomId" element={<RoomPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/contact" element={<ContactPage />} />
+          <Route
+            path="/about"
+            element={
+              <NightSky layout="page">
+                <AboutPage />
+              </NightSky>
+            }
+          />
+          <Route
+            path="/contact"
+            element={
+              <NightSky layout="page">
+                <ContactPage />
+              </NightSky>
+            }
+          />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

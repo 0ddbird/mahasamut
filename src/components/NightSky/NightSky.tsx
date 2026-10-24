@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import lanternLarge from '../../assets/home/lantern-large.webp';
 import lanternMedium from '../../assets/home/lantern-medium.webp';
 import lanternMedium2 from '../../assets/home/lantern-medium-2.webp';
@@ -85,16 +85,21 @@ function Sparks({ sparks }: { sparks: Spark[] }) {
   ));
 }
 
+interface NightSkyProps {
+  /** Where the lanterns stand: by the masthead, or by a column of text. */
+  layout: 'home' | 'page';
+  children: ReactNode;
+}
+
 /**
- * The home page's scenery, behind its content: a night sky over the water,
- * paper lanterns that float in place, swaying, and gold sparks around them that
- * the wind carries away, twinkling. Only decoration: hidden from screen
- * readers, and still for those who ask for less motion. Its parent must be
- * positioned, and clip what overflows: the lanterns stand in the margins.
+ * A page over the night sky: the sky over the water, paper lanterns that float
+ * in place, swaying, and gold sparks around them that the wind carries away,
+ * twinkling. Only decoration: hidden from screen readers, and still for those
+ * who ask for less motion. The lanterns scroll with the page, in its margins.
  */
-export function NightSky() {
+export function NightSky({ layout, children }: NightSkyProps) {
   return (
-    <>
+    <div className={`${styles.scene} ${styles[layout]}`}>
       <div className={styles.sky} aria-hidden="true">
         <Sparks sparks={SKY_SPARKS} />
       </div>
@@ -111,6 +116,7 @@ export function NightSky() {
           </div>
         ))}
       </div>
-    </>
+      {children}
+    </div>
   );
 }

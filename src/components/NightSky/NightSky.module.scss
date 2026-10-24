@@ -1,7 +1,16 @@
-// Under it, the lanterns sit by the masthead; from it, all four stand in the
-// margins along the page, which are wide enough for them.
+// Under it, the lanterns sit by the title; from it, all four stand in the
+// margins along the page, which are wide enough for them. Between the two, a
+// page of text has margins wide enough for two.
 $by-masthead: 40rem;
+$beside-text: 60rem;
 $in-margins: 80rem;
+
+// Holds the page over the sky, and its lanterns, which stand in the margins:
+// what of them overflows the window is cut, rather than scrolled to.
+.scene {
+  position: relative;
+  overflow-x: clip;
+}
 
 // The sky stays put while the page scrolls over it: a landscape crop around the
 // horizon, the whole picture on a portrait screen. AVIF keeps the grain of the
@@ -170,72 +179,132 @@ $in-margins: 80rem;
   }
 }
 
-// On a phone, two small ones by the masthead, off the edges of the screen:
-// one high on the left, one a little lower on the right.
-.small {
-  top: 0.75rem;
-  left: 1rem;
-  width: 2.4rem;
-}
-
-.medium {
-  top: 2.75rem;
-  right: 1rem;
-  width: 2.3rem;
-}
-
-.large,
-.medium2 {
-  display: none;
-}
-
-// The masthead is 30rem wide at most: the right one stands close to its end,
-// the left one lower and farther out.
-@media (min-width: $by-masthead) {
+// On the home page. On a phone, two small ones by the masthead, off the edges
+// of the screen: one high on the left, one a little lower on the right.
+.home {
   .small {
-    top: 4.5rem;
-    left: max(0.5rem, calc(50% - 15rem - 5.5rem));
-    width: 3.75rem;
+    top: 0.75rem;
+    left: 1rem;
+    width: 2.4rem;
   }
 
   .medium {
-    top: 1.5rem;
-    left: min(calc(100% - 5.5rem), calc(50% + 14rem));
-    right: auto;
-    width: 5rem;
-  }
-}
-
-// Scattered along the margins at uneven heights; the farther ones are smaller
-// and a little blurred.
-@media (min-width: $in-margins) {
-  .large {
-    display: block;
-    top: 24rem;
-    left: max(1rem, calc(50% - 30rem - 11.5rem));
-    width: clamp(7rem, 9vw, 9.5rem);
+    top: 2.75rem;
+    right: 1rem;
+    width: 2.3rem;
   }
 
-  .small {
-    top: 9rem;
-    left: max(2.5rem, calc(50% - 30rem - 5.5rem));
-    width: 3.75rem;
-    filter: blur(0.6px);
-    opacity: 0.85;
-  }
-
-  .medium {
-    top: 1.75rem;
-    left: calc(50% + 15rem + 0.5rem);
-    width: 5.5rem;
-  }
-
+  .large,
   .medium2 {
-    display: block;
-    top: 34rem;
-    right: max(2rem, calc(50% - 30rem - 8.5rem));
-    width: 5rem;
-    filter: blur(0.4px);
+    display: none;
+  }
+
+  // The masthead is 30rem wide at most: the right one stands close to its
+  // end, the left one lower and farther out.
+  @media (min-width: $by-masthead) {
+    .small {
+      top: 4.5rem;
+      left: max(0.5rem, calc(50% - 15rem - 5.5rem));
+      width: 3.75rem;
+    }
+
+    .medium {
+      top: 1.5rem;
+      left: min(calc(100% - 5.5rem), calc(50% + 14rem));
+      right: auto;
+      width: 5rem;
+    }
+  }
+
+  // Scattered along the margins at uneven heights; the farther ones are
+  // smaller and a little blurred.
+  @media (min-width: $in-margins) {
+    .large {
+      display: block;
+      top: 24rem;
+      left: max(1rem, calc(50% - 30rem - 11.5rem));
+      width: clamp(7rem, 9vw, 9.5rem);
+    }
+
+    .small {
+      top: 9rem;
+      left: max(2.5rem, calc(50% - 30rem - 5.5rem));
+      width: 3.75rem;
+      filter: blur(0.6px);
+      opacity: 0.85;
+    }
+
+    .medium {
+      top: 1.75rem;
+      left: calc(50% + 15rem + 0.5rem);
+      width: 5.5rem;
+    }
+
+    .medium2 {
+      display: block;
+      top: 34rem;
+      right: max(2rem, calc(50% - 30rem - 8.5rem));
+      width: 5rem;
+      filter: blur(0.4px);
+    }
+  }
+}
+
+// On a page of text, a column 36rem wide whose title is short: one lantern by
+// the end of the title, then more in the margins as they widen.
+.page {
+  .small,
+  .large,
+  .medium2 {
+    display: none;
+  }
+
+  .medium {
+    top: 0.75rem;
+    right: 1rem;
+    width: 2.3rem;
+  }
+
+  @media (min-width: $by-masthead) {
+    .medium {
+      top: 1rem;
+      right: max(1rem, calc(50% - 18rem - 6rem));
+      width: 4.5rem;
+    }
+  }
+
+  @media (min-width: $beside-text) {
+    .small {
+      display: block;
+      top: 9rem;
+      left: calc(50% - 18rem - 6.5rem);
+      width: 3.75rem;
+      filter: blur(0.6px);
+      opacity: 0.85;
+    }
+
+    .medium {
+      top: 1.5rem;
+      right: calc(50% - 18rem - 8rem);
+      width: 5rem;
+    }
+  }
+
+  @media (min-width: $in-margins) {
+    .large {
+      display: block;
+      top: 16rem;
+      left: calc(50% - 18rem - 14rem);
+      width: clamp(7rem, 9vw, 9.5rem);
+    }
+
+    .medium2 {
+      display: block;
+      top: 26rem;
+      right: calc(50% - 18rem - 9rem);
+      width: 5rem;
+      filter: blur(0.4px);
+    }
   }
 }
 

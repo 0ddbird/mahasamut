@@ -1,13 +1,6 @@
 // From this width, the three tiles stand side by side, on one row.
 $one-row: 40rem;
 
-// Holds the night sky's lanterns, which stand in the margins: what of them
-// overflows the window is cut, rather than scrolled to.
-.scene {
-  position: relative;
-  overflow-x: clip;
-}
-
 .page {
   max-width: 60rem;
   margin: 0 auto;
