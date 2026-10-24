@@ -2,7 +2,8 @@ import { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { ConfirmDialog } from '../components/ConfirmDialog/ConfirmDialog';
-import { LeaveGuardContext } from './leaveGuard';
+import { DEFAULT_LEAVE_PROMPT, LeaveGuardContext } from './leaveGuard';
+import type { LeavePrompt } from './leaveGuard';
 
 /**
  * Holds whether leaving the page is guarded and how to end its game, for the
@@ -12,6 +13,7 @@ import { LeaveGuardContext } from './leaveGuard';
 export function LeaveGuardProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const [guarded, setGuarded] = useState(false);
+  const [leavePrompt, setLeavePrompt] = useState<LeavePrompt>(DEFAULT_LEAVE_PROMPT);
   const [endGame, setEndGameState] = useState<(() => void) | null>(null);
   const [endLabel, setEndLabel] = useState('End');
   // A function given to a state setter would be called as an updater: wrap it.
@@ -39,14 +41,24 @@ export function LeaveGuardProvider({ children }: { children: ReactNode }) {
 
   return (
     <LeaveGuardContext
-      value={{ guarded, setGuarded, endGame, setEndGame, endLabel, setEndLabel, askToLeave }}
+      value={{
+        guarded,
+        setGuarded,
+        leavePrompt,
+        setLeavePrompt,
+        endGame,
+        setEndGame,
+        endLabel,
+        setEndLabel,
+        askToLeave,
+      }}
     >
       {children}
       {/* After the page, outside the bar, which stays behind the help panels: the dialog goes over both. */}
       {leavingTo !== null && (
         <ConfirmDialog
-          title="Leave the game?"
-          message="Your score will be lost."
+          title={leavePrompt.title}
+          message={leavePrompt.message}
           confirmLabel="Leave"
           cancelLabel="Keep playing"
           onConfirm={leave}

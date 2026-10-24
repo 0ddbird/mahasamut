@@ -1,5 +1,6 @@
-import { Link, useNavigate, useParams } from 'react-router';
-import { useGameEndInBar, useLeaveGuard } from '../../site/leaveGuard';
+import { Link, useParams } from 'react-router';
+import { useAskToLeave, useGameEndInBar, useLeaveGuard } from '../../site/leaveGuard';
+import type { LeavePrompt } from '../../site/leaveGuard';
 import { normalizeRoomId } from '../roomId';
 import { FinalScreen } from './FinalScreen';
 import { JoinForm } from './JoinForm';
@@ -18,6 +19,21 @@ const UNAVAILABLE_MESSAGES: Record<'not-found' | 'started' | 'full' | 'closed', 
   closed: 'This lobby was closed after 30 minutes without activity.',
 };
 
+const LOBBY_LEAVE_PROMPT: LeavePrompt = {
+  title: 'Leave the lobby?',
+  message: 'You can join again with the link until the game starts.',
+};
+
+const GAME_LEAVE_PROMPT: LeavePrompt = {
+  title: 'Leave the game?',
+  message: 'Your points stay in the ranking, and you can come back to the game from this tab.',
+};
+
+const HOST_LEAVE_PROMPT: LeavePrompt = {
+  title: GAME_LEAVE_PROMPT.title,
+  message: `${GAME_LEAVE_PROMPT.message} Another player will take over as host.`,
+};
+
 interface RoomPageProps {
   socket?: RoomSocket;
   onReadyRoom?: (view: unknown, actions: unknown) => React.ReactNode;
@@ -27,7 +43,7 @@ interface RoomPageProps {
  * The page at `/room/:roomId`: validates the ID, connects to the room, and
  * shows the join form, the lobby, the current question, the round results, or
  * the final podium. While in an active room, `Leave` takes the place of the
- * games in the top bar.
+ * games in the top bar, and asks first.
  */
 export function RoomPage({ socket = getRoomSocket() }: RoomPageProps) {
   const { roomId: rawId } = useParams<{ roomId: string }>();
@@ -48,18 +64,27 @@ export function RoomPage({ socket = getRoomSocket() }: RoomPageProps) {
 }
 
 function ConnectedRoomPage({ roomId, socket }: { roomId: string; socket: RoomSocket }) {
-  const navigate = useNavigate();
   const [session, actions] = useRoomSession(socket, roomId);
+  const askToLeave = useAskToLeave();
 
-  const inActiveRoom = session.status === 'in-room' && session.view.phase.kind !== 'finished';
+  const view = session.status === 'in-room' ? session.view : null;
+  const phaseKind = view?.phase.kind ?? null;
+  const inActiveRoom = phaseKind !== null && phaseKind !== 'finished';
+  const inGame = phaseKind === 'question' || phaseKind === 'results';
+  const isHost = view?.you.isHost ?? false;
 
-  useLeaveGuard(inActiveRoom);
+  useLeaveGuard(
+    inActiveRoom,
+    !inGame ? LOBBY_LEAVE_PROMPT : isHost ? HOST_LEAVE_PROMPT : GAME_LEAVE_PROMPT,
+  );
+  // Leaving the page leaves the room (useRoomSession): Leave goes home, once confirmed.
   useGameEndInBar(
     inActiveRoom,
-    () => {
-      actions.leave();
-      navigate('/');
-    },
+    () =>
+      askToLeave(
+        '/',
+        document.activeElement instanceof HTMLElement ? document.activeElement : null,
+      ),
     'Leave',
   );
 
@@ -86,23 +111,28 @@ function ConnectedRoomPage({ roomId, socket }: { roomId: string; socket: RoomSoc
     return <JoinForm game={session.game} hasPassword={session.hasPassword} onJoin={actions.join} />;
   }
 
-  const { view } = session;
-  if (view.phase.kind === 'lobby') {
+  if (session.view.phase.kind === 'lobby') {
     return (
       <Lobby
-        view={view}
+        view={session.view}
         onStart={actions.start}
         onChangeAvatar={actions.setAvatar}
         onUpdateSettings={actions.updateSettings}
       />
     );
   }
-  if (view.phase.kind === 'question') {
-    return <QuestionScreen key={view.phase.index} view={view} onAnswer={actions.answer} />;
+  if (session.view.phase.kind === 'question') {
+    return (
+      <QuestionScreen
+        key={session.view.phase.index}
+        view={session.view}
+        onAnswer={actions.answer}
+      />
+    );
   }
-  if (view.phase.kind === 'results') {
-    return <ResultsScreen view={view} onNext={actions.next} />;
+  if (session.view.phase.kind === 'results') {
+    return <ResultsScreen view={session.view} onNext={actions.next} />;
   }
 
-  return <FinalScreen view={view} onReturnToLobby={actions.returnToLobby} />;
+  return <FinalScreen view={session.view} onReturnToLobby={actions.returnToLobby} />;
 }

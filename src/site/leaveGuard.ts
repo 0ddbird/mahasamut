@@ -15,9 +15,22 @@
 import { createContext, useContext, useEffect, useRef } from 'react';
 import type { MouseEvent } from 'react';
 
+/** What the dialog says before leaving a game; by default, that its score is lost. */
+export interface LeavePrompt {
+  title: string;
+  message: string;
+}
+
+export const DEFAULT_LEAVE_PROMPT: LeavePrompt = {
+  title: 'Leave the game?',
+  message: 'Your score will be lost.',
+};
+
 interface LeaveGuard {
   guarded: boolean;
   setGuarded: (guarded: boolean) => void;
+  leavePrompt: LeavePrompt;
+  setLeavePrompt: (prompt: LeavePrompt) => void;
   /** Ends the game on the page; `null` when no game is in progress. */
   endGame: (() => void) | null;
   setEndGame: (end: (() => void) | null) => void;
@@ -31,6 +44,8 @@ interface LeaveGuard {
 export const LeaveGuardContext = createContext<LeaveGuard>({
   guarded: false,
   setGuarded: () => {},
+  leavePrompt: DEFAULT_LEAVE_PROMPT,
+  setLeavePrompt: () => {},
   endGame: null,
   setEndGame: () => {},
   endLabel: 'End',
@@ -38,13 +53,26 @@ export const LeaveGuardContext = createContext<LeaveGuard>({
   askToLeave: () => {},
 });
 
-/** Guards leaving the page while `active` is true, and no longer once it is gone. */
-export function useLeaveGuard(active: boolean): void {
-  const { setGuarded } = useContext(LeaveGuardContext);
+/**
+ * Guards leaving the page while `active` is true, and no longer once it is
+ * gone; the dialog that asks first says `prompt`.
+ */
+export function useLeaveGuard(active: boolean, prompt: LeavePrompt = DEFAULT_LEAVE_PROMPT): void {
+  const { setGuarded, setLeavePrompt } = useContext(LeaveGuardContext);
   useEffect(() => {
     setGuarded(active);
     return () => setGuarded(false);
   }, [active, setGuarded]);
+  const { title, message } = prompt;
+  useEffect(() => {
+    setLeavePrompt({ title, message });
+    return () => setLeavePrompt(DEFAULT_LEAVE_PROMPT);
+  }, [title, message, setLeavePrompt]);
+}
+
+/** Asks the player before going to `to`, as a guarded link does. */
+export function useAskToLeave(): (to: string, focusOnStay: HTMLElement | null) => void {
+  return useContext(LeaveGuardContext).askToLeave;
 }
 
 export function useIsLeaveGuarded(): boolean {

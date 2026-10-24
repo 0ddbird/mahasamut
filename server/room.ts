@@ -220,17 +220,34 @@ export class Room {
     this.closeIfEveryoneAnswered();
   }
 
+  /**
+   * The player leaves on purpose. In the lobby they are gone for good; once the
+   * game has started they keep their seat and their points, and their token
+   * brings them back. Either way, a host who leaves hands the role over.
+   */
   leave(token: string, now: number): void {
     const player = this.byToken.get(token);
     if (!player) return;
-    this.byToken.delete(token);
-    const idx = this.players.indexOf(player);
-    if (idx !== -1) {
-      this.players.splice(idx, 1);
-    }
-    if (player.isHost && this.players.length > 0) {
-      const nextHost = this.activePlayers()[0] ?? this.players[0];
-      nextHost.isHost = true;
+    if (this.phase.kind === 'lobby') {
+      this.byToken.delete(token);
+      const idx = this.players.indexOf(player);
+      if (idx !== -1) {
+        this.players.splice(idx, 1);
+      }
+      if (player.isHost && this.players.length > 0) {
+        const nextHost = this.activePlayers()[0] ?? this.players[0];
+        nextHost.isHost = true;
+      }
+    } else {
+      player.connections = Math.max(0, player.connections - 1);
+      if (player.connections === 0) {
+        player.left = true;
+      }
+      const nextHost = this.activePlayers().find((p) => p !== player);
+      if (player.isHost && nextHost) {
+        player.isHost = false;
+        nextHost.isHost = true;
+      }
     }
     this.activityAt = now;
     this.closeIfEveryoneAnswered();
@@ -282,6 +299,14 @@ export class Room {
     if (!player.isHost) return { ok: false, error: 'not-host' };
     if (this.phase.kind !== 'lobby') return { ok: false, error: 'wrong-phase' };
 
+    // The game is played by the players the lobby shows: those gone from it get no seat.
+    for (let i = this.players.length - 1; i >= 0; i--) {
+      const p = this.players[i];
+      if (p.left) {
+        this.players.splice(i, 1);
+        this.byToken.delete(p.token);
+      }
+    }
     this.questions = SERVER_GAMES[this.settings.game].drawQuestions(this.settings, this.rng);
     this.roundResults = [];
     this.openQuestion(0, now);
@@ -346,8 +371,9 @@ export class Room {
       },
       you: { pseudo: you.pseudo, avatar: you.avatar, isHost: you.isHost },
       host: { pseudo: host.pseudo, connected: host.connections > 0 },
-      // The host first, so that a new host is seen at once.
-      players: this.activePlayers()
+      // In the lobby, the players there; once the game has started, everyone
+      // who has a seat in it. The host first, so that a new host is seen at once.
+      players: (this.phase.kind === 'lobby' ? this.activePlayers() : this.players)
         .toSorted((a, b) => Number(b.isHost) - Number(a.isHost))
         .map((p) => ({
           pseudo: p.pseudo,

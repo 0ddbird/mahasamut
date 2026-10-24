@@ -288,4 +288,63 @@ describe('Room (during a game)', () => {
     const phase = room.viewFor(host, 2_000).phase;
     expect(phase.kind === 'question' && phase.answered).toEqual(['Anna']);
   });
+
+  describe('leaving', () => {
+    it('keeps the seat and the points of a player who leaves, and lets them come back', () => {
+      const { room, host, anna } = startedRoom();
+      room.answer(host, answersFor(0).wrong, 3_500);
+      room.answer(anna, answersFor(0).right, 3_500); // +92
+
+      room.leave(anna, 4_000);
+      const view = room.viewFor(host, 4_000);
+      expect(view.players).toEqual([
+        expect.objectContaining({ pseudo: 'Host', connected: true }),
+        expect.objectContaining({ pseudo: 'Anna', connected: false }),
+      ]);
+      if (view.phase.kind === 'results') {
+        expect(view.phase.ranking[0]).toEqual(
+          expect.objectContaining({ pseudo: 'Anna', score: 92 }),
+        );
+      }
+
+      expect(room.hasPlayer(anna)).toBe(true);
+      expect(room.connect(anna, 5_000)).toBe(true);
+      expect(room.viewFor(host, 5_000).players[1].connected).toBe(true);
+    });
+
+    it('hands the host role over when the host leaves, and keeps it with the new host', () => {
+      const { room, host, anna } = startedRoom();
+      room.leave(host, 2_000);
+      expect(room.viewFor(anna, 2_000).you.isHost).toBe(true);
+      expect(room.viewFor(anna, 2_000).host.pseudo).toBe('Anna');
+      expect(room.viewFor(anna, 2_000).players.map((p) => [p.pseudo, p.isHost])).toEqual([
+        ['Anna', true],
+        ['Host', false],
+      ]);
+
+      room.connect(host, 3_000);
+      expect(room.viewFor(host, 3_000).you.isHost).toBe(false);
+      expect(room.next(host, 3_000)).toEqual({ ok: false, error: 'not-host' });
+    });
+
+    it('closes the question when the last player still to answer leaves', () => {
+      const { room, host, anna } = startedRoom();
+      room.answer(host, answersFor(0).right, 2_000);
+      room.leave(anna, 3_000);
+      expect(room.viewFor(host, 3_000).phase.kind).toBe('results');
+    });
+
+    it('gives no seat to a player gone from the lobby when the game starts', () => {
+      const { room, token: host } = Room.create('K7P2QX', SETTINGS, 'Host', 0, seededRng(1));
+      const joined = room.join('Anna', null, 1);
+      if (!joined.ok) throw new Error('expected join to succeed');
+      room.connect(host, 10);
+      room.connect(joined.token, 20);
+      room.disconnect(joined.token, 30);
+
+      room.start(host, 1_000);
+      expect(room.viewFor(host, 1_000).players.map((p) => p.pseudo)).toEqual(['Host']);
+      expect(room.hasPlayer(joined.token)).toBe(false);
+    });
+  });
 });
