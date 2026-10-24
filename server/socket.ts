@@ -88,6 +88,10 @@ export function attachRooms(
           metrics?.recordMultiGameFinished(room.settings.game, now());
         }
         broadcastRoom(room);
+      } else {
+        // A timer may fire a few milliseconds before the clock reaches the
+        // deadline: set it again, or the question would stay open at 0.
+        syncRoomTimer(room);
       }
     }, delayMs);
     timers.set(room.id, timer);

@@ -150,6 +150,32 @@ describe('Socket.IO room server', () => {
     expect(guestView.phase.kind).toBe('results');
   });
 
+  it('closes the question at the deadline, even when the timer fires a little early', async () => {
+    const host = await connectClient();
+    const created = await host.emitWithAck('room:create', { settings: SETTINGS, pseudo: 'Host' });
+    if (!created.ok) throw new Error('expected room creation');
+    const guest = await connectClient();
+    await guest.emitWithAck('room:join', {
+      roomId: created.roomId,
+      pseudo: 'Anna',
+      password: null,
+    });
+    const started = waitForEvent<RoomView>(host, 'room:state');
+    await host.emitWithAck('game:start');
+    const { phase } = await started;
+    if (phase.kind !== 'question') throw new Error('expected a question');
+
+    // 20 ms before the deadline: the timer is set again for those 20 ms, and
+    // fires while the clock of the room has not moved, as a timer firing early.
+    now += phase.remainingMs - 20;
+    await host.emitWithAck('game:answer', { game: 'syllable', answers: { tone: 'mid' } });
+    await new Promise((resolve) => setTimeout(resolve, 60));
+
+    const results = waitForEvent<RoomView>(host, 'room:state');
+    now += 20;
+    expect((await results).phase.kind).toBe('results');
+  });
+
   it('lets a player come back with their token', async () => {
     const host = await connectClient();
     const created = await host.emitWithAck('room:create', { settings: SETTINGS, pseudo: 'Host' });
