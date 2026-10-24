@@ -12,13 +12,13 @@ export function Masthead() {
     <>
       <svg
         className={styles.masthead}
-        viewBox="0 0 480 159"
+        viewBox="0 0 480 118"
         fill="var(--color-text)"
         aria-hidden="true"
         focusable="false"
       >
         <path d={THAI_TITLE} transform="translate(49.3 69.73)" />
-        <path d={SUBTITLE} transform="translate(72.99 153.75)" />
+        <path d={SUBTITLE} transform="translate(46.62 101.29)" />
       </svg>
       <span className={styles.text}>
         Mahasamut (<span lang="th">มหาสมุด</span>), the great notebook
