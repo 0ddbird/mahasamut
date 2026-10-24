@@ -130,6 +130,13 @@ describe('VowelPage', () => {
     expect(play).toHaveBeenLastCalledWith(vowelSoundUrl(FIRST.vowel.id));
   });
 
+  it('does not show Listen when the answer is right, avoiding a flash before auto-advance', async () => {
+    renderPage();
+    await choose(RIGHT);
+    await userEvent.click(validateButton());
+    expect(screen.queryByRole('button', { name: 'Listen' })).toBeNull();
+  });
+
   // Listen appearing would push the answers down just as the correction shows.
   it('keeps the room of Listen before the check, hidden, so the answers do not move', () => {
     renderPage();

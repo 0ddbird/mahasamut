@@ -61,9 +61,9 @@ interface VowelPageProps {
 /**
  * The vowel game: the player reads a vowel, written on อ, and finds how it
  * sounds among four answers in IPA. Choosing an answer plays its sound, since
- * IPA is hard to read alone. Validate checks it; once checked, Listen plays
- * the right one again. A right answer moves on by itself, a wrong one waits
- * for Next.
+ * IPA is hard to read alone. Validate checks it; once checked on a wrong
+ * answer, Listen plays the right one again. A right answer moves on by itself,
+ * a wrong one waits for Next.
  */
 export function VowelPage({
   rng = Math.random,
@@ -126,7 +126,10 @@ export function VowelPage({
           secondsPerQuestion={settings.secondsPerQuestion}
         />
         <ThaiDisplay text={vowelOnCarrier(vowel)} />
-        <ListenButton visible={checked} onClick={() => play(vowelSoundUrl(vowel.id))} />
+        <ListenButton
+          visible={checked && !game.correct}
+          onClick={() => play(vowelSoundUrl(vowel.id))}
+        />
         <div className={styles.answer}>
           <AnswerRow
             title="Sound"
