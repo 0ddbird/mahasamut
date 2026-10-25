@@ -1,6 +1,16 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/logo-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/logo-light.png">
+    <img alt="Mahasamut · มหาสมุด" src="docs/logo.png" width="440">
+  </picture>
+</p>
+
 # Mahasamut · มหาสมุด
 
 Short games to learn to read Thai script, served at <https://mahasamut.app>.
+
+![Mahasamut preview](docs/screenshot.png)
 
 The name is a pun on _mahasamut_: spelled **มหาสมุด** (from มหา _maha_, "great", and สมุด _samut_, "notebook") rather than มหาสมุทร ("ocean"), it means **"great notebook"**.
 
@@ -50,9 +60,9 @@ Mahasamut collects strictly anonymous usage metrics (page views, games started/f
 
 ## Deployment
 
-Server provisioning and deployment live in the companion repository [`0ddbird/mahasamut-infra`](https://github.com/0ddbird/mahasamut-infra).
+Server provisioning and deployment live in a private companion repository with Ansible, Caddy and systemd.
 
-After pushing to GitHub, deploy from `mahasamut-infra`:
+Deployments are atomic with instant rollback:
 
 ```bash
 just deploy            # build and publish origin/main on https://mahasamut.app
