@@ -42,3 +42,7 @@ data/words/takes/
 # Takes of vowels, recorded locally (npm run vowels:takes)
 data/vowels/takes/
 
+# Design assets & raw PSD files
+design/
+
+
